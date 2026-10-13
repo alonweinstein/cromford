@@ -1,0 +1,2 @@
+The rule is `change` and the value is 12.5, same as last week's 12.5. Nothing moved, so there is nothing to tell the operator.
+VERDICT: silent

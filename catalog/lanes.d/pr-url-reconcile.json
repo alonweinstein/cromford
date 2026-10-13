@@ -1,0 +1,50 @@
+{
+  "id": "pr-url-reconcile",
+  "name": "PR URL reconcile",
+  "scope": "hub",
+  "script": "bin/pr-url-reconcile.sh",
+  "cadence": "3,13,23,33,43,53 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-pr-url-reconcile",
+    "aliases": [
+      {
+        "name": "pr-url-reconcile-off",
+        "off_when": "present"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "PR_URL_RECONCILE",
+      "type": "int",
+      "default": 1,
+      "zero_means": null,
+      "note": "Read by bin/pr-url-reconcile.sh as ${PR_URL_RECONCILE:-1}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "PR_URL_RECONCILE_DEADLINE_SECS",
+      "type": "int",
+      "default": 240,
+      "zero_means": null,
+      "note": "Read by bin/pr-url-reconcile.sh as ${PR_URL_RECONCILE_DEADLINE_SECS:-240}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "PR_URL_RECONCILE_MAX",
+      "type": "int",
+      "default": 50,
+      "zero_means": null,
+      "note": "Read by bin/pr-url-reconcile.sh as ${PR_URL_RECONCILE_MAX:-50}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/pr-url-reconcile.log"
+  }
+}

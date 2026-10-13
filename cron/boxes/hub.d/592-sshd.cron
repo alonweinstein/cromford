@@ -1,0 +1,15 @@
+
+# sshd (operator lines, outside managed blocks; BH-662). cron/small.cron:1,
+# cron/project-5.cron:13 and cron/project-6.cron:16 each carry an
+# `@reboot ... /usr/sbin/sshd` line; this file carried none. On these VMs cron is
+# alive from the image and sshd is started by that cron line, so a hub that
+# rebooted (the 2026-09-15 wipe/resize window) runs every lane in this file and
+# listens on nothing — which is exactly what "port 22 refused from the Mac and
+# from a watcher box while its crons run normally" looks like. The */5 keepalive
+# is what restores a hub that has ALREADY rebooted, with no ssh needed to land
+# it: update-runners.sh applies this file at 05:17Z and the next tick starts
+# sshd. Both lines are no-ops when sshd is running. No tailscaled here — the
+# hub's outbound ssh worked on 2026-09-17, so it is alive and must not be
+# double-started.
+@reboot mkdir -p /run/sshd && /usr/sbin/sshd
+*/5 * * * * pgrep -x sshd >/dev/null || { mkdir -p /run/sshd && /usr/sbin/sshd; }

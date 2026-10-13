@@ -1,0 +1,1 @@
+3,13,23,33,43,53 * * * * /root/harness/bin/gh-ledger-push.sh @BOX@ >/dev/null 2>&1 # every 10 min: upsert this box's hourly GitHub-call ledger aggregates (state/gh-rest-ledger/) into the harness-jobs gh_ledger table, so gh-quota-report answers for the whole fleet (BH-1574)

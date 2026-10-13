@@ -1,0 +1,9 @@
+diff --git a/worker/jobs/src/routes/r.js b/worker/jobs/src/routes/r.js
+--- a/worker/jobs/src/routes/r.js
++++ b/worker/jobs/src/routes/r.js
+@@ -1,0 +1,5 @@
++export async function h(env, body) {
++  const where = [];
++  where.push(`${body.col}=?1`, "active=1");
++  return env.DB.prepare(`SELECT * FROM t WHERE ${where.join(" AND ")}`).all();
++}

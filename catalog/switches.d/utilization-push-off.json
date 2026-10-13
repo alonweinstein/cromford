@@ -1,0 +1,1 @@
+{"name":"utilization-push-off","readers":["bin/utilization-push.sh"],"box_scoped":true,"what":"stops utilization-push.sh writing the hourly per-project utilization snapshots"}

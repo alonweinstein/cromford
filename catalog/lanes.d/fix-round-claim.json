@@ -1,0 +1,63 @@
+{
+  "id": "fix-round-claim",
+  "name": "Fix round claim",
+  "scope": "box",
+  "script": "bin/fix-round-claim.sh",
+  "cadence": "*/2 * * * *",
+  "boxes": [
+    "project-4",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-fix-round-claim"
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "FIX_ROUND_CLAIM",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "1 claims the fix rounds blocked-resolver queued for this box and runs each one detached (BH-2530). 0 claims nothing: a queued row waits, and a claimed one is re-offered after the stale cutoff."
+    },
+    {
+      "env": "FIX_ROUND_CLAIM_MAX",
+      "type": "int",
+      "default": 2,
+      "min": 0,
+      "max": 10,
+      "unit": "rounds",
+      "zero_means": "off",
+      "note": "Claim requests one tick may make, lost races included. Each claimed row starts one detached fix round, which holds this box for up to BR_FIX_LANE_TIMEOUT. The stale cutoff sent with each claim is ceil((BR_FIX_LANE_TIMEOUT + BR_FIX_HOP_MARGIN) / 60) minutes, read from the blocked-resolver knobs."
+    },
+    {
+      "env": "FIX_ROUND_CLAIM_FOREGROUND",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": null,
+      "note": "Test seam: 1 runs each claimed round in the foreground so tests/fix-round-claim.bh-2530-test.sh can assert its outcome. NOT settable from the control plane; production leaves it 0, and the tick never waits on a round.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/fix-round-claim.log"
+  },
+  "factory_stop": "launch"
+}

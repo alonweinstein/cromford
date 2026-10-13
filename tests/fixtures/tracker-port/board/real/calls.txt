@@ -1,0 +1,8 @@
+GET https://ledger.example/api/accounting/requests-board/tickets/cmParent01
+GET https://ledger.example/api/accounting/requests-board/boards
+GET https://ledger.example/api/accounting/requests-board/tickets/cmParent01
+POST https://ledger.example/api/accounting/requests-board/boards/rb-1/tickets
+POST https://ledger.example/api/accounting/requests-board/boards/rb-1/tickets
+POST https://ledger.example/api/accounting/requests-board/boards/rb-1/tickets
+POST https://ledger.example/api/accounting/requests-board/tickets/cmParent01/comments
+POST https://ledger.example/api/accounting/requests-board/tickets/cmParent01/move

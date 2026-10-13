@@ -1,0 +1,1 @@
+{"name":"gh-app-default-off","readers":["bin/lib/gh-app-default.sh","bin/triage-map.sh"],"box_scoped":true,"what":"stops bin/gh-ledger/gh and gh_rest defaulting a tokenless example-org gh call to a GitHub App installation token, so the call keeps the keyring PAT"}

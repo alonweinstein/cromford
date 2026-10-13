@@ -1,0 +1,27 @@
+{
+  "id": "alert-flush",
+  "name": "Alert flush (Telegram spool)",
+  "scope": "box",
+  "script": "bin/alert-flush.sh",
+  "cadence": "*/15 * * * *",
+  "boxes": [
+    "project-4",
+    "hub",
+    "project-1",
+    "project-10",
+    "project-2"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-alert-flush",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/alert-flush.log"
+  }
+}

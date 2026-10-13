@@ -1,0 +1,4 @@
+# tests/mc/expected-map.d/BH-2199.tsv — BH-2199: the held-queue re-ask knob reader
+# (queue, beside mc_queue_inactive_alert, which names its interval); origin=lib
+# because it is a new module function.
+queue	mergify_reask_ticks_for	lib

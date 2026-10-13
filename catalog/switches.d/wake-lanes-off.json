@@ -1,0 +1,1 @@
+{"name":"wake-lanes-off","readers":["bin/lib/wake-armed-watch.sh","bin/lib/wake-lanes.sh","bin/wake-loop.sh"],"box_scoped":true,"what":"stops the wake-class lane hooks in the wake loop, so every lane runs on its own cron tick"}

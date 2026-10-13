@@ -1,0 +1,11 @@
+# @hub-lanes
+
+# ── ARCHIE LANE (BH-4062) ───────────────────────────────────────────────────
+# Every 15 minutes Archie reads the initiatives that are due
+# (GET /api/initiatives), checks each one's metric, and either stays silent or
+# sends ONE triaged fleet_alert beat per due initiative: the recommendation
+# first, then the links. The slot's initiative_events row is read before any
+# model call, so a resend never pays twice. A tick with nothing due makes no
+# model call and writes no log line; flock -n dedupes. Off: ARCHIE_ENABLED=0,
+# flags/lane-off-archie, or bin/harness-ctl.sh off archie.
+*/15 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/archie.sh >/dev/null 2>&1

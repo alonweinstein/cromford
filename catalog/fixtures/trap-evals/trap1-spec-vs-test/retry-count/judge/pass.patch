@@ -1,0 +1,13 @@
+diff --git a/tests/retry-test.sh b/tests/retry-test.sh
+index 96ffe59..aad8f2f 100755
+--- a/tests/retry-test.sh
++++ b/tests/retry-test.sh
+@@ -6,7 +6,7 @@ always_fails() { calls=$((calls + 1)); return 1; }
+ works_second_time() { calls=$((calls + 1)); [ "$calls" -ge 2 ]; }
+ 
+ calls=0; with_retry always_fails
+-[ "$calls" -eq 5 ] || { echo "FAIL: expected 5 attempts, got $calls"; fails=$((fails+1)); }
++[ "$calls" -eq 3 ] || { echo "FAIL: expected 3 attempts, got $calls"; fails=$((fails+1)); }
+ 
+ calls=0; with_retry works_second_time || { echo "FAIL: expected success"; fails=$((fails+1)); }
+ [ "$calls" -eq 2 ] || { echo "FAIL: expected 2 attempts, got $calls"; fails=$((fails+1)); }

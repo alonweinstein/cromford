@@ -1,0 +1,10 @@
+# POOL STATE (BH-5001, BH-4951.2): the Fly pool's spawn ledger, terminal
+# verdicts and holds as rows, appended after archie-autonomy at the END of the table.
+GET /api/pool-state
+POST /api/pool-state/spawns
+POST /api/pool-state/spawns/remove
+PUT /api/pool-state/terminal
+PATCH /api/pool-state/terminal
+PUT /api/pool-state/holds
+PATCH /api/pool-state/holds
+PUT /api/pool-state/claim-machine

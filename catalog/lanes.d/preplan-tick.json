@@ -1,0 +1,204 @@
+{
+  "id": "preplan-tick",
+  "name": "Pre-plan tick",
+  "scope": "box",
+  "script": "bin/preplan-tick.sh",
+  "cadence": "*/2 * * * *",
+  "boxes": [
+    "project-4",
+    "hub",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-preplan-tick",
+    "aliases": [
+      {
+        "name": "preplan-speculative-off",
+        "off_when": "partial"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "PREPLAN_SPECULATIVE",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "Master switch for speculative pre-planning.",
+      "read_in": "bin/lib/preplan-lib.sh"
+    },
+    {
+      "env": "PREPLAN_AHEAD",
+      "type": "int",
+      "default": 2,
+      "min": 0,
+      "max": 50,
+      "unit": "tickets",
+      "zero_means": "off",
+      "note": "Untouched ready tickets pre-planned per project per tick.",
+      "read_in": "bin/lib/preplan-lib.sh"
+    },
+    {
+      "env": "PREPLAN_AHEAD_READY",
+      "type": "int",
+      "default": null,
+      "min": 0,
+      "max": 50,
+      "unit": "tickets",
+      "zero_means": "off",
+      "note": "Overrides PREPLAN_AHEAD for the READY class only. Unset means follow PREPLAN_AHEAD.",
+      "read_in": "bin/lib/preplan-lib.sh"
+    },
+    {
+      "env": "PREPLAN_PARALLEL",
+      "type": "int",
+      "default": 3,
+      "min": 0,
+      "max": 32,
+      "unit": "pre-plans",
+      "zero_means": "off",
+      "note": "Pre-plans running at once box-wide.",
+      "read_in": "bin/lib/preplan-lib.sh"
+    },
+    {
+      "env": "PREPLAN_STALE_MAX",
+      "type": "int",
+      "default": 2,
+      "min": 0,
+      "max": 50,
+      "unit": "re-plans",
+      "zero_means": "off",
+      "note": "Stale re-plans one ticket may buy per 24h.",
+      "read_in": "bin/lib/preplan-lib.sh"
+    },
+    {
+      "env": "PREPLAN_SKIP_SMALL",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "P2: skip the pre-plan when it adds nothing: triage sized it S (size=S on the queue line), it is copy/docs (kind=copy|docs, or the board title prefix via bin/kind-gate.sh), or its build is already running. The build stage plans it. 0 pre-plans them as before.",
+      "read_in": "bin/lib/preplan-lib.sh"
+    },
+    {
+      "env": "PREPLAN_READY_ONLY",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "Will skip the pre-plan for a key the deterministic readiness filter calls not ready. 0 turns the filter off. (BH-2543; stub until the readiness/cadence child lands, so it changes nothing yet.)",
+      "read_in": "bin/lib/preplan-ready.sh"
+    },
+    {
+      "env": "PREPLAN_ADOPT_FLOOR_PCT",
+      "type": "int",
+      "default": 50,
+      "min": 0,
+      "max": 100,
+      "unit": "percent",
+      "zero_means": "off",
+      "note": "Will cut a project's pre-plan cadence when its adopt rate stays under this percent. 0 never cuts. (BH-2543; stub until the readiness/cadence child lands, so it changes nothing yet.)",
+      "read_in": "bin/lib/preplan-cadence.sh"
+    },
+    {
+      "env": "PREPLAN_ADOPT_MIN_SAMPLES",
+      "type": "int",
+      "default": 10,
+      "min": 1,
+      "max": 1000,
+      "unit": "pre-plans",
+      "zero_means": null,
+      "note": "Will be the bought pre-plans (adopted + stale) a project needs in the window before its adopt rate counts. (BH-2543; stub until the readiness/cadence child lands, so it changes nothing yet.)",
+      "read_in": "bin/lib/preplan-cadence.sh"
+    },
+    {
+      "env": "PREPLAN_ADOPT_WINDOW_DAYS",
+      "type": "int",
+      "default": 7,
+      "min": 1,
+      "max": 30,
+      "unit": "days",
+      "zero_means": null,
+      "note": "Will be the window the adopt rate is measured over. (BH-2543; stub until the readiness/cadence child lands, so it changes nothing yet.)",
+      "read_in": "bin/lib/preplan-cadence.sh"
+    },
+    {
+      "env": "PREPLAN_CUT_INTERVAL_S",
+      "type": "int",
+      "default": 1800,
+      "min": 60,
+      "max": 86400,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "Will be the least time between two pre-plan launches for a project whose cadence is cut. (BH-2543; stub until the readiness/cadence child lands, so it changes nothing yet.)",
+      "read_in": "bin/lib/preplan-cadence.sh"
+    },
+    {
+      "env": "PREPLAN_ADOPT_CACHE_S",
+      "type": "int",
+      "default": 900,
+      "min": 0,
+      "max": 3600,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "Will be how long one adoption answer is reused before the route is asked again. (BH-2543; stub until the readiness/cadence child lands, so it changes nothing yet.)",
+      "read_in": "bin/lib/preplan-cadence.sh"
+    },
+    {
+      "env": "LLM_LANE_ENABLED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "0 makes this lane call no model at all. bin/lib/llm-gate.sh refuses BEFORE the vendor call and writes a zero-cost row_source=refused row, so the stop is visible in the ledger rather than being a lane that went quiet."
+    },
+    {
+      "env": "LLM_RUNNER_ALLOWED",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Comma/space list of the ONLY ladder rungs this lane may reach. Empty is every rung, i.e. today's ladder unchanged. A rung outside the list is refused before the call, so a cliff or a failure on the standing lane cannot descend into one that costs ~100x (#1141, the $793 descent)."
+    },
+    {
+      "env": "LLM_USD_CAP_DAY",
+      "type": "float",
+      "default": 0,
+      "min": 0,
+      "max": 10000,
+      "unit": "usd",
+      "zero_means": "unlimited",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Dollars this lane may spend in the current UTC day, summed from D1 cost_rows through GET /api/metrics/llm-spend — never from the box's own logs/cost.csv. A second, project-scoped ceiling is the lane.<id>.<project>.llm_usd_cap_day row, which is read only when somebody wrote it."
+    }
+  ],
+  "stats": {
+    "cost_stage": "preplan",
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/preplan.log"
+  },
+  "factory_stop": "launch"
+}

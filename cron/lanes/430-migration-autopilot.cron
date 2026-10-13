@@ -1,0 +1,2 @@
+# @hub-lanes
+9,24,39,54 * * * * /root/harness/bin/hub-lease.sh check && for P in project-2 project-3 project-4; do /root/harness/bin/migration-autopilot.sh $P >/dev/null 2>&1; done

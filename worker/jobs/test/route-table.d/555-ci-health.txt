@@ -1,0 +1,4 @@
+# BH-2633 (BH-2517.2): the newest CI minutes / runner-pool snapshot per repo,
+# at the END of the table, after product-proposals, where src/index.js puts it.
+PUT /api/ci-health
+GET /api/ci-health

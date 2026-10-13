@@ -1,0 +1,4 @@
+# tests/jobs-client-modules.d/20-BH-3316.tsv — the queue routing verbs for stranded build rows (BH-3316).
+queue	queue_routing_facts
+queue	queue_route_target
+queue	queue_target_stranded

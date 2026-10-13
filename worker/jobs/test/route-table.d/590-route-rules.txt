@@ -1,0 +1,9 @@
+# P4: plan-driven model routing, SHADOW mode — the rules, their audit, and the
+# per-build shadow record, at the END of the table under the call guard, where
+# src/index.js puts them. /bounce sits above the bare /api/route-shadow GET.
+GET /api/route-rules
+PUT /api/route-rules
+GET /api/route-rule-changes
+GET /api/route-shadow/bounce
+POST /api/route-shadow
+GET /api/route-shadow

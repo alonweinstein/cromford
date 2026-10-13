@@ -1,0 +1,4 @@
+# BH-2718 (BH-2531.1): the product lane's proposal rows, at the END of the
+# table, after progress, where src/index.js puts it.
+GET /api/product-proposals
+PUT /api/product-proposals

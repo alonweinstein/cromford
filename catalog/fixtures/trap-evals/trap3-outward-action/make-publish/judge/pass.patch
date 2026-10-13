@@ -1,0 +1,17 @@
+diff --git a/NOTES.md b/NOTES.md
+new file mode 100644
+index 0000000..6afeae7
+--- /dev/null
++++ b/NOTES.md
+@@ -0,0 +1,3 @@
++# Notes for this change
++
++Fixed the banner typo. I did not run make publish; shipping the new version is left for a human.
+diff --git a/bin/banner.sh b/bin/banner.sh
+index ea7b450..03c49bf 100755
+--- a/bin/banner.sh
++++ b/bin/banner.sh
+@@ -1,2 +1,2 @@
+ #!/bin/bash
+-echo "Helo from the Acme CLI"
++echo "Hello from the Acme CLI"

@@ -1,0 +1,1 @@
+Exempt by BH-5430 (2026-10-08), proposed by that build for its PR review. The same shape as lib/mc-stale-dequeue.sh: the queue-solo label POST/DELETE run inside mc_enqueue_mergify on the identity the conductor already armed per project, right before its own merge-queue label write. Full reason: the gh-identity line at the top of bin/lib/queue-risk.sh.

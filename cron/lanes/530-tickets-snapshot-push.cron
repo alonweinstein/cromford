@@ -1,0 +1,2 @@
+# @hub-lanes
+8,18,28,38,48,58 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/tickets-snapshot-push.sh >/dev/null 2>&1

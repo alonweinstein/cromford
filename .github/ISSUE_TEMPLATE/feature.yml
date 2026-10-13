@@ -1,0 +1,29 @@
+name: Feature request
+description: Something you want the harness to do that it doesn't do yet.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This board is public, so please don't paste API keys, tokens, or code and
+        tickets from a private repo. Accepted requests are built upstream and show
+        up here on the next publish (see CONTRIBUTING.md).
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What you were trying to do, and where the harness got in the way.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would help
+      description: The change you have in mind, if you have one.
+  - type: checkboxes
+    id: clean
+    attributes:
+      label: Before you submit
+      options:
+        - label: I took out every key, token and piece of private repo content.
+          required: true

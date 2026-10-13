@@ -1,0 +1,8 @@
+# @hub-lanes
+
+# ── FLAG SEED LANE (BH-5635.1) ──────────────────────────────────────────────
+# Hourly, the hub copies its flags/ pause, automerge and WIP files into the
+# pause_flags rows once: a missing row is written, an existing row is never
+# overwritten. A no-op after state/flags-seeded. Off: flags/lane-off-flag
+# or bin/harness-ctl.sh off flag.
+23 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/flag.sh seed >/dev/null 2>&1

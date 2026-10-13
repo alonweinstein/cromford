@@ -1,0 +1,4 @@
+{
+  "_doc": "Hand-maintained write-route evidence for bin/board-conformance.sh (BH-3947). projects.<p>.<write.route> = {status: ok|missing, source: <citation, e.g. app PR #N>}. A row with no source reads unverified. No row = unverified.",
+  "projects": {}
+}

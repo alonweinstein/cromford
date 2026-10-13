@@ -1,0 +1,4 @@
+# BH-1942 (BH-1909.0): the hub-recovery and restore-lab contract stubs,
+# spliced in directly under the hub lease, the same place src/index.js puts them.
+GET /api/hub/recovery
+POST /api/hub/promote

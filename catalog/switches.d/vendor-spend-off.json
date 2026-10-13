@@ -1,0 +1,1 @@
+{"name":"vendor-spend-off","readers":["bin/vendor-spend-pull.sh"],"box_scoped":true,"what":"stops pulling non-Anthropic vendor spend into the cost database"}

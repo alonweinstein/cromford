@@ -1,0 +1,4 @@
+SHELL=/bin/bash
+# BEGIN hub-lanes
+/root/harness/bin/sync-data.sh --one --two --three --four --five
+# END hub-lanes

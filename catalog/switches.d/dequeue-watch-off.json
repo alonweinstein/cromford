@@ -1,0 +1,1 @@
+{"name":"dequeue-watch-off","readers":["bin/dequeue-watch.sh"],"box_scoped":false,"what":"stops the dequeue-watch lane before any GitHub read: no requeue, no fix round, no hold, no page"}

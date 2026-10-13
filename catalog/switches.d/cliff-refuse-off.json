@@ -1,0 +1,1 @@
+{"name":"cliff-refuse-off","readers":["bin/agent-call.sh"],"box_scoped":true,"what":"turns off the cliff refuse in agent-call.sh, whatever the env says"}

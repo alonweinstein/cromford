@@ -1,0 +1,52 @@
+{
+  "id": "model-prices-sync",
+  "name": "Model prices sync",
+  "scope": "box",
+  "script": "bin/model-prices-sync.sh",
+  "cadence": "5 5 * * *",
+  "boxes": [
+    "project-4",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-model-prices-sync",
+    "aliases": [
+      {
+        "name": "model-prices-sync-off",
+        "off_when": "present"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "JOBS_HTTP",
+      "type": "string",
+      "default": "none",
+      "zero_means": null,
+      "note": "Read by bin/model-prices-sync.sh as ${JOBS_HTTP:-none}. Registered by BH-1032 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "MODEL_PRICES_SYNC",
+      "type": "int",
+      "default": 1,
+      "zero_means": "off",
+      "note": "Read by bin/model-prices-sync.sh as ${MODEL_PRICES_SYNC:-1}. The lane's own disarm, alongside flags/model-prices-sync-off: 0 leaves this box pricing from whatever state/model-prices.json it already has, or from catalog/model-prices.json if it has none. Registered by BH-1032 so the switch the script really reads is the switch the page draws."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/agent-rules.log"
+  }
+}

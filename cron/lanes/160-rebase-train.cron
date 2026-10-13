@@ -1,0 +1,6 @@
+# @hub-lanes
+11,41 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/rebase-train.sh project-4 >/dev/null 2>&1
+16,46 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/rebase-train.sh project-2 >/dev/null 2>&1
+19,49 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/rebase-train.sh project-3 >/dev/null 2>&1
+# @box project-1
+13,43 * * * * /root/harness/bin/rebase-train.sh project-1 >/dev/null 2>&1

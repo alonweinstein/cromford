@@ -1,0 +1,3 @@
+# OUTCOME-GAP (BH-4017, BH-3987.3): per project, tickets with priced build
+# spend and no merged harness PR, appended after dequeue-watch at the END of the table.
+GET /api/metrics/outcome-gap

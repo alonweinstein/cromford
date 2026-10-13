@@ -1,0 +1,22 @@
+{
+  "libs": [
+    {
+      "id": "utilization-tickets",
+      "file": "bin/lib/utilization/section-tickets.sh",
+      "note": "BH-4009 (BH-3988.1). The tickets section of the hourly utilization snapshot (ready/blocked/held/parked per project), sourced by bin/utilization-push.sh. Applied per project by util_section_tickets through lib_env_apply utilization-tickets <p>.",
+      "knobs": [
+        {
+          "env": "UTIL_HOLD_READS_MAX",
+          "type": "int",
+          "default": 30,
+          "min": 0,
+          "max": 200,
+          "unit": "reads",
+          "zero_means": "no hold or blocker-state reads",
+          "required": false,
+          "note": "GitHub reads per project per hourly run for out-of-list Blocked-by states and hold threads, together. Past it the unchecked candidates count as ready and held_complete is false. Settings key lib.utilization-tickets[.<project>].util_hold_reads_max. Read as ${UTIL_HOLD_READS_MAX:-30}; the literal is the documented fallback."
+        }
+      ]
+    }
+  ]
+}

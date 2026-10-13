@@ -1,0 +1,43 @@
+{
+  "id": "route-shadow-report",
+  "name": "Route shadow report",
+  "scope": "hub",
+  "script": "bin/route-shadow-report.sh",
+  "cadence": "15 6 * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-route-shadow-report",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "ROUTE_SHADOW_REPORT_WINDOW_H",
+      "type": "int",
+      "default": 24,
+      "min": 1,
+      "max": 720,
+      "unit": "hours",
+      "zero_means": null,
+      "note": "P4: the trailing window of route_shadow rows the nightly report summarises. Read as ${ROUTE_SHADOW_REPORT_WINDOW_H:-24}; --window on the command line wins."
+    },
+    {
+      "env": "ROUTE_SHADOW_REPORT_SEND",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "zero_means": "off",
+      "note": "P4: 1 = post the report to the fleet topic (a triaged fleet_alert beat, the dora-digest pass-through); 0 = write state/route-shadow/latest.txt and <date>.json only. Read as ${ROUTE_SHADOW_REPORT_SEND:-1}; --no-send wins."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/route-shadow-report.log"
+  }
+}

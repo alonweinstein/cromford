@@ -1,0 +1,222 @@
+{
+  "id": "run-triage",
+  "name": "Triage (LLM)",
+  "scope": "project",
+  "script": "bin/run-triage.sh",
+  "cadence": "1,11,21,31,41,51 * * * *; 2,12,22,32,42,52 * * * *; 3,13,23,33,43,53 * * * *; 4,14,24,34,44,54 * * * *; 5,15,25,35,45,55 * * * *; 6,16,26,36,46,56 * * * *; 8,18,28,38,48,58 * * * *; 9,19,29,39,49,59 * * * *",
+  "boxes": [
+    "project-4",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-run-triage",
+    "aliases": [
+      {
+        "name": "paused-",
+        "off_when": "present"
+      },
+      {
+        "name": "force-triage-",
+        "off_when": "absent"
+      },
+      {
+        "name": "triage-shards-off",
+        "off_when": "partial"
+      },
+      {
+        "name": "triage-shard-caps-off",
+        "off_when": "partial"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "TRIAGE_SHARDS_PER_HOUR",
+      "type": "int",
+      "default": 30,
+      "min": 0,
+      "max": 1000,
+      "unit": "sessions",
+      "zero_means": "unlimited",
+      "note": "Triage shard sessions per project per rolling hour. 0 is no ceiling.",
+      "read_in": "bin/lib/triage-shards-lib.sh"
+    },
+    {
+      "env": "TRIAGE_SHARD_USD_PER_HOUR",
+      "type": "float",
+      "default": 60,
+      "min": 0,
+      "max": 10000,
+      "unit": "usd",
+      "zero_means": "unlimited",
+      "note": "Triage shard dollars per project per rolling hour. 0 is no ceiling.",
+      "read_in": "bin/lib/triage-shards-lib.sh"
+    },
+    {
+      "env": "TRIAGE_COST_SCAN_LINES",
+      "type": "int",
+      "default": 4000,
+      "min": 100,
+      "max": 1000000,
+      "unit": "lines",
+      "zero_means": null,
+      "note": "cost.csv tail scanned for the shard spend counter.",
+      "read_in": "bin/lib/triage-shards-lib.sh"
+    },
+    {
+      "env": "LLM_LANE_ENABLED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "0 makes this lane call no model at all. bin/lib/llm-gate.sh refuses BEFORE the vendor call and writes a zero-cost row_source=refused row, so the stop is visible in the ledger rather than being a lane that went quiet."
+    },
+    {
+      "env": "LLM_RUNNER_ALLOWED",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Comma/space list of the ONLY ladder rungs this lane may reach. Empty is every rung, i.e. today's ladder unchanged. A rung outside the list is refused before the call, so a cliff or a failure on the standing lane cannot descend into one that costs ~100x (#1141, the $793 descent)."
+    },
+    {
+      "env": "LLM_USD_CAP_DAY",
+      "type": "float",
+      "default": 0,
+      "min": 0,
+      "max": 10000,
+      "unit": "usd",
+      "zero_means": "unlimited",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Dollars this lane may spend in the current UTC day, summed from D1 cost_rows through GET /api/metrics/llm-spend — never from the box's own logs/cost.csv. A second, project-scoped ceiling is the lane.<id>.<project>.llm_usd_cap_day row, which is read only when somebody wrote it."
+    },
+    {
+      "env": "GROK_EFFORT",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/run-triage.sh as ${GROK_EFFORT:-}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "RUNNER_TRIAGE",
+      "type": "string",
+      "default": "claude",
+      "zero_means": null,
+      "note": "Read by bin/run-triage.sh as ${RUNNER_TRIAGE:-claude}. Registered by BH-1165 so it is visible and settable: it NAMES a runner out of the closed list bin/agent-call.sh dispatches (claude|codex|openrouter|fireworks|grok|gemini, runner_ready refuses anything else), so it selects a lane rather than running a command — and which runner triage uses is the spend lever the $793 night turned on; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "SCOPED_GROK_EFFORT",
+      "type": "string",
+      "default": "medium",
+      "zero_means": null,
+      "note": "Read by bin/run-triage.sh as ${SCOPED_GROK_EFFORT:-medium}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "TRIAGE_MODEL_LIGHT",
+      "read_in": "bin/lib/triage-shards-lib.sh",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Empty by default since BH-1510.2: the model is a database row, model_routes role 'triage.light', read through bin/lib/triage-shards-lib.sh:triage_model. Set this only to override that row on this box/lane; no reviewed min/max, nothing is clamped."
+    },
+    {
+      "env": "TRIAGE_TOKEN_MIN_LIFE",
+      "type": "int",
+      "default": 3000,
+      "min": 300,
+      "max": 3500,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "GitHub App token life a triage tick asks for before it arms; a shorter cached token is re-minted.",
+      "read_in": "bin/lib/triage-gh-token.sh"
+    },
+    {
+      "env": "TRIAGE_MIN_INTERVAL_S",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 86400,
+      "unit": "seconds",
+      "zero_means": "off",
+      "note": "P2 cadence: minimum seconds between PAID triage ticks for this project (set per project: lane.run-triage.<project>.triage_min_interval_s). Capped at 86400: the daily sweep is the backstop. forced, daily-sweep, no-gate-state and event-wake are exempt. 0 is today (every gate RUN is bought).",
+      "read_in": "bin/lib/triage-throttle.sh"
+    },
+    {
+      "env": "TRIAGE_MAX_RUNS_DAY",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 1000,
+      "unit": "sessions",
+      "zero_means": "unlimited",
+      "note": "P2 ceiling: paid triage ticks (counted at launch) per project per rolling 24h. forced, daily-sweep, no-gate-state and event-wake are exempt. 0 is no ceiling.",
+      "read_in": "bin/lib/triage-throttle.sh"
+    },
+    {
+      "env": "TRIAGE_HEALTH_GATE",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "P2: hold the paid triage ticks that need the board (board-changed, daily-sweep, event-wake, no-gate-state, gate-fetch-failed) while the project cannot produce a build: no repo/board in fleet.conf, board fetch failing, or a state/triage-health/<project>.down marker. Queue, results and forced ticks proceed. One warn-digest line per project per day. 0 turns the check off.",
+      "read_in": "bin/lib/triage-throttle.sh"
+    },
+    {
+      "env": "TRIAGE_HEALTH_FETCH_FAILS",
+      "type": "int",
+      "default": 3,
+      "min": 0,
+      "max": 100,
+      "unit": "ticks",
+      "zero_means": "off",
+      "note": "P2: consecutive gate-fetch-failed ticks before the board counts as down (one re-probe first). 0 turns the fetch probe off.",
+      "read_in": "bin/lib/triage-throttle.sh"
+    },
+    {
+      "env": "TRIAGE_HEALTH_NEED_CLONE",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "P2: 1 makes a project with no repo checkout on its triage box unhealthy. Ships 0: bin/run-triage.sh runs without a checkout by design, so opt in per project once the checkout is confirmed.",
+      "read_in": "bin/lib/triage-throttle.sh"
+    },
+    {
+      "env": "COMMENTED_MIRROR_MAX",
+      "type": "int",
+      "default": 25,
+      "min": 0,
+      "max": 500,
+      "unit": "build dirs",
+      "zero_means": "off",
+      "note": "BH-2526: build dirs bin/commented-mirror.sh turns into a job_artifacts commented row (or withdraws) per triage tick, oldest first; the rest are counted deferred and drained on later ticks. Not a whole number: the mirror logs one line and does nothing.",
+      "read_in": "bin/commented-mirror.sh"
+    }
+  ],
+  "stats": {
+    "cost_stage": "triage",
+    "cost_project_filter": null,
+    "lanes_row": true,
+    "log": "logs/triage.log"
+  },
+  "factory_stop": "launch"
+}

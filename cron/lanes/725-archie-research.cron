@@ -1,0 +1,15 @@
+# @hub-lanes
+
+# ── ARCHIE-RESEARCH LANE (BH-4065) ──────────────────────────────────────────
+# Daily at 06:40Z Archie scans X (xAI x_search, on its own ARCHIE_XAI_API_KEY)
+# and the web (one agent-call with WebSearch, no write tools) for AI software
+# factory news, scores each new find "does this apply to us?", and writes the
+# good ones into the Ideas ledger as gate_pending proposals. Every billable call
+# is claimed in the archie_research ledger first, so a seen post or url is never
+# bought twice, and the day's spend is capped by ARCHIE_RESEARCH_USD_CAP_DAY.
+# At 07:10Z the digest run sends ONE weekly beat for the previous ISO week (the
+# other six days it finds the week already sent and does nothing). flock -n
+# dedupes. Off: ARCHIE_RESEARCH_ENABLED=0, flags/lane-off-archie-research, or
+# bin/harness-ctl.sh off archie-research.
+40 6 * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/archie-research.sh scan >/dev/null 2>&1
+10 7 * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/archie-research.sh digest >/dev/null 2>&1

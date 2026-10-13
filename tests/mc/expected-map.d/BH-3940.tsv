@@ -1,0 +1,4 @@
+# tests/mc/expected-map.d/BH-3940.tsv — BH-3940 (BH-3930.3): mc_rb_load sources
+# bin/lib/review-bought.sh fail-soft for mc_rereview and the classify consume;
+# origin=lib because it is a new module function.
+rebase	mc_rb_load	lib

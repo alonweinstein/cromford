@@ -1,0 +1,2 @@
+# @hub-lanes
+45 6 * * 1 /root/harness/bin/hub-lease.sh check && /root/harness/bin/lookback.sh >> /root/harness/logs/lookback.log 2>&1

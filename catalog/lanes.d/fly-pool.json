@@ -1,0 +1,549 @@
+{
+  "id": "fly-pool",
+  "name": "Fly runner pool (per project)",
+  "scope": "project",
+  "script": "bin/fly-pool.sh",
+  "cadence": "*/10 * * * * (via bin/fly-pool-tick.sh)",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-fly-pool",
+    "aliases": [
+      {
+        "name": "fly-pool-",
+        "off_when": "absent"
+      },
+      {
+        "name": "pool-halt-",
+        "off_when": "present"
+      },
+      {
+        "name": "fly-disabled",
+        "off_when": "present"
+      },
+      {
+        "name": "paused-",
+        "off_when": "present"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "POOL_CAP_MAX",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 500,
+      "unit": "machines",
+      "zero_means": "unlimited",
+      "note": "Fleet-wide ceiling on live pool machines, trimming every per-project answer including unlimited. 0 is no brake. The PER-PROJECT ceiling is not a settings row: it is a number inside flags/fly-pool-<project> (which is also the pool's enable switch) or a reviewed line in fly/pool-caps.conf.",
+      "read_in": "bin/pool-cap.sh"
+    },
+    {
+      "env": "POOL_AUTOSCALE",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "Autoscale. 0 makes the pool follow the explicit cap only."
+    },
+    {
+      "env": "POOL_SPAWN",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "Whether a tick may spawn machines at all."
+    },
+    {
+      "env": "JOBS_QUEUE_DEFER_MAX",
+      "type": "int",
+      "default": 6,
+      "min": 0,
+      "max": 100,
+      "unit": "jobs",
+      "zero_means": "off",
+      "note": "Queued jobs one tick will consider."
+    },
+    {
+      "env": "DEFER_AFTER_LOOP_ALERT",
+      "read_in": "bin/lib/deferral-after.sh",
+      "type": "int",
+      "default": 12,
+      "min": 0,
+      "max": 1000,
+      "unit": "stand-downs",
+      "zero_means": "off",
+      "note": "BH-5967: a pool stand-down that names its blocker (`After: <KEY>`) is a wait, never parked at JOBS_QUEUE_DEFER_MAX; the row stays queued and is released the tick the blocker is done. At this many stand-downs on the same blocker the pool writes ONE AFTER LOOP alert for the (ticket, blocker) pair."
+    },
+    {
+      "env": "POOL_AFTER_MAX_MIN",
+      "type": "int",
+      "default": 360,
+      "min": 0,
+      "max": 10080,
+      "unit": "minutes",
+      "zero_means": "off",
+      "note": "BH-5967: how long the pool's spawn gate holds a row that waits for its blocker (`after`) before it releases the row anyway, with ONE AFTER CEILING alert. The same ceiling bin/plan-after.sh keeps (PLAN_AFTER_MAX_MIN). A wait cycle (BH-A waits for BH-B and BH-B for BH-A, or longer) does not wait for it: the byte-smallest key of the cycle is released at once. 0 = no ceiling."
+    },
+    {
+      "env": "POOL_GH_TOKEN_MIN_LIFE",
+      "type": "int",
+      "default": 3300,
+      "min": 60,
+      "max": 86400,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "Minimum token life handed to a machine."
+    },
+    {
+      "env": "POOL_GH_TOKEN_ROTATE_BEFORE",
+      "type": "int",
+      "default": 1200,
+      "min": 60,
+      "max": 86400,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "Rotate a token this long before expiry."
+    },
+    {
+      "env": "POOL_GH_TOKEN_ROTATE_EVERY",
+      "type": "int",
+      "default": 1800,
+      "min": 60,
+      "max": 86400,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "Minimum spacing between token rotations."
+    },
+    {
+      "env": "POOL_REUSE_DEFAULT_TOKEN",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": null,
+      "note": "1 lets a reused machine keep the default token."
+    },
+    {
+      "env": "POOL_STOPPED_TTL_S",
+      "type": "int",
+      "default": null,
+      "min": 0,
+      "max": 86400,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "How long a stopped machine is kept before destroy. Unset uses the script default."
+    },
+    {
+      "env": "POOL_SWEEP_MAX_DESTROY",
+      "type": "int",
+      "default": null,
+      "min": 0,
+      "max": 200,
+      "unit": "machines",
+      "zero_means": null,
+      "note": "Destroys one sweep may perform. Unset is no per-sweep ceiling."
+    },
+    {
+      "env": "COST_ROWS_REAP_TIMEOUT_S",
+      "type": "int",
+      "default": 120,
+      "min": 10,
+      "max": 3600,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "Wall clock for the cost-row reap off a machine."
+    },
+    {
+      "env": "GH_APP_ROTATE",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "App-token rotation for pool machines."
+    },
+    {
+      "env": "POOL_GH_APP_PROFILE",
+      "type": "string",
+      "default": "builders",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "required": true,
+      "note": "Which GitHub App mints pool machines' tokens (BH-1578): bin/gh-token.sh --app <profile>, reading env/github-app-<profile>.env with its own token cache and its own installation bucket. 'builders' is the cromford-builders App, so builders stop spending the hub App's 6,600/h. 'hub' (or a profile whose env file is absent on the box, which is logged once per tick) mints from the hub App as before. Letters, digits and '-' only."
+    },
+    {
+      "env": "POOL_GH_APP_OWNERS",
+      "type": "string",
+      "default": "example-org",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "required": true,
+      "note": "The GitHub owners the POOL_GH_APP_PROFILE App is installed on (BH-1602): logins, comma or space separated, case-insensitive, '*' for every owner. A pool project owned by anyone else mints from the hub App directly (no profile attempt, no hourly hub-retry page) and writes one ALERTS line per profile per owner per UTC day. Install the App on that owner and add it here to move it onto the builders bucket."
+    },
+    {
+      "env": "EXTRA_READ_REPOS",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "note": "BH-5910: extra GitHub repos (owner/repo, comma or space separated, at most 10) a pool build of this project may READ. Set per project as lane.fly-pool.<project>.extra_read_repos. Each machine gets a second, read-only App token (contents+metadata read) for the project repo plus these; git answers it for these repos only. The App must be installed on each repo, same owner as the project; a repo it is not installed on is logged EXTRA_READ_REPO_MISSING, paged once a day, and skipped. Empty is no extra repos."
+    },
+    {
+      "env": "POOL_SLUG_TOK_TTL",
+      "type": "int",
+      "default": 900,
+      "min": 60,
+      "max": 86400,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "How long a slug-scoped pool token is reused before it is re-armed."
+    },
+    {
+      "env": "POOL_SPAWN_CAP_PER_KEY",
+      "type": "int",
+      "default": 2,
+      "min": 0,
+      "max": 100,
+      "unit": "spawns",
+      "zero_means": null,
+      "note": "Machine spawns one build key may buy inside the window. The settings row pool_spawn_cap_per_key wins over this env."
+    },
+    {
+      "env": "POOL_SPAWN_CAP_WINDOW_S",
+      "type": "int",
+      "default": 86400,
+      "min": 60,
+      "max": 604800,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "The window the per-key spawn cap counts over. The settings row pool_spawn_cap_window_s wins over this env."
+    },
+    {
+      "env": "TEST_IMPACT_GATE_CAP",
+      "type": "int",
+      "default": 80,
+      "min": 1,
+      "max": 1000,
+      "unit": "suites",
+      "zero_means": null,
+      "note": "The builder's impact gate (bin/test-impact-gate.sh, BH-1524): the most suites a build of this project runs before it pushes, strongest reason first (self > reads > always > named > source > closure). What is past it is named as left to CI.",
+      "read_in": "bin/test-impact-gate.sh"
+    },
+    {
+      "env": "TEST_IMPACT_GATE_BUDGET_S",
+      "type": "int",
+      "default": 450,
+      "min": 60,
+      "max": 1250,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "The builder's impact gate stops STARTING suites after this many seconds and names the unstarted ones as left to CI. It must stay well inside the build stage's `timeout 1500` (HARNESS_IMPACT_GATE_RUN), because the suite running when it expires still finishes. Measured on the #1541 review (idle Fly test host, this repo's own diff): 450 s ran the self suites plus 28 of 30 reads pins in about 7.5 minutes instead of about 15 at 900, and the max leaves 250 s of headroom under the timeout for the ~190 s slowest suite.",
+      "read_in": "bin/test-impact-gate.sh"
+    },
+    {
+      "env": "RB_PREPR_FIX_TURNS",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": "turns",
+      "zero_means": "off",
+      "note": "The build's pre-PR gate (bin/lib/prepr-gate.sh, BH-1706): how many fix turns the execute agent gets when bin/checks-run.sh --tree . or bin/test-determinism-lint.sh finds something in a file the build changed. 0 = detection only (the pre-BH-1706 behaviour: findings logged, no turn, no PR section). Never more than 1: a higher value is treated as 1.",
+      "read_in": "bin/lib/prepr-gate.sh"
+    },
+    {
+      "env": "RULES_PACK_BUDGET_S",
+      "type": "int",
+      "default": 60,
+      "min": 10,
+      "max": 600,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "The rules pack's measured budget (bin/rules-pack.sh, BH-3477). Elapsed over it is a stderr note and summary.json's over_budget, never a red. Measured 2026-09-29: about 48 s serial, about 15 s at 4 jobs.",
+      "read_in": "bin/rules-pack.sh"
+    },
+    {
+      "env": "RULES_PACK_JOBS",
+      "type": "int",
+      "default": 4,
+      "min": 1,
+      "max": 8,
+      "unit": "jobs",
+      "zero_means": null,
+      "note": "How many rules-pack components run at once (bin/rules-pack.sh, BH-3477). --jobs overrides it for one run.",
+      "read_in": "bin/rules-pack.sh"
+    },
+    {
+      "env": "FAST_LINTS_MAX_S",
+      "type": "int",
+      "default": 10,
+      "min": 1,
+      "max": 120,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "Per-suite threshold of the fast always-lint set (bin/fast-lints.sh --list, BH-3860): an always-suite whose seconds in the CI-composed durations file (catalog/ci-suite-durations.tsv, git-ignored, BH-5518; docs/ci-durations.md) are at or under this joins the set. --max-s overrides it for one run.",
+      "read_in": "bin/fast-lints.sh"
+    },
+    {
+      "env": "FAST_LINTS_BUDGET_S",
+      "type": "int",
+      "default": 159,
+      "min": 10,
+      "max": 600,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "Total budget for the PR fast-lints step (bin/fast-lints.sh, BH-3860): --assert-budget prints a note when the --run timings sum past it; never a red (BH-5292). 159 = the 105.8 s the durations file (then committed; CI-composed since BH-5518) gave the 41 suites `bin/fast-lints.sh --list` returns with main merged (after BH-3864 refreshed the durations; BH-3862, 2026-10-02) x 1.5, rounded up.",
+      "read_in": "bin/fast-lints.sh"
+    },
+    {
+      "env": "RULES_PACK_BLOCK",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": "flag",
+      "zero_means": "off",
+      "note": "0 = warn only: a red pack, or a determinism or orphan finding still red after the fix turn (BH-5797), opens the PR with the unresolved section. 1 = either blocks PR creation (REVIEW_BLOCKED rules-pack). The fast lints block only after a fix turn ran: RB_PREPR_FIX_TURNS=0 stays detection only for them. Read by the pre-push gate (bin/lib/prepr-gate.sh).",
+      "read_in": "bin/lib/prepr-gate.sh"
+    },
+    {
+      "env": "POOL_LANE_FAIL_HOLD_S",
+      "type": "int",
+      "default": 1800,
+      "min": 0,
+      "max": 86400,
+      "unit": "seconds",
+      "zero_means": "off",
+      "note": "2026-09-23 pool loop. When a reaped stage verdict blames the runner lane (RUNNER_EXHAUSTED, or class=auth) rather than the ticket, the ticket is requeued with its deferral count unchanged and this project's pool spawns and reuses nothing for this long (state/pool/<project>/_spawn-hold; remove the file to lift it early). Without it every tick spawned a fresh machine into the same exhausted lane: 398 deferred runs over 71 tickets in one night. 0 turns the hold off (lane failures still do not count as deferrals).",
+      "read_in": "bin/fly-pool.sh"
+    },
+    {
+      "env": "POOL_RELAY_FAILOVERS_BYTES",
+      "type": "int",
+      "default": 65536,
+      "min": 0,
+      "max": 1048576,
+      "unit": "bytes",
+      "zero_means": "off",
+      "note": "How much of a reaped machine's logs/failovers.log (its tail) the reap copies into the hub build dir. The ladder's class notes and the vendor's own error text are written there and nowhere on the hub, so without the copy a destroyed machine took the evidence of why its stage failed with it.",
+      "read_in": "bin/fly-pool.sh"
+    },
+    {
+      "env": "POOL_CUSTODY_SWEEP_S",
+      "type": "int",
+      "default": 3600,
+      "min": 0,
+      "max": 604800,
+      "unit": "seconds",
+      "zero_means": "off",
+      "note": "BH-5006. How old a hub pool build's RESULT must be, with no custody marker (RELAYED, RELAY_DEFERRED, COMMENTED, DEFERRED, TERMINAL, SUPERSEDED), before pool_custody_sweep owns it: marks it SUPERSEDED by a newer exact-key result, stamps RELAYED when the ledger has the row, pushes it once, or pages once with the reason. 3600 matches pipeline-health check 4's hour. 0 turns the sweep off.",
+      "read_in": "bin/fly-pool.sh"
+    },
+    {
+      "env": "POOL_CUSTODY_SWEEP_MAX",
+      "type": "int",
+      "default": 10,
+      "min": 0,
+      "max": 200,
+      "unit": "dirs",
+      "zero_means": "off",
+      "note": "BH-5006. The most custodyless pool build dirs pool_custody_sweep acts on per tick (oldest RESULT first; one ledger read each). The rest wait for the next tick. 0 turns the sweep off.",
+      "read_in": "bin/fly-pool.sh"
+    },
+    {
+      "env": "ACCOUNT_RESET_MAX_S",
+      "type": "int",
+      "default": 691200,
+      "min": 0,
+      "max": 2592000,
+      "unit": "seconds",
+      "zero_means": "off",
+      "note": "The furthest-off vendor reset time ('resets Sep 25, 5pm', carried to the hub as resets_at= on the stage verdict) a pool account cooldown will run to. A reset later than this, or in the past, is not believed and the normal ACCOUNT_COOLDOWN_SECS window is used. Default 8 days: a weekly limit plus a day. 0 never believes a reset.",
+      "read_in": "bin/lib/pool-account.sh"
+    },
+    {
+      "env": "LLM_LANE_ENABLED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "0 makes every build stage call no model at all (plan, execute, review, fix, qa: every call through CC() in bin/lib/rb/plan.sh names this lane). bin/lib/llm-gate.sh refuses BEFORE the vendor call and writes a zero-cost row_source=refused row, so the stop is visible in the ledger rather than being a lane that went quiet."
+    },
+    {
+      "env": "LLM_RUNNER_ALLOWED",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Comma/space list of the ONLY ladder rungs a build stage call may reach. Empty is every rung, i.e. today's ladder unchanged. A rung outside the list is refused before the call."
+    },
+    {
+      "env": "LLM_USD_CAP_DAY",
+      "type": "float",
+      "default": 0,
+      "min": 0,
+      "max": 10000,
+      "unit": "usd",
+      "zero_means": "unlimited",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Dollars of the current UTC day's execute-stage spend stamped fly-pool (where the metered fallback money is), summed from D1 cost_rows through GET /api/metrics/llm-spend. Plan, review, fix and qa spend is NOT in that sum, but once the cap is hit it refuses those calls too. 0 is no cap. A second, project-scoped ceiling is the lane.fly-pool.<project>.llm_usd_cap_day row, read only when somebody wrote it."
+    },
+    {
+      "env": "LLM_RUNNER_ALLOWED_PLAN",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/llm-gate.sh",
+      "prefix": "LLM_RUNNER_ALLOWED_",
+      "note": "Comma/space list of the ONLY rungs the plan build stage may reach, intersected with LLM_RUNNER_ALLOWED; empty is every rung. Set per project as lane.fly-pool.<project>.llm_runner_allowed_plan."
+    },
+    {
+      "env": "LLM_RUNNER_ALLOWED_EXECUTE",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/llm-gate.sh",
+      "prefix": "LLM_RUNNER_ALLOWED_",
+      "note": "Comma/space list of the ONLY rungs the execute build stage may reach, intersected with LLM_RUNNER_ALLOWED; empty is every rung. Set per project as lane.fly-pool.<project>.llm_runner_allowed_execute."
+    },
+    {
+      "env": "LLM_RUNNER_ALLOWED_REVIEW",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/llm-gate.sh",
+      "prefix": "LLM_RUNNER_ALLOWED_",
+      "note": "Comma/space list of the ONLY rungs the review build stage may reach, intersected with LLM_RUNNER_ALLOWED; empty is every rung. Set per project as lane.fly-pool.<project>.llm_runner_allowed_review."
+    },
+    {
+      "env": "LLM_RUNNER_ALLOWED_FIX",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/llm-gate.sh",
+      "prefix": "LLM_RUNNER_ALLOWED_",
+      "note": "Comma/space list of the ONLY rungs the fix build stage may reach, intersected with LLM_RUNNER_ALLOWED; empty is every rung. Set per project as lane.fly-pool.<project>.llm_runner_allowed_fix."
+    },
+    {
+      "env": "LLM_RUNNER_ALLOWED_QA",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/llm-gate.sh",
+      "prefix": "LLM_RUNNER_ALLOWED_",
+      "note": "Comma/space list of the ONLY rungs the qa build stage may reach, intersected with LLM_RUNNER_ALLOWED; empty is every rung. Set per project as lane.fly-pool.<project>.llm_runner_allowed_qa."
+    },
+    {
+      "env": "POOL_HOTFIX_FRESH_AFTER_DEFER",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "1 = a hotfix job that deferred on a REUSED pool machine is spawned fresh next time, never handed to another reused machine (BH-5025)."
+    },
+    {
+      "env": "POOL_EXECUTE_EMPTY_MAX",
+      "type": "int",
+      "default": 2,
+      "min": 0,
+      "max": 20,
+      "unit": "results",
+      "zero_means": "off",
+      "read_in": "bin/lib/execute-empty.sh",
+      "note": "BH-5911: EXECUTE_EMPTY results of one key inside POOL_EXECUTE_EMPTY_WINDOW_S at which the pool stops relaunching it and places ONE NEEDS_HUMAN hold on the ticket with the last stop reason (pool_spawn_decision 3b). 0 = off. Read as ${POOL_EXECUTE_EMPTY_MAX:-2}; a non-integer is the default.",
+      "settable": true
+    },
+    {
+      "env": "POOL_EXECUTE_EMPTY_WINDOW_S",
+      "type": "int",
+      "default": 86400,
+      "min": 3600,
+      "max": 604800,
+      "unit": "s",
+      "zero_means": null,
+      "read_in": "bin/lib/execute-empty.sh",
+      "note": "BH-5911: the window, in seconds, over which POOL_EXECUTE_EMPTY_MAX counts a key's EXECUTE_EMPTY results (the hub build records' RESULT mtime). Read as ${POOL_EXECUTE_EMPTY_WINDOW_S:-86400}; a non-integer is the default.",
+      "settable": true
+    },
+    {
+      "env": "POOL_TEST_POSTGRES",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 1,
+      "unit": "switch",
+      "zero_means": "off",
+      "read_in": "bin/lib/pg-test.sh",
+      "note": "BH-5962: 1 = the build's harness suite run (HARNESS_SUITE_RUN, npm arm) starts a throwaway Postgres (major POOL_TEST_POSTGRES_MAJOR, default 16) on 127.0.0.1 from /opt/pgtest, runs POOL_TEST_SETUP_CMD if set, gives DATABASE_URL to the setup and the suite only, and tears it down after. Per project: lane.fly-pool.<project>.pool_test_postgres. Only exactly 1 is on. Off = today's run.",
+      "settable": true
+    },
+    {
+      "env": "POOL_TEST_SETUP_CMD",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "read_in": "bin/lib/pg-test.sh",
+      "note": "BH-5962: the setup run against the throwaway Postgres before the suite. Empty (the default) = no setup. The only accepted value is `npm run <script>` where <script> is declared in the target repo's own package.json (e.g. `npm run db:apply`); anything else is refused with a HARNESS_PG_SETUP line, because a settable row never carries a command. Per project: lane.fly-pool.<project>.pool_test_setup_cmd.",
+      "settable": true
+    },
+    {
+      "env": "POOL_TEST_POSTGRES_MAJOR",
+      "type": "int",
+      "default": 16,
+      "min": 9,
+      "max": 99,
+      "unit": "major",
+      "zero_means": null,
+      "read_in": "bin/lib/pg-test.sh",
+      "note": "BH-5962: the Postgres major the project's suite needs (match prod and CI). The pool image holds one major (bin/lib/pgtest-pin.sh, 16); any other is a HARNESS_PG could-not-start and the suite runs with no URL. Per project: lane.fly-pool.<project>.pool_test_postgres_major.",
+      "settable": true
+    }
+  ],
+  "stats": {
+    "cost_stage": "execute",
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/fly-pool.log"
+  },
+  "factory_stop": "launch"
+}

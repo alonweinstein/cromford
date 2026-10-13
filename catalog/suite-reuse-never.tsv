@@ -1,0 +1,21 @@
+# catalog/suite-reuse-never.tsv — suites whose green is NEVER reused (BH-5354.0 / BH-5366).
+#
+# Format: one `<suite>\t<reason>` row per suite, TAB separated, `#` lines are
+# comments. bin/lib/suite-fingerprint.sh gives a listed suite fp `-` and the
+# reason `never.tsv: <reason>`, so it runs every time and is never recorded.
+#
+# A suite belongs here when its result depends on something no git tree id can
+# see: a live host (docker, flyctl, ssh, wrangler, nc against a real endpoint),
+# a box's own state, the network. The text rule in suite-fingerprint.sh
+# already catches the out-of-tree reads it can spell (RATCHET_BASE, origin/main,
+# merge-base, git fetch, ls-remote, gh api, /root/harness/{state,logs,builds}),
+# so those are not repeated here.
+#
+# SEEDED EMPTY, ON PURPOSE (2026-10-08). The seed grep
+#   grep -lE '(^|[^A-Za-z_])(docker|flyctl|ssh|wrangler|nc)[[:space:]]' tests/*.sh tests/mc/*.sh
+# hit 582 suites, almost all of them `jq -nc`, comments and quoted log text.
+# Narrowed to a command position on a non-comment line it hit 10, and every
+# one of those is a stub, a shell function (`ssh() { :; }`), a grep pattern or
+# a variable named nc; the docker suites drive a fake docker on PATH. None
+# reads a live host, so no row would be true. Add a row with its reason when
+# a suite that does is written.

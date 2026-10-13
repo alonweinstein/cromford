@@ -1,0 +1,4 @@
+# BH-5022: the risk tier classification record, directly under the lead's
+# protected-path globs (src/index.js ROUTES: ...leadProtectedPaths, ...riskTiers, ...catalog).
+POST /api/risk-tiers
+GET /api/risk-tiers

@@ -1,0 +1,4 @@
+# tests/mc/expected-map.d/BH-5796.tsv — BH-5796: the stacked block asks whether
+# an OPEN parent branch moved past its child (mc_stack_parent_moved, beside
+# mc_restack); origin=lib because it is a new module function.
+rebase	mc_stack_parent_moved	lib

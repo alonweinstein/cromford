@@ -1,0 +1,32 @@
+{
+  "id": "locks-mint-digest",
+  "name": "Locks mint digest",
+  "scope": "hub",
+  "script": "bin/locks-mint-digest.sh",
+  "cadence": "41 14 * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-locks-mint-digest",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "LOCKS_URL",
+      "type": "string",
+      "default": "https://harness-locks.operator.workers.dev",
+      "zero_means": null,
+      "note": "Read by bin/locks-mint-digest.sh as ${LOCKS_URL:-https://harness-locks.operator.workers.dev}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/locks-mint-digest.log"
+  }
+}

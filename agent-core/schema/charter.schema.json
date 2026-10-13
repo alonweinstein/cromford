@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/example-org/cromford/agent-core/schema/charter.schema.json",
+  "title": "Agent charter",
+  "description": "One staff agent: who it is, who answers for it, its autonomy level and cap, and the lanes it runs.",
+  "type": "object",
+  "required": [
+    "name",
+    "role",
+    "accountable",
+    "autonomy",
+    "cap",
+    "status",
+    "soul",
+    "lanes"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "role": {
+      "type": "string",
+      "minLength": 1
+    },
+    "accountable": {
+      "type": "string",
+      "minLength": 1
+    },
+    "autonomy": {
+      "type": "string",
+      "enum": [
+        "automation",
+        "augmentation",
+        "autonomy"
+      ]
+    },
+    "cap": {
+      "type": "string",
+      "enum": [
+        "automation",
+        "augmentation",
+        "autonomy"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused",
+        "retired"
+      ]
+    },
+    "soul": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Repo path of the soul file or soul directory."
+    },
+    "lanes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "additionalProperties": false
+}

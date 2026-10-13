@@ -1,0 +1,23 @@
+{
+  "id": "alert-digest",
+  "name": "Alert digest",
+  "scope": "hub",
+  "script": "bin/alert-digest.sh",
+  "cadence": "30 17 * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-alert-digest",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/alert-digest.log"
+  }
+}

@@ -1,0 +1,7 @@
+# STAFF (BH-5559, BH-5556.2): the staff charter roster, one agent's charter,
+# its autonomy level and its class delegation, appended after
+# queue-batch-minutes at the END of the table.
+GET /api/staff/agents
+GET /api/staff/agent
+POST /api/staff/agents/autonomy
+POST /api/staff/classes/delegation

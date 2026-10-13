@@ -1,0 +1,5 @@
+# Ready thread, but PR #286 already covers the exact scope. SOP:
+# project-8.md:35 (duplicate-work check before ANY launch: if a PR
+# already covers the scope, don't build).
+# Not launching is the whole test; a comment pointing at the PR is also correct.
+TK-7401 :: skip|defer|comment

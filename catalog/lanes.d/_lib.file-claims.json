@@ -1,0 +1,21 @@
+{
+  "libs": [
+    {
+      "id": "file-claims",
+      "file": "bin/lib/file-claims.sh",
+      "note": "BH-2524.0 (BH-2627). Fleet file claims: a build's planned files and its overlap not-before window, held on its job_claims row so every box sees them. BH-2628: the four fclaim_* functions talk to worker/jobs/src/routes/file-claims.js and fail open (rc != 0, no stdout) on any failure. No pipeline script calls them yet.",
+      "knobs": [
+        {
+          "env": "FILE_CLAIM_TTL_S",
+          "type": "int",
+          "default": 14400,
+          "min": 60,
+          "max": 86400,
+          "unit": "seconds",
+          "required": true,
+          "note": "TTL of a fleet file claim. 14400 is today's 240-minute box-local claim ageout. Read by fclaim_put."
+        }
+      ]
+    }
+  ]
+}

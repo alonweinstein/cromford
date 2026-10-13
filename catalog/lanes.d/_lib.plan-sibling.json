@@ -1,0 +1,53 @@
+{
+  "libs": [
+    {
+      "id": "plan-sibling",
+      "file": "bin/plan-sibling.sh",
+      "note": "BH-4988 r2 (BH-4975.3). Sibling sequencing at plan time. When bin/plan-overlap.sh says build, bin/lib/rb/gates.sh asks bin/plan-sibling.sh check: for a child ticket (`Part of #P`) on a GitHub-Issues board it reads the open sibling issues, their open PRs (ticket/<prefix>-<n>[-rN] or agent/<PREFIX>-<n>, minus the stack base) and those PRs' changed files, and answers plan-overlap's own `OVERLAP_DEFER <KEY> vs <SIB> files=[..]` on a non-fragment intersection, so the existing After: hold applies until that PR merges or closes. Every After: decision on a child is then posted once on the child issue by plan-sibling.sh note (comment-mark key `sequenced <project> <KEY>:<OTHER>`). Every choice is a PLAN_SIBLING line in the build's pipeline.log and logs/plan-hotspot.log. Fragment dirs come from lib.plan-hotspot. The script calls lib_env_apply plan-sibling <project>.",
+      "knobs": [
+        {
+          "env": "PLAN_SIBLING_SEQ",
+          "read_in": "bin/plan-sibling.sh",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "zero_means": "off",
+          "required": false,
+          "note": "1 = check siblings' open PRs at plan time; 0 = off (check exits 0 before any read). Read as a settings row, then env, then env/global.env, then 1."
+        },
+        {
+          "env": "PLAN_SIBLING_COMMENT",
+          "read_in": "bin/plan-sibling.sh",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "zero_means": "off",
+          "required": false,
+          "note": "1 = post the one sequencing note on a held child issue; 0 = log `comment=off` and post nothing. Read as a settings row, then env, then env/global.env, then 1."
+        },
+        {
+          "env": "PLAN_SIBLING_MAX_ISSUES",
+          "read_in": "bin/plan-sibling.sh",
+          "type": "int",
+          "default": 500,
+          "min": 100,
+          "unit": "issues",
+          "zero_means": null,
+          "required": false,
+          "note": "Cap on the open-issue read that finds siblings. A read that reaches it logs incomplete=1 and judges what it read. Below 100 is raised to 100."
+        },
+        {
+          "env": "PLAN_SIBLING_MAX_PRS",
+          "read_in": "bin/plan-sibling.sh",
+          "type": "int",
+          "default": 8,
+          "min": 1,
+          "unit": "PRs",
+          "zero_means": null,
+          "required": false,
+          "note": "Cap on sibling PRs whose changed files are read per plan. Past it the rest are not judged and the decision logs incomplete=1."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+{"name":"pr-owner-sweep-off","readers":["bin/orphan-reconcile.sh","bin/pr-owner-sweep.sh"],"box_scoped":true,"what":"stops pr-owner-sweep.sh classifying open PRs by owner, and stops orphan-reconcile.sh launching it"}

@@ -1,0 +1,81 @@
+{
+  "id": "lane-reprobe",
+  "name": "Lane re-probe",
+  "scope": "hub",
+  "script": "bin/lane-reprobe.sh",
+  "cadence": "*/5 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-lane-reprobe",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "LANE_REPROBE_FAST_S",
+      "type": "int",
+      "default": 1800,
+      "zero_means": null,
+      "note": "Read by bin/lane-reprobe.sh as ${LANE_REPROBE_FAST_S:-1800}: seconds between probes of a runner lane marked down in state/lane-down/ while its outage is younger than LANE_REPROBE_BACKOFF_AFTER_S; a non-numeric value falls back to 1800. Registered by BH-1687, the change that introduced the read; no reviewed min/max yet, so nothing is clamped.",
+      "settable": true
+    },
+    {
+      "env": "LANE_REPROBE_SLOW_S",
+      "type": "int",
+      "default": 21600,
+      "zero_means": null,
+      "note": "Read by bin/lane-reprobe.sh as ${LANE_REPROBE_SLOW_S:-21600}: seconds between probes once the outage is LANE_REPROBE_BACKOFF_AFTER_S old, and the interval the standing warn quotes; a non-numeric value falls back to 21600. Registered by BH-1687, the change that introduced the read; no reviewed min/max yet, so nothing is clamped.",
+      "settable": true
+    },
+    {
+      "env": "LANE_REPROBE_BACKOFF_AFTER_S",
+      "type": "int",
+      "default": 86400,
+      "zero_means": null,
+      "note": "Read by bin/lane-reprobe.sh as ${LANE_REPROBE_BACKOFF_AFTER_S:-86400}: outage age in seconds at which a down lane moves from the fast to the slow probe interval; a non-numeric value falls back to 86400. Registered by BH-1687, the change that introduced the read; no reviewed min/max yet, so nothing is clamped.",
+      "settable": true
+    },
+    {
+      "env": "LANE_DOWN_STANDING_S",
+      "type": "int",
+      "default": 86400,
+      "zero_means": null,
+      "note": "Read by bin/lane-reprobe.sh as ${LANE_DOWN_STANDING_S:-86400}: outage age in seconds at which a still-down lane raises its ONE standing warn, lanedown-stale-<box>-<lane>, per outage; a non-numeric value falls back to 86400. Registered by BH-1687, the change that introduced the read; no reviewed min/max yet, so nothing is clamped.",
+      "settable": true
+    },
+    {
+      "env": "LANE_REPROBE_MAX_PER_RUN",
+      "type": "int",
+      "default": 4,
+      "zero_means": null,
+      "note": "Read by bin/lane-reprobe.sh as ${LANE_REPROBE_MAX_PER_RUN:-4}: the most lanes one tick probes, oldest last_probe first; the rest are logged as deferred and wait for the next tick; a non-numeric value falls back to 4. Registered by BH-1687, the change that introduced the read; no reviewed min/max yet, so nothing is clamped.",
+      "settable": true
+    },
+    {
+      "env": "LANE_REPROBE_DEADLINE_S",
+      "type": "int",
+      "default": 600,
+      "zero_means": null,
+      "note": "Read by bin/lane-reprobe.sh as ${LANE_REPROBE_DEADLINE_S:-600}: seconds after the tick starts past which no further probe is started; the rest are logged as deferred; a non-numeric value falls back to 600. Registered by BH-1687, the change that introduced the read; no reviewed min/max yet, so nothing is clamped.",
+      "settable": true
+    },
+    {
+      "env": "LANE_DOWN_TTL_S",
+      "type": "int",
+      "default": 7200,
+      "zero_means": null,
+      "note": "Read by bin/lane-reprobe.sh (through ld_mark in bin/lib/lane-down.sh) as ${LANE_DOWN_TTL_S:-7200}: seconds a fleet `lane` row (bin/lib/fleet-cooldown.sh) stays live after a mark; every mark refreshes it; a non-numeric or 0 value falls back to 7200. Registered by BH-2359, the change that introduced the read; no reviewed min/max yet, so nothing is clamped.",
+      "read_in": "bin/lib/lane-down.sh",
+      "settable": true
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/lane-reprobe.log"
+  }
+}

@@ -1,0 +1,6 @@
+# Labeled ai-build and open (THE PRIME RULE, prompts/project-6.md:13-15), no
+# Blocked-by line (project-6.md:25), no existing PR or branch, a free slot, and
+# the newest comment is a go-ahead. Launch.
+# The key is TK-7041: a decision keyed "#7041" shows up as MISSING plus a WARN
+# extra, which is the honest way for a key-format drift to surface.
+TK-7041 :: launch

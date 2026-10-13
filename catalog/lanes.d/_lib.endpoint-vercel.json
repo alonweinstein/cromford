@@ -1,0 +1,20 @@
+{
+  "libs": [
+    {
+      "id": "endpoint-vercel",
+      "file": "bin/served-sha-watch.sh",
+      "note": "BH-4936 (the tracer of #4916). The base URL of the Vercel REST API, resolved by endpoint_url vercel (bin/lib/endpoints.sh). Read by bin/served-sha-watch.sh for its alias, deployment and deployment-list GETs; the /v4, /v13 and /v6 paths stay in bin/lib/served-sha-watch.sh. bin/vercel-deploy-snapshot.sh still carries its own literal https://api.vercel.com and is not converted here.",
+      "knobs": [
+        {
+          "env": "ENDPOINT_VERCEL",
+          "type": "string",
+          "default": "https://api.vercel.com",
+          "zero_means": null,
+          "required": true,
+          "settable": false,
+          "note": "Base URL of the Vercel REST API; the API path stays in code. settable:false (BH-1165): a URL a root lane sends the hub's Vercel Bearer token to is set by the operator's env, never by a settings row; no row can override it."
+        }
+      ]
+    }
+  ]
+}

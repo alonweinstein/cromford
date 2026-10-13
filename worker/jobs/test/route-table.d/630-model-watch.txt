@@ -1,0 +1,6 @@
+# MODEL-WATCH (BH-3425): the model-watch contract stubs, appended after
+# split-watchdog at the END of the table, where src/index.js puts it.
+POST /api/model-watch
+GET /api/model-watch
+PUT /api/model-watch/state
+GET /api/model-watch/usage

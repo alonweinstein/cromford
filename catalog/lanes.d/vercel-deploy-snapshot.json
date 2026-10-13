@@ -1,0 +1,23 @@
+{
+  "id": "vercel-deploy-snapshot",
+  "name": "Vercel deploy snapshot",
+  "scope": "hub",
+  "script": "bin/vercel-deploy-snapshot.sh",
+  "cadence": "*/4 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-vercel-deploy-snapshot",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/vercel-deploy-snapshot.log"
+  }
+}

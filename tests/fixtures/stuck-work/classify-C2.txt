@@ -1,0 +1,4 @@
+# C2 MERGE on head and lead success: the conductor owns it
+# want: ready	conductor
+# decide: - page
+pr	o/r#12	https://github.com/o/r/pull/12	0	ai-build	success	1799998900	MERGE	abc	1799998800	abc	-	-	-	-	-	-	-	-	-	-	1799995000

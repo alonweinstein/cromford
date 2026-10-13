@@ -1,0 +1,7 @@
+{"window":{"from":"2026-09-01T00:00:00Z","to":"2026-09-08T00:00:00Z"},
+ "items":[
+  {"id":"alerts:1","source":"alerts","at":"2026-09-02T10:00:00Z","project":"acme-os","ticket":"TK-11","pr":null,"files":["src/a.ts"],"lane":"rebase","reason":"rebase failed: lock held"},
+  {"id":"alerts:2","source":"alerts","at":"2026-09-03T10:00:00Z","project":"acme-os","ticket":"TK-12","pr":41,"files":[],"lane":"rebase","reason":"rebase failed: lock held"},
+  {"id":"builds:3","source":"builds","at":"2026-09-04T10:00:00Z","project":"acme-os","ticket":null,"pr":42,"files":["src/b.ts"],"lane":"rebase","reason":"rebase failed: lock held"}],
+ "sources":{"alerts":{"ok":true,"n":2,"truncated":false},"builds":{"ok":true,"n":1,"truncated":false}},
+ "incomplete":false}

@@ -1,0 +1,1 @@
+{"name":"fleet-slo-off","readers":["bin/fleet-slo.sh"],"box_scoped":true,"what":"stops the fleet SLO detectors in fleet-slo.sh"}

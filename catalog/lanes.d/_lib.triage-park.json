@@ -1,0 +1,32 @@
+{
+  "libs": [
+    {
+      "id": "triage-park",
+      "file": "bin/lib/triage-park.sh",
+      "note": "BH-3949 (BH-3943 item 1): park a ticket the call-guard keeps refusing. bin/triage-shard.sh's `call-guard repeat` arm calls triage_park_on_refusal; once the D1 call_guard row for that ticket's fingerprint has refused_since_reset >= TRIAGE_REFUSED_PARK_AFTER, one triage_state PUT stamps verdict=hold with verdict_hash = the row's input_hash, so bin/triage-state.py decide answers `skip unchanged:hold` until TRIAGE_PARK_RECHECK_S passes or the board moves the hash. One warn lane-alert per park (marker state/triage-park/<p>/<KEY>.<fp>), one `triage-park: N parked (KEYS)` line per tick from the last line of rt_scope in bin/lib/rt/scope.sh (before rt_shards; shards.sh stays unedited, BH-3418). Fail-open: an unreadable read parks nothing. Applied by the lib itself through lib_env_apply triage-park <project>. Doc: docs/CALL-GUARD.md.",
+      "knobs": [
+        {
+          "env": "TRIAGE_REFUSED_PARK_AFTER",
+          "type": "int",
+          "default": 3,
+          "min": 0,
+          "max": 50,
+          "zero_means": "off",
+          "required": false,
+          "note": "Call-guard refusals of one ticket fingerprint (refused_since_reset, last 24h) before the ticket is parked. 0 = never park, and the tick line is off too. Code default 3, read as ${TRIAGE_REFUSED_PARK_AFTER:-3}; with no settings row the env value answers, and a non-integer falls back to 3."
+        },
+        {
+          "env": "TRIAGE_PARK_RECHECK_S",
+          "type": "int",
+          "default": 604800,
+          "min": 3600,
+          "max": 2592000,
+          "unit": "seconds",
+          "zero_means": null,
+          "required": false,
+          "note": "How long a park holds on an unchanged board: next_recheck_at = now + this. Any board change moves input_hash and unparks sooner. Code default 604800 (7 days), read as ${TRIAGE_PARK_RECHECK_S:-604800}; with no settings row the env value answers, and a non-integer falls back to 604800."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+# C17 waiting on a human for 30 hours
+# want: waiting-on-human	the operator
+# decide: - quiet
+# decide: paged quiet
+pr	o/r#12	https://github.com/o/r/pull/12	0	ai-build	success	1799800000	MERGE	abc	1799800000	abc	-	BLOCKED_HUMAN	1799892000	-	-	-	-	-	-	-	1799800000

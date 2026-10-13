@@ -1,0 +1,3 @@
+# tests/mc/expected-map.d/BH-4497.tsv — the STUCK READY page reads the
+# PR-dependency gate live (mc_dep_live); origin=lib, a new module function.
+classify	mc_dep_live	lib

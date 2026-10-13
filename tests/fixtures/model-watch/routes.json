@@ -1,0 +1,8 @@
+[
+  {"project": "project-3", "role": "build", "position": 1, "model": "claude-sonnet-5", "runner": "claude"},
+  {"project": null, "role": "triage", "position": 0, "model": "claude-sonnet-5", "runner": "claude"},
+  {"project": "project-4", "role": "review", "position": 0, "model": "claude-opus-5", "runner": "claude"},
+  {"project": null, "role": "summarize", "position": 0, "model": "claude-haiku-4-5", "runner": "claude"},
+  {"project": "project-3", "role": "triage", "position": 2, "model": "anthropic/claude-sonnet-5", "runner": "openrouter"},
+  {"project": null, "role": "build", "position": 1, "model": "gpt-5", "runner": "codex"}
+]

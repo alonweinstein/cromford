@@ -1,0 +1,7 @@
+[
+ {"id":"alerts:new1","source":"alerts","age_s":86400,"project":"acme-os","ticket":"TK-20","pr":null,"files":["src/a.ts"],"lane":"rebase","reason":"rebase failed: lock held"},
+ {"id":"alerts:old1","source":"alerts","age_s":2764800,"project":"acme-os","ticket":"TK-11","pr":null,"files":["src/a.ts"],"lane":"rebase","reason":"rebase failed: lock held"},
+ {"id":"alerts:other","source":"alerts","age_s":86400,"project":"project-3","ticket":null,"pr":7,"files":["src/a.ts"],"lane":"rebase","reason":"rebase failed: lock held"},
+ {"id":"builds:review","source":"builds","age_s":86400,"project":"acme-os","ticket":null,"pr":8,"files":["bin/x.sh.old"],"lane":"review","reason":"review blocked"},
+ {"id":"builds:badat","source":"builds","at":"not a time","project":"acme-os","ticket":null,"pr":9,"files":["bin/x"],"lane":"rebase","reason":"rebase failed: lock held"}
+]

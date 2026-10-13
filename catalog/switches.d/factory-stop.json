@@ -1,0 +1,1 @@
+{"name":"factory-stop","readers":["bin/lib/factory-stop.sh"],"box_scoped":false,"what":"stops every lane tagged factory_stop (launch/merge/deploy), parks in-flight builds at their next phase boundary, and holds tier-1 and review-prs merges"}

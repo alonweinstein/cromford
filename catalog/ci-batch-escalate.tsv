@@ -1,0 +1,99 @@
+# catalog/ci-batch-escalate.tsv — which changed paths make a Mergify merge-queue
+# batch run the WHOLE corpus instead of its impact set (BH-4968). Read by
+# bin/lib/ci-batch-escalate.sh, which bin/ci-plan.sh asks once per changed path
+# of the batch's combined diff.
+#
+# Columns (tab separated): pattern, kind, why
+#   pattern  ending in / : a prefix (bin/lib/ matches everything under bin/lib)
+#            anything else: a bash glob matched against the whole path
+#   kind     escalate | allow. An allow row exempts a path an escalate row
+#            would catch. Rows of any other kind belong to another reader and
+#            are skipped here.
+#   why      one line, for the reviewer of this file
+#
+# KINDS spa AND worker (BH-4969) are read by cbe_affects, not cbe_reason (which
+# skips them). On a batch that stays batch-selected, bin/ci-plan.sh writes
+# spa=0 (worker=0) when no changed path is affected, and the console-ui
+# (worker-jobs) job then runs only its "not affected by this batch" step. A
+# path under console-ui/ (worker/) is always affected, row or no row; these rows
+# add the paths OUTSIDE those trees each job builds or tests from: what
+# console-ui/ and worker/jobs/ import or read by a relative path (a guard in
+# tests/ci-plan-spa-worker.bh-4969-test.sh fails on one with no row here), and
+# the scripts the jobs' own workflow steps run. A path that also escalates still
+# carries its row, so deleting an escalate row cannot un-gate a job. Every
+# non-batch-selected run, and an escalated batch, runs both jobs whole.
+#
+# These are the paths the selection itself runs on: the workflow, the planner,
+# the selector and tier step, the libs and catalogs those three source and read,
+# the runners, and the suites' shared helpers. A batch that touches one of them
+# cannot trust a selection that the change may have altered, so it proves
+# everything. The file fails closed: unreadable, or no escalate row, escalates
+# every batch.
+#
+# BH-6059 replaced the blanket `bin/lib/` and `catalog/` rows with the files
+# below: 19 of 21 sampled batches ran the whole corpus through them, a README
+# included. Every other bin/lib/ or catalog/ path runs its impact set, and one
+# the impact map has no specific row for (a new file, a deleted one) still
+# escalates, as `unmapped path <p>`: bin/test-impact.sh does that under
+# TI_BATCH_SELECT=1, which only bin/ci-plan.sh's batch select sets. The rows
+# are derived from what the scripts source and read; a guard in
+# tests/ci-batch-escalate-narrow.bh-6059-test.sh fails when a path in
+# test-impact's infra list has no row here. Not rows, on purpose:
+# catalog/ci-suite-durations.tsv (shard weights, not which suites run),
+# catalog/test-impact-orphans.txt and catalog/ci-merge-reuse.tsv (PR lint,
+# never read when a batch is selected).
+#
+# The allow rows exempt docs: a *.md never escalates on its own.
+.github/	escalate	the workflow decides what runs and on which runner
+bin/ci-plan.sh	escalate	the planner itself
+bin/test-impact*.sh	escalate	the selector and its builder gate
+bin/test-tiers.sh	escalate	the tier step that runs after the selection
+tests/lib/	escalate	the scratch and runner helpers every suite sources
+.mergify.yml	escalate	the merge queue's own conditions
+catalog/ci-batch-escalate.tsv	escalate	this file; bin/ci-plan.sh reads it through bin/lib/ci-batch-escalate.sh, and no other row covers it
+bin/lib/ci-batch-escalate.sh	escalate	the rules reader bin/ci-plan.sh sources
+catalog/test-tiers.tsv	escalate	the tiers bin/ci-plan.sh and bin/test-tiers.sh read
+bin/lib/test-protected.sh	escalate	sourced by bin/test-tiers.sh: which suites the tier step may never drop
+catalog/test-quarantine-protected.txt	escalate	read by bin/test-tiers.sh and bin/lib/test-protected.sh
+catalog/nightly-strict.txt	escalate	read by bin/lib/test-protected.sh: a suite listed here is never dropped
+catalog/test-impact-always.txt	escalate	the always set bin/test-impact.sh adds to every selection
+bin/lib/train-shape.sh	escalate	sourced by bin/test-impact.sh: what a merge train looks like
+bin/lib/suite-runner.sh	escalate	sourced by bin/test-suite-run.sh and the runners: how a suite runs
+bin/suite-reuse.sh	escalate	the suite ledger plan/record (BH-5366): which suites a batch reuses instead of running
+bin/lib/suite-fingerprint.sh	escalate	the suite input fingerprint (BH-5366): a change here moves every fingerprint
+bin/test-suite-run.sh	escalate	the suite runner the shards call
+bin/test-trace-safety.sh	escalate	the trace-safety runner the workflow calls
+bin/run-tests-in-docker.sh	escalate	the docker runner; decides what tree a green ran on
+bin/lib/docker-host.sh	escalate	sourced by bin/run-tests-in-docker.sh: which daemon a green ran on
+bin/lib/env-path.sh	escalate	sourced by bin/lib/docker-host.sh
+bin/lib/test-image-node.sh	escalate	sourced by bin/run-tests-in-docker.sh: the node version the tests run on
+bin/lib/*.md	allow	a doc never escalates on its own (BH-6059)
+catalog/*.md	allow	a doc never escalates on its own (BH-6059)
+catalog/lanes.d/	spa	the lane sources the rendered registry is built from
+catalog/lanes.d/	worker	the lane sources the worker's imported registry is built from
+catalog/lanes.json	spa	the rendered lane registry
+catalog/lanes.json	worker	the registry worker/jobs/src/lib/core.js imports
+worker/jobs/schema.sql	spa	the schema the SPA's API reads
+worker/jobs/schema.sql	worker	the schema the replay step applies
+worker/jobs/schema.d/	spa	the fragments the SPA's API schema is composed from
+worker/jobs/schema.d/	worker	the fragments the replay step composes
+console-ui/	spa	the SPA itself (also built into cbe_affects)
+worker/	worker	the worker itself (also built into cbe_affects)
+bin/lib/jobs/	worker	the box-side jobs client the worker's routes answer
+agent-core/	worker	worker/jobs/src/routes/staff.js imports agent-core/src and its charter schema (BH-5559)
+worker/jobs/src/lib/config-changes.js	spa	console-ui tests import it to pin the console's CONFIG_KINDS copy against the worker's
+worker/watchdog/src/	spa	console-ui/tests/standby-panel.bh-2641.test.js imports worker/watchdog/src/standby.js
+bin/lanes-build.sh	worker	the worker-jobs step that renders the registry the worker imports
+bin/worker-schema-upgrade.sh	worker	the worker-jobs step that replays schema.sql over main's
+bin/lib/d1-schema.sh	worker	the splitter bin/worker-schema-upgrade.sh sources and worker tests run
+bin/lib/hub-probes/	worker	worker/jobs/test/hub-probe-count.bh-3434.test.js reads common.sh
+bin/lib/mc/log.sh	worker	worker/jobs/test/conductor-held-nhv.bh-3777.test.js reads MC_STATES from it
+bin/agent-call.sh	worker	worker/jobs/test/egress-seed.bh-4492.test.js scans its base_url hosts
+tests/fixtures/daily-digest/	worker	the fixtures five worker/jobs/test/daily-digest*.test.js read
+fleet.conf	worker	worker/jobs/test/routes/projects.bh-4082.test.js reads it
+catalog/llm-sites.json	worker	worker/jobs/src/lib/llm-sites-catalog.js imports it
+catalog/llm-sites.d/	worker	the fragments the worker's imported llm-sites catalog is composed from (BH-4987)
+bin/llm-sites-build.sh	worker	the worker-jobs step that composes the llm-sites catalog the worker imports
+catalog/context-budgets.json	worker	worker/jobs/src/routes/llm-sites.js imports it
+catalog/model-prices.json	worker	worker/jobs/test/route-rules.p4.test.js reads it
+catalog/readiness-levels.json	worker	worker/jobs/test/settings-conf-value.bh-2411.test.js reads it

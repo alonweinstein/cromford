@@ -1,0 +1,93 @@
+{
+  "id": "migration-autopilot",
+  "name": "Migration autopilot",
+  "scope": "hub",
+  "factory_stop": "deploy",
+  "script": "bin/migration-autopilot.sh",
+  "cadence": "9,24,39,54 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-migration-autopilot",
+    "aliases": [
+      {
+        "name": "migration-autopilot-disabled",
+        "off_when": "present"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "PROJECT_4_API_BASE",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/migration-autopilot.sh as ${PROJECT_4_API_BASE:-}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "HARNESS_PR_AUTHOR",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/migration-autopilot.sh as ${HARNESS_PR_AUTHOR:-}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "MIGRATION_AUTOPILOT_WINDOW_HOURS",
+      "type": "int",
+      "default": 48,
+      "zero_means": null,
+      "note": "Read by bin/migration-autopilot.sh as ${MIGRATION_AUTOPILOT_WINDOW_HOURS:-48}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "PROJECT_1_API_BASE",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/migration-autopilot.sh as ${PROJECT_1_API_BASE:-}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "PROJECT_3_APP_BASE",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/migration-autopilot.sh as ${PROJECT_3_APP_BASE:-}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "PROJECT_2_APP_BASE",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/migration-autopilot.sh as ${PROJECT_2_APP_BASE:-}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "VERSION_URL",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it ($BASE/api/internal/version). Read by bin/migration-autopilot.sh as ${VERSION_URL:-$BASE/api/internal/version}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "MIGRATION_AUTOPILOT_REPO_DIR",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it (/root/repos/$PROJECT). Read by bin/migration-autopilot.sh as ${MIGRATION_AUTOPILOT_REPO_DIR:-/root/repos/$PROJECT}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/migration-autopilot.log"
+  }
+}

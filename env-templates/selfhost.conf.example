@@ -1,0 +1,71 @@
+# env-templates/selfhost.conf.example — BH-4081: the install settings for a
+# self-hosted harness in YOUR OWN accounts. Copy it, fill it in, then run:
+#
+#   bin/selfhost-install.sh --config <your copy>
+#
+# That prints the plan (every resource, every env line, every cap, every secret
+# name) and creates nothing. --apply is not built yet.
+#
+# SECRETS NEVER GO IN THIS FILE. No tokens, keys or passwords: the installer
+# refuses any key that looks like one. It asks for them at apply time and keeps
+# them only under /etc/harness/env/. The plan lists their NAMES.
+#
+# The file is read as data, KEY=value per line, never sourced. Unknown keys and
+# duplicate keys are refused, so a typo cannot fall back to a default. Blank
+# values are blank on purpose: nothing here defaults to anyone else's account.
+
+# ── Cloudflare ───────────────────────────────────────────────────────────────
+# Your Cloudflare account id (32 hex characters, dashboard sidebar).
+SELFHOST_CF_ACCOUNT_ID=
+# Your workers.dev subdomain: the jobs worker is harness-jobs.<this>.workers.dev.
+HARNESS_WORKERS_SUBDOMAIN=
+# The Pages project the console deploys to (catalog row cf-pages-console).
+CONSOLE_PAGES_PROJECT=
+# The R2 bucket the state backup writes to (catalog row cf-r2-backup).
+BACKUP_S3_BUCKET=
+
+# ── GitHub ───────────────────────────────────────────────────────────────────
+# The harness repo, owner/repo (your fork or copy).
+HARNESS_REPO=
+# The GitHub owner for App tokens. Blank = the owner half of HARNESS_REPO.
+# Read by catalog rows gh-app and gh-pat.
+HARNESS_GH_OWNER=
+# Your GitHub login (PR author filters).
+HARNESS_OPERATOR_LOGIN=
+# The commit identity the boxes use. Also used for the merge and bot commits.
+HARNESS_GIT_NAME=
+HARNESS_GIT_EMAIL=
+# app = a GitHub App installation (recommended), pat = a personal access token.
+SELFHOST_GH_AUTH=
+
+# ── Hub and build pool ───────────────────────────────────────────────────────
+# Box naming: a project with no box column is owned by <prefix><project>.
+HARNESS_BOX_PREFIX=
+# The hub's name (catalog rows fly-hub-app and fly-hub-volume when on Fly).
+HARNESS_HUB_BOX=
+# fly = the hub runs as a Fly app, vm = a VM you already have.
+SELFHOST_HUB=
+# The VM's hostname or address, when SELFHOST_HUB=vm (catalog row vm-hub-host).
+SELFHOST_HUB_HOST=
+# Your Fly org, needed when the hub or the pool is on Fly.
+FLY_ORG=
+# fly = one Fly build app per project, local = builds run on the hub.
+SELFHOST_POOL=
+# The projects to watch, space-separated name=owner/repo. name is [a-z0-9-].
+# Catalog rows fly-pool-app and fly-pool-volume repeat once per project.
+SELFHOST_PROJECTS=
+
+# ── Models and chat ──────────────────────────────────────────────────────────
+# oauth = a Claude Code subscription token, api-key = an Anthropic API key.
+SELFHOST_MODEL_AUTH=
+# none, telegram or slack.
+SELFHOST_CHAT=none
+
+# ── Caps (on by default, because the bill is yours) ──────────────────────────
+# Dollars per agent call (AGENT_CALL_BUDGET_USD) and per lane per day
+# (LLM_USD_CAP_DAY). Must be positive numbers: 0 does NOT mean unlimited here.
+# The harness has no call or token cap yet; dollars are the cap.
+SELFHOST_CAP_USD_PER_CALL=5
+SELFHOST_CAP_USD_DAY=20
+# Set to 1 to turn the caps off. That is the only way to turn them off.
+SELFHOST_CAPS_OFF=

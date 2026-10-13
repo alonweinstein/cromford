@@ -1,0 +1,10 @@
+# @hub-lanes
+
+# ── PR GATE FACTS RECONCILE (BH-4954) ───────────────────────────────────────
+# bin/pr-state-reconcile.sh tick — every 15 min, for each repo in
+# LEAD_REVIEW_AUTO_REPOS, compare the live GitHub and worker facts of every
+# open PR (head, draft, CI green, builder APPROVE, lead verdict, thread HOLD)
+# with GET /api/pr-state/gate and write one correcting gate event per stale
+# field, capped by PR_STATE_RECONCILE_MAX_PER_SWEEP. It gates no other lane.
+# Off via flags/lane-off-pr-state-reconcile. Log: logs/pr-state-reconcile.log.
+*/15 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/pr-state-reconcile.sh tick >/dev/null 2>&1

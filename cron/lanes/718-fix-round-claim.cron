@@ -1,0 +1,1 @@
+*/2 * * * * /root/harness/bin/fix-round-claim.sh >>/root/harness/logs/fix-round-claim.log 2>&1 # every 2 min on each project box: claim the fix rounds the resolver queued for this box and run each detached (BH-2530; no ssh from the hub)

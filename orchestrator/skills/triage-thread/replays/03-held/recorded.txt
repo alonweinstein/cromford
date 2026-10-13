@@ -1,0 +1,2 @@
+It reads ready, but the operator's comment 2 says HOLD until he RESUMEs, and there's no RESUME after it.
+VERDICT: hold

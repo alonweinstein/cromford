@@ -1,0 +1,4 @@
+GET /api/routing-changes
+GET /api/routing
+GET prefix:/api/routing/
+PUT /api/routing

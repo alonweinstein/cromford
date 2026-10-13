@@ -1,0 +1,501 @@
+{
+  "note": "BH-1511.1: knobs read by SHARED libraries (bin/lib/*.sh sourced by several lanes), which belong to no one lane. Composed by bin/lanes-build.sh as the registry's top-level `libs` array; a lib calls bin/lib/lane-gate.sh's lib_env_apply <id> itself, and its settings rows are keyed lib.<id>.<env lowercased>. `required: true` means the library has NO literal of its own for the knob: the contract (row > cached row > env > this default > fail closed) is the only thing that sets it.",
+  "libs": [
+    {
+      "id": "agent-call",
+      "file": "bin/agent-call.sh",
+      "note": "BH-1636. The operator policy knobs bin/agent-call.sh reads: numbers an operator tunes, never per-call context a calling lane sets (a row outranks the env, so a row for STAGE or CONTEXT_KILL_TOKENS would override every caller), never a secret, a path, a model slug (those go through model_routes) or GROK_BILLING (it puts a metered key into the child env). None is required: agent-call.sh keeps its own literal, and with no row nothing is exported, so the call runs as before. Applied by agent-call.sh right after it sources bin/lib/llm-gate.sh.",
+      "knobs": [
+        {
+          "env": "GROK_OUTPUT_JSON",
+          "type": "int",
+          "default": 0,
+          "min": 0,
+          "max": 1,
+          "zero_means": "off",
+          "required": false,
+          "note": "BH-1494/BH-1636. 1 asks the grok CLI for --output-format json, keeps its result envelope at $OUT.envelope and prices the cost row from the vendor's own usage and dollars. Stays 0 until a probe on a grok 1.0.40 box confirms the answer text is at .result; then the flip is this one row. Read by bin/agent-call.sh as ${GROK_OUTPUT_JSON:-0}."
+        },
+        {
+          "env": "GROK_MAX_TURNS",
+          "type": "int",
+          "default": 25,
+          "min": 1,
+          "max": 200,
+          "unit": "turns",
+          "zero_means": null,
+          "required": false,
+          "note": "The --max-turns every grok call is given. Read as ${GROK_MAX_TURNS:-25}."
+        },
+        {
+          "env": "GROK_RULES_INJECT",
+          "type": "int",
+          "default": 0,
+          "min": 0,
+          "max": 1,
+          "zero_means": "off",
+          "required": false,
+          "note": "1 injects the fleet rules block into a grok prompt the way the other runners get it. Read as ${GROK_RULES_INJECT:-0}."
+        },
+        {
+          "env": "LADDER_TIER2_GROK",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 1,
+          "zero_means": "off",
+          "required": false,
+          "note": "The grok tier-2 rung of the survival ladder (claude -> grok -> the configured fallback). 0 removes the rung. Read as ${LADDER_TIER2_GROK:-1}."
+        },
+        {
+          "env": "LADDER_SAME_RETRIES",
+          "type": "int",
+          "default": 2,
+          "min": 0,
+          "max": 10,
+          "unit": "retries",
+          "zero_means": "no same-runner retry",
+          "required": false,
+          "note": "How many times a transient failure retries on the SAME runner and account before the ladder descends. Read as ${LADDER_SAME_RETRIES:-2}."
+        },
+        {
+          "env": "LADDER_BACKOFF_SECS",
+          "type": "int",
+          "default": 60,
+          "min": 0,
+          "max": 3600,
+          "unit": "seconds",
+          "zero_means": "no backoff",
+          "required": false,
+          "note": "The backoff before a same-runner retry. Read as ${LADDER_BACKOFF_SECS:-60}."
+        },
+        {
+          "env": "CLIFF_ROUTE_SAMPLE",
+          "type": "int",
+          "default": 10,
+          "min": 1,
+          "max": 100,
+          "unit": "rows",
+          "zero_means": null,
+          "required": false,
+          "note": "How many recent successful cost rows for the same stage and project the cliff route takes the median of when it projects a grok call's context. Read as ${CLIFF_ROUTE_SAMPLE:-10}."
+        },
+        {
+          "env": "CLIFF_ROUTE_MIN_SAMPLES",
+          "type": "int",
+          "default": 3,
+          "min": 1,
+          "max": 100,
+          "unit": "rows",
+          "zero_means": null,
+          "required": false,
+          "note": "Fewer rows than this is no projection at all, so the cliff route never descends on it. Read as ${CLIFF_ROUTE_MIN_SAMPLES:-3}."
+        },
+        {
+          "env": "CONTEXT_KILL_POLL_S",
+          "type": "int",
+          "default": 15,
+          "min": 1,
+          "max": 600,
+          "unit": "seconds",
+          "zero_means": null,
+          "required": false,
+          "note": "How often the context meter beside a running claude call reads its transcript to decide whether to kill it at its context ceiling. Read as ${CONTEXT_KILL_POLL_S:-15}."
+        },
+        {
+          "env": "CONTEXT_KILL_REPEAT_MAX",
+          "type": "int",
+          "default": 2,
+          "min": 0,
+          "max": 20,
+          "unit": "kills",
+          "zero_means": "off",
+          "required": false,
+          "note": "BH-2538. How many context kills of the same work (same project and stage, and the same ticket AND call-guard fingerprint when the call declares both, so a ticket whose thread moved is new work) inside CONTEXT_KILL_REPEAT_WINDOW_S escalate: the kill that reaches this count raises ONE critical alert to a person, and every later call for that work is refused rc 74 before anything is bought. Counted from the cost.csv ledger's context-kill rows, no state file. Read as ${CONTEXT_KILL_REPEAT_MAX:-2}."
+        },
+        {
+          "env": "CONTEXT_KILL_REPEAT_WINDOW_S",
+          "type": "int",
+          "default": 86400,
+          "min": 3600,
+          "max": 604800,
+          "unit": "seconds",
+          "zero_means": null,
+          "required": false,
+          "note": "BH-2538. The window CONTEXT_KILL_REPEAT_MAX counts kills in. Read as ${CONTEXT_KILL_REPEAT_WINDOW_S:-86400}."
+        },
+        {
+          "env": "CONTEXT_KILL_REPEAT_SCAN_ROWS",
+          "type": "int",
+          "default": 50000,
+          "min": 1000,
+          "max": 5000000,
+          "unit": "rows",
+          "zero_means": null,
+          "required": false,
+          "note": "BH-2538. How many of cost.csv's newest rows the repeat-kill count reads (the ledger is never rotated, so an unbounded scan grows with it). Read as ${CONTEXT_KILL_REPEAT_SCAN_ROWS:-50000}."
+        },
+        {
+          "env": "COST_SOURCE_DELTA_PCT",
+          "type": "int",
+          "default": 20,
+          "min": 0,
+          "max": 100,
+          "unit": "percent",
+          "zero_means": null,
+          "required": false,
+          "note": "How far a claude call's transcript-priced dollars and its result-reported dollars may differ, in percent, before one line goes to logs/cost-source-delta.log. The row itself is unchanged. Read as ${COST_SOURCE_DELTA_PCT:-20}."
+        },
+        {
+          "env": "AGENT_CALL_LEDGER_TTL_S",
+          "type": "int",
+          "default": 1800,
+          "min": 60,
+          "max": 86400,
+          "unit": "seconds",
+          "zero_means": null,
+          "required": false,
+          "note": "How long a ledger row answers a repeat of the same prompt without calling a model again, for the stages that opted in through AGENT_CALL_LEDGER. The floor is 60, not 0: a row must never close the replay window and re-bill every repeat. Read as ${AGENT_CALL_LEDGER_TTL_S:-1800}."
+        },
+        {
+          "env": "OPENROUTER_HEADROOM_TTL_S",
+          "type": "int",
+          "default": 600,
+          "min": 0,
+          "max": 86400,
+          "unit": "seconds",
+          "zero_means": "off",
+          "required": false,
+          "note": "2026-09-23 pool loop. How long runner_ready openrouter trusts one reading of the key's own headroom (GET /api/v1/key, no tokens), cached per key fingerprint in state/openrouter-headroom/. A key below OPENROUTER_HEADROOM_MIN_USD is not ready, so the ladder stops buying a floor that answers every call with 403 Key limit exceeded. 0 turns the headroom check off (the hub canary's LANE DOWN record is still read). Read as ${OPENROUTER_HEADROOM_TTL_S:-600}."
+        },
+        {
+          "env": "OPENROUTER_HEADROOM_MIN_USD",
+          "type": "float",
+          "default": 1,
+          "min": 0,
+          "max": 1000,
+          "unit": "usd",
+          "zero_means": "only a key at or past its limit is down",
+          "required": false,
+          "note": "The key headroom (limit_remaining, dollars) below which the OpenRouter lane counts as not ready. A key with no limit is always ready. Read as ${OPENROUTER_HEADROOM_MIN_USD:-1}."
+        },
+        {
+          "env": "OPENROUTER_FALLBACK",
+          "type": "string",
+          "default": "exhausted-only",
+          "min": null,
+          "max": null,
+          "unit": null,
+          "zero_means": null,
+          "required": false,
+          "read_in": "bin/agent-call.sh",
+          "note": "the operator, 2026-09-24: \"No need to use OpenRouter if the Claude OAuth is working.\" When OpenRouter may be reached as a FALLBACK (the configured RUNNER_<STAGE>_FALLBACK=openrouter arm and the tier-3 survival block; a caller that names openrouter as its primary is not gated). exhausted-only (default): only when no Claude account can serve the call (claude's account failed on this ladder after every rotation, the picker has no claude account with headroom, or the box has no claude CLI). off: never (bin/fly-pool.sh ships this to a machine whose hub holds another healthy account). always: the behaviour before the gate. Each skip writes one failovers.log line. Read as ${OPENROUTER_FALLBACK:-exhausted-only}."
+        },
+        {
+          "env": "AGENT_CALL_MODEL_MISMATCH",
+          "type": "string",
+          "default": "warn",
+          "zero_means": null,
+          "required": false,
+          "note": "BH-1765/BH-1837. warn|refuse: what bin/agent-call.sh does when the argv model's family does not match the stage's primary runner. warn writes one ALERTS line per (stage, project, runner, model) per UTC day plus one failovers.log line per (stage, runner, model) per day, and runs the call; refuse stops it, rc 74, nothing called and nothing billed. Any other value is warn. Read as ${AGENT_CALL_MODEL_MISMATCH:-warn}."
+        },
+        {
+          "env": "AGENT_CALL_STAGE_ROUTE_TTL_S",
+          "type": "int",
+          "default": 120,
+          "min": 0,
+          "max": 3600,
+          "unit": "s",
+          "zero_means": "no cache",
+          "required": false,
+          "note": "BH-1837. How long this box reuses its answer to the stage.<stage> route read (the runner every call looks up), the \"no route\" answer included, from state/model-routes/stage-runner/. A route changed on the console reaches a box within this. Read as ${AGENT_CALL_STAGE_ROUTE_TTL_S:-120}."
+        },
+        {
+          "env": "AGENT_CALL_STAGE_ROUTE_TIMEOUT_S",
+          "type": "int",
+          "default": 3,
+          "min": 1,
+          "max": 8,
+          "unit": "s",
+          "zero_means": null,
+          "required": false,
+          "note": "BH-1837. The longest the stage.<stage> route read waits for the worker, with no retry. On a timeout the call runs RUNNER_<STAGE> or claude (or this box's last-good cached ladder for the route). Max 8 is the jobs client's own timeout, so a row can only shorten the wait. Read as ${AGENT_CALL_STAGE_ROUTE_TIMEOUT_S:-3}."
+        }
+      ]
+    },
+    {
+      "id": "gh-policy-cache",
+      "file": "bin/lib/gh-policy-cache.sh",
+      "knobs": [
+        {
+          "env": "GH_POLICY_TTL_SECS",
+          "type": "int",
+          "default": 3600,
+          "min": 0,
+          "max": 86400,
+          "unit": "seconds",
+          "zero_means": "off",
+          "required": true,
+          "note": "How long a repo's rulesets, .mergify.yml and branch protection answers (200 or 404, never an unverifiable 403/5xx) are served from state/gh-policy-cache/ before gh_rest asks GitHub again (BH-1586). Read by the merge conductor's queue-provider probe and gh_branch_protection, in every lane that sources them. A policy edit takes up to this long to be seen. 0 turns the cache off. No literal in code."
+        }
+      ]
+    },
+    {
+      "id": "wake-lanes",
+      "file": "bin/lib/wake-lanes.sh",
+      "knobs": [
+        {
+          "env": "WAKE_BACKSTOP_S",
+          "type": "int",
+          "default": 1800,
+          "zero_means": null,
+          "required": true,
+          "note": "How long a wake-driven run covers for: a cron tick of the same lane inside this window is skipped as redundant (wake_backstop_skip). Used when the lane passes no window of its own. Read by bin/lib/wake-lanes.sh as $WAKE_BACKSTOP_S with no literal since BH-1511.1; was ${WAKE_BACKSTOP_S:-1800}."
+        }
+      ]
+    },
+    {
+      "id": "remote-gate",
+      "file": "bin/remote-gate.sh",
+      "knobs": [
+        {
+          "env": "REMOTE_GATE_TMPFS_SIZE",
+          "type": "string",
+          "default": "20g",
+          "zero_means": null,
+          "required": true,
+          "note": "BH-1597. The size of the tmpfs the gate mounts on a test host's /srv/tmp (mount -t tmpfs -o size=<it>) when /srv/tmp is not already a tmpfs and nothing is on it. Each testhost has 32 GB RAM and a 7.8 GB root overlay. bin/remote-gate.sh accepts only <digits>[kKmMgG] and exits 125 on anything else before it reaches the host. Resolved on the machine that RUNS the gate (a Mac or a builder) and baked into the job, so a row changes the next run."
+        },
+        {
+          "env": "REMOTE_GATE_MIN_FREE_MB",
+          "type": "int",
+          "default": 1500,
+          "min": 0,
+          "max": 100000,
+          "unit": "MB",
+          "zero_means": "no floor",
+          "required": true,
+          "note": "BH-1597. The least free space (MB) the run root's filesystem on the test host must have before the gate copies the tree. Below it, or below copies x du(base) x REMOTE_GATE_FREE_FACTOR (whichever is larger), the job runs the sweep, measures again, and if it is still short exits 125 with 'nothing ran', rather than starting copies that die on ENOSPC and starve every other builder on the host."
+        },
+        {
+          "env": "REMOTE_GATE_FREE_FACTOR",
+          "type": "int",
+          "default": 3,
+          "min": 0,
+          "max": 20,
+          "unit": "x",
+          "zero_means": "no per-copy estimate (the floor alone decides)",
+          "required": true,
+          "note": "BH-1597. Headroom multiplier for the pre-run free-space check: the job needs copies x du(base) x this MB free, where copies is min(-P, the number of suites) (1 in -- mode). 3 covers the copy plus what a suite writes into it (logs, git objects, its scratch under TMPDIR)."
+        },
+        {
+          "env": "REMOTE_GATE_SWEEP_MIN",
+          "type": "int",
+          "default": 30,
+          "min": 30,
+          "max": 1440,
+          "unit": "minutes",
+          "zero_means": null,
+          "required": true,
+          "note": "BH-1597 (was a hardcoded 360). Age after which the host-side sweep removes run roots under /srv/tmp/runs and /srv/runs, loose /srv/tmp/{rc,log,cperr,runner}-* and <epoch>-<pid>* trees, and /tmp/tmp.* + /tmp/scratch.*: only when nothing inside is newer than this AND no live process has the path as its cwd, holds a file under it open, or names it in its cmdline. bin/remote-gate.sh also enforces a floor IN CODE of the suite cap plus a fifth (REMOTE_GATE_SUITE_TIMEOUT 1500 s -> 30 min), because a caller's env bypasses this clamp and the age is what protects scratch the liveness arms cannot see (#1604 review, I1)."
+        },
+        {
+          "env": "REMOTE_GATE_LOCK_WAIT_S",
+          "type": "int",
+          "default": 30,
+          "min": 1,
+          "max": 600,
+          "unit": "seconds",
+          "zero_means": null,
+          "required": true,
+          "note": "BH-1597 (#1604 review, I4). How long the host-side prep waits for /srv/tmp.mount.lock before giving up on the tmpfs mount for this run (one WARNING line; the run goes on), and how long the run-dir mkdir waits for the same lock. Bounded so one wedged prep (a /proc read or a mount that hangs) cannot stall every later gate on the host."
+        },
+        {
+          "env": "REMOTE_GATE_CERT_ISSUE_TIMEOUT_S",
+          "type": "int",
+          "default": 60,
+          "min": 5,
+          "max": 600,
+          "unit": "seconds",
+          "zero_means": null,
+          "required": true,
+          "note": "BH-1836. How long bin/remote-gate.sh lets `flyctl ssh issue` run when it reissues the test-host ssh cert (TERM past it, KILL 5 s later). On 2026-09-23 an issue hung for 37 and 52 minutes and stalled every gate. Past the bound the gate keeps using the current cert while it has any time left (one WARNING line) and exits 125 only when the cert is missing or expired. A gate with no usable cert waits for another gate's reissue lock at most this plus 15 s, and a mkdir lock (no flock, BH-1854) older than twice this plus 15 s is stale. Resolved on the machine that runs the gate."
+        }
+      ]
+    },
+    {
+      "id": "gh-pr-list",
+      "file": "bin/lib/gh-pr-list.sh",
+      "knobs": [
+        {
+          "env": "GH_PR_LIST_GRAPHQL_FALLBACK",
+          "type": "int",
+          "default": 0,
+          "min": 0,
+          "max": 1,
+          "zero_means": "off",
+          "required": true,
+          "note": "BH-1585. 1 = a harness_pr_list call that asks for a field no read carries goes back to the per-author GraphQL `gh pr list` loop; 0 (default) = that call answers 75 with no request at all. mergeStateStatus, mergeable and files are REST (per-PR, ETag) and isInMergeQueue is one GraphQL mergeQueue read, either way."
+        },
+        {
+          "env": "HARNESS_VERDICT_AUTHORS",
+          "type": "string",
+          "default": "operator app/cromford",
+          "min": null,
+          "max": null,
+          "zero_means": null,
+          "required": false,
+          "settable": false,
+          "read_in": "bin/lib/gh-pr-list.sh",
+          "note": "BH-1668. The logins whose harness verdicts COUNT: harness-review-autopilot marker comments (bin/lib/mc/classify.sh, bin/review-autopilot.sh) and harness-footer reviews (bin/review-prs.sh, bin/blocked-resolver.sh). Deliberately narrower than HARNESS_PR_AUTHORS: the builders App (app/cromford-builders) authors pool PRs but is held by the boxes where the build agent runs, so its verdicts must never count (self-approval). Space separated, any spelling (app/x, x[bot], x). settable:false: a trust list lives in env/global.env, never in a settings row. Read as ${HARNESS_VERDICT_AUTHORS:-operator app/cromford}; the hub App's GH_APP_SLUG (env/github-app.env, never an App profile file) is unioned in."
+        }
+      ]
+    },
+    {
+      "id": "pr-terminal",
+      "file": "bin/lib/pr-terminal.sh",
+      "knobs": [
+        {
+          "env": "PR_TERMINAL_CLOSED_RECHECK_S",
+          "type": "int",
+          "default": 86400,
+          "zero_means": null,
+          "required": true,
+          "note": "BH-1585. How long a build record whose PR was read CLOSED (not merged) is skipped by bin/rebase-train.sh and pipeline-health's sweep-should-have-landed check before it is read again (a reopen must not be missed for ever). A merged PR is never read again."
+        },
+        {
+          "env": "PR_READ_TIMEOUT_S",
+          "type": "int",
+          "default": 30,
+          "zero_means": "off",
+          "required": true,
+          "note": "BH-1585. Seconds one per-record PR read (bin/lib/pr-terminal.sh) may take. It runs under GNU timeout, which signals the whole process group, so a hung gh is killed with its children; a timed-out read is unverifiable (75) and writes nothing."
+        }
+      ]
+    },
+    {
+      "id": "gh-ledger",
+      "file": "bin/gh-ledger/gh",
+      "knobs": [
+        {
+          "env": "GH_LEDGER_UNKNOWN_TTL_S",
+          "type": "int",
+          "default": 3600,
+          "zero_means": null,
+          "note": "BH-1574 round 2: seconds an `unknown` gh trace-format verdict (state/gh-ledger.trace-format) is trusted before the PATH shim bin/gh-ledger/gh probes the binary again. Only a probe that got an HTTP response is ever cached; this bounds the life of the rest. Read by bin/gh-ledger/gh as ${GH_LEDGER_UNKNOWN_TTL_S:-3600}, through lib_env_apply gh-ledger, only when an unknown verdict is found."
+        }
+      ]
+    },
+    {
+      "id": "verdict-parse",
+      "file": "bin/lib/verdict-parse.sh",
+      "knobs": [
+        {
+          "env": "VERDICT_WINDOW_LINES",
+          "type": "int",
+          "default": 3,
+          "min": 1,
+          "max": 50,
+          "unit": "lines",
+          "zero_means": null,
+          "required": true,
+          "note": "BH-1625. How many of a review's LAST non-empty lines are its final block, the only place bin/lib/verdict-parse.sh accepts a verdict line from. Every verdict reader in bin/ (the head-bound re-review gate in bin/lib/mc/rebase.sh, merge-sweep, classify, review-prs, review-autopilot, run-build's lenses and the rest) goes through it. A line starting with VERDICT: outside this window, quoted mid-text, in a blockquote or in a code fence is not a verdict, and two verdict lines inside it that disagree are no verdict (fail closed). 3 covers the prompts' 'TIER: n' + 'VERDICT: x' ending with one line of slack, and stays short of the original verdict of a lens artifact that bin/lib/rb/review.sh appends a 3-line merged re-review block to. Callers whose format puts known lines after the verdict (one per lens tag) add them with -x."
+        }
+      ]
+    },
+    {
+      "id": "main-red-label",
+      "file": "bin/lib/main-red-label.sh",
+      "note": "BH-1770. The ONE knob that names the main-red fix label, read by every merge lane (bin/lib/main-red-gate.sh's MC_MAIN_RED_LABEL) and by every build's priority rank (main_red_label in bin/lib/hotfix-lib.sh) through main_red_label_resolve. MAIN_RED_LABEL is its deprecated alias: still honoured, logged once an hour to logs/lane-gate.log, and never registered as a knob of its own.",
+      "knobs": [
+        {
+          "env": "MC_MAIN_RED_LABEL",
+          "type": "string",
+          "default": "fix-main-red",
+          "zero_means": null,
+          "required": false,
+          "note": "BH-1770. The label that marks a PR as THE fix for a red main: it merges through the main-red freeze, a merged one lifts the freeze (bin/lib/mc/train.sh), and a ticket carrying it ranks 1 (between hotfix 0 and everything else 2). Resolution, the same for every reader: this settings row, then MC_MAIN_RED_LABEL, then the deprecated alias MAIN_RED_LABEL, process env before env/global.env, then fix-main-red. Matched as a whole label name."
+        }
+      ]
+    },
+    {
+      "id": "gate-release",
+      "file": "bin/lib/gate-release.sh",
+      "note": "BH-3825. Merge-gate release: bin/gate-release.sh (called from rt_gate) sources this lib, which resolves these knobs through lib_env_apply gate-release in _gr_knobs. Kill switch gate-release-off (catalog/switches.d/gate-release-off.json).",
+      "knobs": [
+        {
+          "env": "GATE_RELEASE_MAX_LAUNCHES",
+          "type": "int",
+          "default": 0,
+          "min": 0,
+          "max": 20,
+          "unit": "launches",
+          "zero_means": "off",
+          "required": false,
+          "note": "BH-3825. The most merge-gated tickets one gate-release pass may launch. Resolved by _gr_knobs in bin/lib/gate-release.sh into _GR_MAXLAUNCH; read by gr_release_queue (bin/lib/gate-release/queue.sh, BH-3828). Ships DARK at 0 (the operator, 2026-10-02): 0 = the pass returns before reading anything. Turning it on is one settings row, lib.gate-release.GATE_RELEASE_MAX_LAUNCHES = 2, or the env var on one box."
+        },
+        {
+          "env": "GATE_RELEASE_REMIND_S",
+          "type": "int",
+          "default": 21600,
+          "min": 60,
+          "max": 604800,
+          "unit": "seconds",
+          "zero_means": null,
+          "required": false,
+          "note": "BH-3825. How long a gate-release pass waits before acting on the same gated ticket again. Resolved by _gr_knobs in bin/lib/gate-release.sh into _GR_REMIND; read by the gate-release part files under bin/lib/gate-release/, so it has no effect until they land."
+        },
+        {
+          "env": "GATE_RELEASE_MAX_LOOKUPS",
+          "type": "int",
+          "default": 10,
+          "min": 0,
+          "max": 50,
+          "unit": "reads",
+          "zero_means": null,
+          "required": false,
+          "note": "BH-3825. The most GitHub PR-state reads gr_key_merged (bin/lib/gate-release.sh) makes in one shell, through split_chain_key_merged; only a key whose newest RESULT is PR_CREATED and that neither a PR_MERGED RESULT, the split-chain merged cache nor the merge ledger answered costs one. 0 = no REST reads at all: such a key reads not merged, today's behaviour."
+        }
+      ]
+    },
+    {
+      "id": "split-chain",
+      "file": "bin/lib/split-chain.sh",
+      "knobs": [
+        {
+          "env": "SPLIT_CHAIN_REMIND_S",
+          "type": "int",
+          "default": 21600,
+          "min": 60,
+          "max": 604800,
+          "unit": "seconds",
+          "zero_means": null,
+          "required": false,
+          "note": "BH-1655. How long bin/lib/split-chain.sh waits before offering the same due split sibling again (state/split-chain/<p>/offered/<CHILD>). bin/triage-gate.sh step 1c answers RUN split-ready at most once per child per this window, so it bounds how often a merged dependency can pre-empt the queue and results brakes. A state/split-ready-keys-<p> file older than this is deleted unread."
+        },
+        {
+          "env": "SPLIT_CHAIN_LOOKBACK_S",
+          "type": "int",
+          "default": 1209600,
+          "min": 3600,
+          "max": 7776000,
+          "unit": "seconds",
+          "zero_means": null,
+          "required": false,
+          "note": "BH-1655. How old a parent's `DECOMPOSED k1,k2,...` RESULT may be (file mtime) and still be read by bin/lib/split-chain.sh. Older splits are ignored, so a long-dead chain never re-offers a child."
+        },
+        {
+          "env": "SPLIT_CHAIN_MAX_LOOKUPS",
+          "type": "int",
+          "default": 10,
+          "min": 0,
+          "max": 100,
+          "unit": "reads",
+          "zero_means": null,
+          "required": false,
+          "note": "BH-1655. The most GitHub PR-state reads one split-chain pass makes (a sibling whose newest RESULT is PR_CREATED). Past it the sibling reads not-merged and one `split-chain: lookup cap hit` line goes to logs/<project>.log. A merged answer is cached in state/split-chain/<p>/merged/, so each merge is read once. 0 means no reads: only PR_MERGED records count."
+        }
+      ]
+    }
+  ]
+}

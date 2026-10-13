@@ -1,0 +1,10 @@
+# fly/testhost/fly.toml — the shared test host app (#1597). Deploy from the repo
+# root with `-c fly/testhost/fly.toml`; the exact line, the build args and when
+# it is safe to run are in docs/REMOTE-GATE.md, "Deploying the test host image".
+# The machines (testhost-1..4, performance-16x) already exist: a deploy rolls
+# their image and restarts them, which ends every run on them.
+app = "bh-testhost-example-org"
+primary_region = "sjc"
+
+[build]
+  dockerfile = "Dockerfile"

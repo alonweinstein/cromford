@@ -1,0 +1,134 @@
+{
+  "id": "postmerge-qa",
+  "name": "Post-merge QA",
+  "scope": "project",
+  "script": "bin/postmerge-qa.sh",
+  "cadence": "21,51 * * * *; 26,56 * * * *; 31 * * * *; 36 * * * *; 46 * * * *",
+  "boxes": [
+    "project-4",
+    "project-1",
+    "project-3",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-postmerge-qa",
+    "aliases": [
+      {
+        "name": "postmerge-qa-disabled",
+        "off_when": "present"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "LLM_LANE_ENABLED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "0 makes this lane call no model at all. bin/lib/llm-gate.sh refuses BEFORE the vendor call and writes a zero-cost row_source=refused row, so the stop is visible in the ledger rather than being a lane that went quiet."
+    },
+    {
+      "env": "LLM_RUNNER_ALLOWED",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Comma/space list of the ONLY ladder rungs this lane may reach. Empty is every rung, i.e. today's ladder unchanged. A rung outside the list is refused before the call, so a cliff or a failure on the standing lane cannot descend into one that costs ~100x (#1141, the $793 descent)."
+    },
+    {
+      "env": "LLM_USD_CAP_DAY",
+      "type": "float",
+      "default": 0,
+      "min": 0,
+      "max": 10000,
+      "unit": "usd",
+      "zero_means": "unlimited",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Dollars this lane may spend in the current UTC day, summed from D1 cost_rows through GET /api/metrics/llm-spend — never from the box's own logs/cost.csv. A second, project-scoped ceiling is the lane.<id>.<project>.llm_usd_cap_day row, which is read only when somebody wrote it."
+    },
+    {
+      "env": "POSTMERGE_QA_AGENT",
+      "type": "int",
+      "default": 1,
+      "zero_means": null,
+      "note": "Read by bin/postmerge-qa.sh as ${POSTMERGE_QA_AGENT:-1}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "POSTMERGE_QA_DEPLOY_MAX_HOURS",
+      "type": "int",
+      "default": 12,
+      "zero_means": null,
+      "note": "Read by bin/postmerge-qa.sh as ${POSTMERGE_QA_DEPLOY_MAX_HOURS:-12}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped. LANE-WIDE: lane.<id>.<project>.postmerge_qa_deploy_max_hours is 67 characters and PUT /api/settings refuses anything over 64, so this one has no per-project row.",
+      "project_scoped": false
+    },
+    {
+      "env": "POSTMERGE_QA_DISABLED",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/postmerge-qa.sh as ${POSTMERGE_QA_DISABLED:-}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "POSTMERGE_QA_LOOKBACK_HOURS",
+      "type": "int",
+      "default": 48,
+      "zero_means": null,
+      "note": "Read by bin/postmerge-qa.sh as ${POSTMERGE_QA_LOOKBACK_HOURS:-48}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped. LANE-WIDE: lane.<id>.<project>.postmerge_qa_lookback_hours is 65 characters and PUT /api/settings refuses anything over 64, so this one has no per-project row.",
+      "project_scoped": false
+    },
+    {
+      "env": "POSTMERGE_QA_MAX",
+      "type": "int",
+      "default": 1,
+      "zero_means": null,
+      "note": "Read by bin/postmerge-qa.sh as ${POSTMERGE_QA_MAX:-1}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "POSTMERGE_QA_MODEL",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Empty by default since BH-1510: the model is a database row, model_routes role 'postmerge.qa', read by bin/postmerge-qa.sh after this env var. Set this only to override that row; no reviewed min/max, nothing is clamped."
+    },
+    {
+      "env": "POSTMERGE_QA_USER_ID",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it (${QA_TEST_USER_ID:-). Read by bin/postmerge-qa.sh as ${POSTMERGE_QA_USER_ID:-${QA_TEST_USER_ID:-}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "QA_REPO_DIR",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it (/root/repos/$P). Read by bin/postmerge-qa.sh as ${QA_REPO_DIR:-/root/repos/$P}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "VERSION_URL",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/postmerge-qa.sh as ${VERSION_URL:-}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": "prodqa",
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/postmerge-qa.log"
+  }
+}

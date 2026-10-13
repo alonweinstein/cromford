@@ -1,0 +1,3 @@
+# BH-2437: triage-shards-off, triage-shard-caps-off, triage-health-off and
+# triage-spool-age-off now read through lane_switch.
+4

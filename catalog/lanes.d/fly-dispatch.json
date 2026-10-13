@@ -1,0 +1,29 @@
+{
+  "id": "fly-dispatch",
+  "name": "Fly dispatch",
+  "scope": "hub",
+  "script": "bin/fly-dispatch.sh",
+  "cadence": "*/10 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-fly-dispatch",
+    "aliases": [
+      {
+        "name": "fly-disabled",
+        "off_when": "present"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/fly-dispatch.log"
+  },
+  "factory_stop": "launch"
+}

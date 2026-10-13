@@ -1,0 +1,5 @@
+
+# audit tail (operator line, outside managed blocks; BH-444, incident #388): every 5 minutes read
+# the kernel audit trail (ausearch -k harness) and page once per deletion/rename/truncate burst under
+# the harness roots. Off via AUDIT_TAIL=0 in env/global.env or flags/audit-off. Docs: docs/AUDIT-TRAIL.md.
+*/5 * * * * /root/harness/bin/audit-tail.sh >/dev/null 2>&1

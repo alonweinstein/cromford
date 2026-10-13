@@ -1,0 +1,4 @@
+{
+  "version": 1,
+  "note": "Every automatic mechanism the fleet runs, one entry per lane. bin/lib/lane-gate.sh reads `switch` and `knobs`; worker/jobs serves this file at GET /api/lanes/registry. `aliases` are the switches that already existed before BH-1132 and still work; the page shows them so the registry never lies about what is off today. Since BH-1165 every lane whose script this repo ships calls lane_gate_or_exit and lane_env_apply (tests/lanes-registry-test.sh section 5 EXECUTES each shipped header); a lane with wired=false must declare external=true and say which repo owns it."
+}

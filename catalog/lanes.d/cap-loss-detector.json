@@ -1,0 +1,23 @@
+{
+  "id": "cap-loss-detector",
+  "name": "Cap-loss detector",
+  "scope": "hub",
+  "script": "bin/cap-loss-detector.sh",
+  "cadence": "20 6 * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-cap-loss-detector",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/cap-loss.log"
+  }
+}

@@ -1,0 +1,1 @@
+{"name":"model-watch-off","readers":["bin/model-watch.sh"],"box_scoped":false,"what":"stops the model-watch lane before any vendor fetch"}

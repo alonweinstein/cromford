@@ -1,0 +1,9 @@
+# @hub-lanes
+# Flaky CI (2026-09-12, docs/FLAKY-TESTS.md) — classify every red head of the
+# last 14 days as flake (both red and green on the SAME sha) or real red, so the
+# conductor's known-flake set and pipeline-health's 7d rate have data. DAILY and
+# staggered: it reads run logs, so it is the most expensive read in this file,
+# and the window is measured in days. Detection only — the quarantine proposer
+# (bin/flaky-quarantine.sh) is run BY HAND, because quarantining a test switches
+# off a repo's own alarm and that is never a cron's decision to make.
+40 5 * * * /root/harness/bin/hub-lease.sh check && for P in $(/root/harness/bin/fleet-conf.sh --projects); do /root/harness/bin/flaky-detect.sh "$P" >/dev/null 2>&1; sleep 5; done

@@ -1,0 +1,93 @@
+{
+  "libs": [
+    {
+      "id": "mc-ci-timeout",
+      "file": "bin/lib/mc-ci-timeout.sh",
+      "note": "BH-3775 (contract: BH-3784). The ci-timeout budget the merge conductor's BH-636 flake ladder consults through cit_assess. Applied by the lib at file scope, in a subshell; the code literal after each read is the documented fallback when there is no registry. Until the scan/rekick/budget slices land only MC_CI_TIMEOUT is acted on.",
+      "knobs": [
+        {
+          "env": "MC_CI_TIMEOUT",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 1,
+          "unit": "flag",
+          "zero_means": "feature off: the ladder runs on the full flake list, as BH-636",
+          "required": true,
+          "note": "1 lets the BH-3775 timeout classifier read the flake list before the ladder re-runs it."
+        },
+        {
+          "env": "MC_CI_TIMEOUT_SLACK_S",
+          "type": "int",
+          "default": 60,
+          "min": 0,
+          "max": 3600,
+          "unit": "seconds",
+          "zero_means": "a job counts as a timeout only at or past its exact limit",
+          "required": true,
+          "note": "How close to timeout-minutes a dead job's duration must be to read as TIMEOUT rather than a cancel."
+        },
+        {
+          "env": "MC_CI_TIMEOUT_DEFAULT_MIN",
+          "type": "int",
+          "default": 360,
+          "min": 1,
+          "max": 4320,
+          "unit": "minutes",
+          "required": true,
+          "note": "The limit assumed for a job whose workflow sets no timeout-minutes (GitHub's job maximum is 360; self-hosted runners allow more)."
+        },
+        {
+          "env": "MC_CI_TIMEOUT_MIN_PRS",
+          "type": "int",
+          "default": 3,
+          "min": 1,
+          "max": 100,
+          "unit": "PRs",
+          "required": true,
+          "note": "How many distinct PRs must show the same check timing out before the repo-level budget fires."
+        },
+        {
+          "env": "MC_CI_TIMEOUT_RATIO_PCT",
+          "type": "int",
+          "default": 50,
+          "min": 1,
+          "max": 100,
+          "unit": "percent",
+          "required": true,
+          "note": "The share of a check's recent runs that must have timed out before the budget fires."
+        },
+        {
+          "env": "MC_CI_TIMEOUT_HISTORY_N",
+          "type": "int",
+          "default": 20,
+          "min": 1,
+          "max": 100,
+          "unit": "runs",
+          "required": true,
+          "note": "How many recent runs of a check the budget reads for its ratio and duration percentiles."
+        },
+        {
+          "env": "MC_CI_TIMEOUT_HISTORY_MIN",
+          "type": "int",
+          "default": 10,
+          "min": 1,
+          "max": 100,
+          "unit": "runs",
+          "required": true,
+          "note": "The fewest runs of a check the budget needs before it may fire at all."
+        },
+        {
+          "env": "MC_CI_TIMEOUT_WINDOW_S",
+          "type": "int",
+          "default": 259200,
+          "min": 3600,
+          "max": 2592000,
+          "unit": "seconds",
+          "required": true,
+          "note": "How far back the ledger is read for the budget (3 days by default)."
+        }
+      ]
+    }
+  ]
+}

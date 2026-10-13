@@ -1,0 +1,12 @@
+# @hub-lanes
+
+# ── ARCHIE FACTORY MANAGER LANE (BH-4583) ───────────────────────────────────
+# Every 10 minutes Archie reads each project's open PRs and runs ONE playbook
+# per stuck PR. Wave 1 knows one: a PR stacked on a parent that merged is
+# replayed onto the parent's base with only its own commits, its suites run,
+# it is retargeted and pushed with a lease; a conflict or red suites park it
+# for bin/blocked-resolver.sh instead. Every action is claimed as an
+# archie_actions row before any write, so a second tick does nothing; flock -n
+# dedupes. Off: ARCHIE_FM_ENABLED=0, flags/lane-off-archie-fm,
+# bin/harness-ctl.sh off archie-fm, or the settings row archie.manage=off.
+*/10 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/archie-fm.sh >/dev/null 2>&1

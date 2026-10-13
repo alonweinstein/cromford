@@ -1,0 +1,6 @@
+# tests/mc/expected-map.d/BH-4585.tsv — BH-4585: a verdict contradiction on a
+# moved head is head-moved and the head-bound re-review of that sha stands
+# (mc_rr_verdict_of); a current-head park quotes both verdicts
+# (mc_contradiction_words). origin=lib because they are new module functions.
+classify	mc_rr_verdict_of	lib
+classify	mc_contradiction_words	lib

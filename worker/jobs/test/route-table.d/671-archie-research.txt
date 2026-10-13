@@ -1,0 +1,6 @@
+# ARCHIE-RESEARCH (BH-4065, BH-3966.4): Archie's research scout ledger,
+# appended after initiatives at the END of the table.
+POST /api/archie-research/claim
+POST /api/archie-research/settle
+GET /api/archie-research/spend
+GET /api/archie-research

@@ -1,0 +1,153 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
+  <style>
+    body { margin: 0; background: #070B08; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; color: #C9DCC9; }
+    a { color: #4AF37A; text-decoration: none; } a:hover { color: #8CFFB0; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; width: 1440px; height: 900px; background: #070B08; overflow: hidden">
+
+  <!-- top bar -->
+  <div style="display: flex; align-items: center; gap: 20px; padding: 0 24px; height: 56px; border-bottom: 1px solid #16241A; background: linear-gradient(180deg, #0A120C 0%, #070B08 100%); flex-shrink: 0">
+    <a style="font-size: 11px; color: #6E8F77; letter-spacing: 1px">← FLEET</a>
+    <span style="font-size: 14px; font-weight: 700; letter-spacing: 2px; color: #E8F5E8; text-shadow: 0 0 12px rgba(74,243,122,0.3)">KANBAN</span>
+    <div style="display: flex; border: 1px solid #1E3325; border-radius: 2px; overflow: hidden">
+      <span style="padding: 5px 16px; font-size: 11px; letter-spacing: 1px; color: #070B08; background: #4AF37A; font-weight: 700">PIPELINE</span>
+      <span style="padding: 5px 16px; font-size: 11px; letter-spacing: 1px; color: #6E8F77">BOARDS</span>
+    </div>
+    <div style="display: flex; gap: 6px; margin-left: auto">
+      <span style="padding: 4px 11px; font-size: 10px; letter-spacing: 1px; color: #070B08; background: #8CFFB0; border-radius: 2px; font-weight: 700">ALL</span>
+      <span style="padding: 4px 11px; font-size: 10px; letter-spacing: 1px; color: #6E8F77; border: 1px solid #16241A; border-radius: 2px">project-1</span>
+      <span style="padding: 4px 11px; font-size: 10px; letter-spacing: 1px; color: #6E8F77; border: 1px solid #16241A; border-radius: 2px">project-2</span>
+      <span style="padding: 4px 11px; font-size: 10px; letter-spacing: 1px; color: #6E8F77; border: 1px solid #16241A; border-radius: 2px">project-3</span>
+      <span style="padding: 4px 11px; font-size: 10px; letter-spacing: 1px; color: #6E8F77; border: 1px solid #16241A; border-radius: 2px">project-4</span>
+    </div>
+  </div>
+
+  <!-- columns -->
+  <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; padding: 18px 24px 22px 24px; flex-grow: 1; min-height: 0">
+
+    <!-- QUEUED -->
+    <div style="display: flex; flex-direction: column; gap: 10px; min-height: 0">
+      <div style="display: flex; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid #16241A">
+        <span style="font-size: 10px; letter-spacing: 2px; color: #8FA996; font-weight: 700">QUEUED</span>
+        <span style="font-size: 10px; color: #4E6B55">3</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 1px solid #16241A; border-left: 2px solid #4E6B55; border-radius: 2px; background: #0A110B">
+        <div style="display: flex; align-items: center; gap: 8px"><a style="font-size: 11px; font-weight: 700">TK-49</a><span style="margin-left: auto; font-size: 9px; color: #FFB000">51m</span></div>
+        <span style="font-size: 10px; color: #8FA996; line-height: 1.5">CSV export on the ledger page</span>
+        <span style="font-size: 9px; color: #4E6B55">project-3 · attempt 1</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 1px solid #16241A; border-left: 2px solid #4E6B55; border-radius: 2px; background: #0A110B">
+        <div style="display: flex; align-items: center; gap: 8px"><a style="font-size: 11px; font-weight: 700">TK-52</a><span style="margin-left: auto; font-size: 9px; color: #4E6B55">12m</span></div>
+        <span style="font-size: 10px; color: #8FA996; line-height: 1.5">Retreat roster print view</span>
+        <span style="font-size: 9px; color: #4E6B55">project-3 · attempt 1</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 1px solid #16241A; border-left: 2px solid #4E6B55; border-radius: 2px; background: #0A110B">
+        <div style="display: flex; align-items: center; gap: 8px"><a style="font-size: 11px; font-weight: 700">TK-215</a><span style="margin-left: auto; font-size: 9px; color: #4E6B55">8m</span></div>
+        <span style="font-size: 10px; color: #8FA996; line-height: 1.5">Depreciation schedule per entity</span>
+        <span style="font-size: 9px; color: #4E6B55">project-1 · attempt 1</span>
+      </div>
+    </div>
+
+    <!-- BUILDING -->
+    <div style="display: flex; flex-direction: column; gap: 10px; min-height: 0">
+      <div style="display: flex; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid #1E3325">
+        <span style="font-size: 10px; letter-spacing: 2px; color: #4AF37A; font-weight: 700; text-shadow: 0 0 8px rgba(74,243,122,0.4)">BUILDING</span>
+        <span style="font-size: 10px; color: #4E6B55">2</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 1px solid #1E3325; border-left: 2px solid #4AF37A; border-radius: 2px; background: #0B130D; box-shadow: 0 0 16px rgba(74,243,122,0.08)">
+        <div style="display: flex; align-items: center; gap: 8px"><a style="font-size: 11px; font-weight: 700">TK-212</a><span style="margin-left: auto; font-size: 9px; color: #8CFFB0">11m ▓</span></div>
+        <span style="font-size: 10px; color: #8FA996; line-height: 1.5">CSV export GL ledger drill-down</span>
+        <div style="display: flex; align-items: center; gap: 6px">
+          <span style="font-size: 9px; color: #55D7E8">fly:d891f04a</span>
+          <span style="font-size: 9px; color: #4E6B55">green stage</span>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 1px solid #1E3325; border-left: 2px solid #4AF37A; border-radius: 2px; background: #0B130D">
+        <div style="display: flex; align-items: center; gap: 8px"><a style="font-size: 11px; font-weight: 700">TK-14</a><span style="margin-left: auto; font-size: 9px; color: #8CFFB0">3m ▓</span></div>
+        <span style="font-size: 10px; color: #8FA996; line-height: 1.5">Migration endpoint bootstrap perf</span>
+        <div style="display: flex; align-items: center; gap: 6px">
+          <span style="font-size: 9px; color: #55D7E8">fly:a02c11b9</span>
+          <span style="font-size: 9px; color: #4E6B55">review stage</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PR OPEN -->
+    <div style="display: flex; flex-direction: column; gap: 10px; min-height: 0">
+      <div style="display: flex; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid #16241A">
+        <span style="font-size: 10px; letter-spacing: 2px; color: #8FA996; font-weight: 700">PR OPEN</span>
+        <span style="font-size: 10px; color: #4E6B55">2</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 1px solid #16241A; border-left: 2px solid #8CFFB0; border-radius: 2px; background: #0A110B">
+        <div style="display: flex; align-items: center; gap: 8px"><a style="font-size: 11px; font-weight: 700">TK-96</a><span style="margin-left: auto; font-size: 9px; color: #4E6B55">2h</span></div>
+        <span style="font-size: 10px; color: #8FA996; line-height: 1.5">Lead soft-delete audit trail</span>
+        <div style="display: flex; gap: 8px; font-size: 9px"><a>PR #204 ↗</a><span style="color: #FFB000">TIER 2 · needs review</span></div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 1px solid #16241A; border-left: 2px solid #8CFFB0; border-radius: 2px; background: #0A110B">
+        <div style="display: flex; align-items: center; gap: 8px"><a style="font-size: 11px; font-weight: 700">TK-31</a><span style="margin-left: auto; font-size: 9px; color: #4E6B55">44m</span></div>
+        <span style="font-size: 10px; color: #8FA996; line-height: 1.5">Composio scope narrowing sweep</span>
+        <div style="display: flex; gap: 8px; font-size: 9px"><a>PR #19 ↗</a><span style="color: #4E6B55">verdict pending</span></div>
+      </div>
+    </div>
+
+    <!-- REVIEW -->
+    <div style="display: flex; flex-direction: column; gap: 10px; min-height: 0">
+      <div style="display: flex; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid #16241A">
+        <span style="font-size: 10px; letter-spacing: 2px; color: #8FA996; font-weight: 700">REVIEW ✓</span>
+        <span style="font-size: 10px; color: #4E6B55">1</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 1px solid #16241A; border-left: 2px solid #55D7E8; border-radius: 2px; background: #0A110B">
+        <div style="display: flex; align-items: center; gap: 8px"><a style="font-size: 11px; font-weight: 700">TK-207</a><span style="margin-left: auto; font-size: 9px; color: #4E6B55">19m</span></div>
+        <span style="font-size: 10px; color: #8FA996; line-height: 1.5">Vendor 1099 threshold report</span>
+        <div style="display: flex; gap: 8px; font-size: 9px"><a>PR #341 ↗</a><span style="color: #8CFFB0">APPROVE · tier 1</span></div>
+      </div>
+    </div>
+
+    <!-- MERGE QUEUE -->
+    <div style="display: flex; flex-direction: column; gap: 10px; min-height: 0">
+      <div style="display: flex; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid #16241A">
+        <span style="font-size: 10px; letter-spacing: 2px; color: #8FA996; font-weight: 700">MERGE Q</span>
+        <span style="font-size: 10px; color: #4E6B55">1</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 1px solid #16241A; border-left: 2px solid #C9DCC9; border-radius: 2px; background: #0A110B">
+        <div style="display: flex; align-items: center; gap: 8px"><a style="font-size: 11px; font-weight: 700">TK-207</a><span style="margin-left: auto; font-size: 9px; color: #4E6B55">4m</span></div>
+        <span style="font-size: 10px; color: #8FA996; line-height: 1.5">awaiting deploy-train window</span>
+        <span style="display: inline-flex"><span style="font-size: 9px; letter-spacing: 1px; padding: 2px 8px; color: #070B08; background: #4AF37A; border-radius: 2px; font-weight: 700">MERGE NOW</span></span>
+      </div>
+    </div>
+
+    <!-- SHIPPED / DEAD -->
+    <div style="display: flex; flex-direction: column; gap: 10px; min-height: 0">
+      <div style="display: flex; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid #16241A">
+        <span style="font-size: 10px; letter-spacing: 2px; color: #8FA996; font-weight: 700">SHIPPED 24H</span>
+        <span style="font-size: 10px; color: #4E6B55">4</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 1px solid #16241A; border-radius: 2px; background: #0A110B; opacity: 0.75">
+        <div style="display: flex; align-items: center; gap: 8px"><a style="font-size: 11px; font-weight: 700">TK-201</a><span style="margin-left: auto; font-size: 9px; color: #4AF37A">✓ 3h</span></div>
+        <span style="font-size: 10px; color: #6E8F77; line-height: 1.5">Entity pipeline s-election flags</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 1px solid #16241A; border-radius: 2px; background: #0A110B; opacity: 0.75">
+        <div style="display: flex; align-items: center; gap: 8px"><a style="font-size: 11px; font-weight: 700">TK-11</a><span style="margin-left: auto; font-size: 9px; color: #4AF37A">✓ 6h</span></div>
+        <span style="font-size: 10px; color: #6E8F77; line-height: 1.5">Checkout-links purge fix</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 1px solid #3A1515; border-radius: 2px; background: #100808">
+        <div style="display: flex; align-items: center; gap: 8px"><a style="font-size: 11px; font-weight: 700; color: #FF9B9B">TK-198</a><span style="margin-left: auto; font-size: 9px; color: #FF7B7B">✕ dead</span></div>
+        <span style="font-size: 10px; color: #8F7070; line-height: 1.5">Tipalti sync — 2 attempts</span>
+        <span style="display: inline-flex"><span style="font-size: 9px; letter-spacing: 1px; padding: 2px 8px; color: #C9DCC9; border: 1px solid #26402E; border-radius: 2px">RETRY</span></span>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "_doc": "Per-model minimum runner-CLI versions. Read by bin/cli-version-check.sh (hub, 05:40Z daily): a box whose runner CLI is below the floor for a model its env or the fleet defaults name gets ONE ALERTS line. The `clis` keys are ALSO the list of CLIs that check probes, so adding one here is what puts it on every box's report. Seeds: claude-fable-5-1 needs claude-code >= 2.1.251 (the Fable 5.1 bump, #188, stranded box-project-9-1 on 2.1.250 for days). gpt-6-astra needs codex >= 0.155.1 (raised from 0.153.4 by BH-1494, 2026-09-22 — the whole fleet is already there). claude-opus-5-5 needs claude-code >= 2.1.280 (BH-1507: 2.1.278 answers \"isn't described by this version's model catalog\"; bin/agent-call.sh fails over to claude-opus-5 on that error). grok-4.6 and grok-4.7 need the grok CLI >= 1.0.40 (BH-1494: on 2026-09-22 six boxes sat at 0.2.118, project-6 at 1.0.5, project-1-1 at 1.0.13 and small had none at all, while 1.0.40 was current and Grok 4.7 had shipped as Grok Build's default model). grok has no npm package: it is a native install whose launcher is `native_launcher` below, and that launcher is what the lanes run, so it is read BEFORE PATH. Edit here, open a PR; the catalog rides harness-sync to every box.",
+  "clis": {
+    "claude": { "package": "@anthropic-ai/claude-code", "native_launcher": "~/.local/bin/claude" },
+    "codex":  { "package": "@openai/codex" },
+    "grok":   { "native_launcher": "~/.grok/bin/grok" }
+  },
+  "models": {
+    "claude-fable-5-1": { "cli": "claude", "min": "2.1.251" },
+    "claude-opus-5-5":  { "cli": "claude", "min": "2.1.280" },
+    "gpt-6-astra":      { "cli": "codex",  "min": "0.155.1" },
+    "grok-4.6":         { "cli": "grok",   "min": "1.0.40" },
+    "grok-4.7":         { "cli": "grok",   "min": "1.0.40" }
+  },
+  "fleet_defaults": ["claude-fable-5-1", "gpt-6-astra", "grok-4.6"]
+}

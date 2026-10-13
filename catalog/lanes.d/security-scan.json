@@ -1,0 +1,25 @@
+{
+  "id": "security-scan",
+  "name": "Security scan",
+  "scope": "project",
+  "script": "bin/security-scan.sh",
+  "cadence": "0 10 * * 0; 0 14 * * 0; 0 8 * * 0",
+  "boxes": [
+    "project-4",
+    "project-1",
+    "project-2"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-security-scan",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/security-scan.log"
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "id": "testhost-tick",
+  "name": "Shared Fly test host (on-demand start, idle stop)",
+  "scope": "hub",
+  "script": "bin/testhost-tick.sh",
+  "cadence": "*/5 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-testhost-tick",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "TESTHOST_APP",
+      "type": "string",
+      "default": "bh-testhost-example-org",
+      "unit": null,
+      "zero_means": null,
+      "note": "The Fly app holding the shared test host (org board-builders). bin/remote-gate.sh reads the same name, so changing it here without changing it for the gate's callers points the tick at one host and the runs at another. Registered so it is visible; NOT settable from the control plane (BH-1291) — bin/testhost-tick.sh hands it to flyctl machine stop/start and flyctl ssh console as -a \"$APP\" under the box's own Fly credential, so a settings row could re-aim that credential at any app the token reaches; only env/global.env on the box moves it.",
+      "settable": false
+    },
+    {
+      "env": "TESTHOST_IDLE_STOP_MIN",
+      "type": "int",
+      "default": 30,
+      "min": 25,
+      "max": 240,
+      "unit": "minutes",
+      "zero_means": null,
+      "note": "Minutes since testhost.last_used before the tick considers stopping the machine (the live busy probe still has to agree). The floor is 25 because last_used is stamped when a run STARTS and REMOTE_GATE_SUITE_TIMEOUT lets one suite run for 25 minutes — a shorter window would put the host inside the stop window while a single suite is still going."
+    },
+    {
+      "env": "TESTHOST_BUSY_WINDOW_MIN",
+      "type": "int",
+      "default": 120,
+      "min": 10,
+      "max": 1440,
+      "unit": "minutes",
+      "zero_means": null,
+      "note": "How recent a run root under /srv/tmp, /srv/tmp/runs or /srv/runs must be to count as live work in the busy probe. Too small and an interrupted run's leftovers stop counting while its work is still going; too large and a tree nothing cleaned up blocks the idle stop for ever."
+    },
+    {
+      "env": "TESTHOST_SIZE",
+      "type": "string",
+      "default": "performance-16x",
+      "unit": null,
+      "zero_means": null,
+      "note": "The size this lane expects the machine to be. The tick only REPORTS a mismatch (logs/testhost-tick.log) — resizing a machine other agents are connected to is not a decision a */5 cron gets to make."
+    },
+    {
+      "env": "CI_RUNNERS_ALERT_HOLD_MIN",
+      "type": "int",
+      "default": 10,
+      "min": 0,
+      "max": 120,
+      "unit": "minutes",
+      "zero_means": "off",
+      "note": "Minutes the bh-ci pool must read rc 1 (nothing online) or rc 2 (unreadable) continuously before this tick alerts. Ephemeral runners consume their registration per job and re-register, so a single read taken while a run is landing shows a chunk of the pool offline — that is churn, not an outage. 0 turns the pool check off entirely, and the floor is 0 rather than 5 so a settings row saying 0 is not clamped back into an alert."
+    },
+    {
+      "env": "TESTHOST_DISK_ALERT_PCT",
+      "type": "int",
+      "default": 85,
+      "min": 0,
+      "max": 99,
+      "unit": "percent",
+      "zero_means": "off",
+      "required": true,
+      "note": "BH-1597. Every tick probes EVERY started machine in TESTHOST_APP with one df over flyctl ssh console, logs its root and /srv/tmp use, and raises testhost-disk-<machine name> (warn, bin/lane-alert.sh) when its ROOT disk is above this percent; the condition resolves once the machine is back at or under it. The roots are 7.8 GB overlays and testhost-2 went from 74% to 87% in minutes with thirteen runs live. 0 turns the alert off (the log line stays). Same 85% idea as #1123's fleet disk guard."
+    },
+    {
+      "env": "CI_RUNNERS_SLUG",
+      "type": "string",
+      "default": "example-org/cromford",
+      "unit": null,
+      "zero_means": null,
+      "note": "The repo whose bh-ci runner pool the tick checks. bin/ci-runners-status.sh reads it (its own default is this value) when the tick runs it as a child, and BH-2633's runners snapshot uses it as the repo of the {unreadable:true} ci_health row when the read fails with no body to name one. Registered so it is visible; NOT settable from the control plane: only env/global.env on the box moves it, the same as the status script it is handed to.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/testhost-tick.log"
+  }
+}

@@ -1,0 +1,3 @@
+POST /api/merge-queue
+GET /api/merge-queue
+PATCH /api/merge-queue

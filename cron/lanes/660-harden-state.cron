@@ -1,0 +1,3 @@
+
+# harden-state re-arm (operator line, outside managed blocks; BH-390): chattr +i on env/ssh, +a on the ledgers, so a file a writer released never stays writable. flock-serialised; the redirect keeps the tick silent.
+*/10 * * * * /root/harness/bin/harden-state.sh >/dev/null 2>&1 # BH-390: re-arm chattr +i env/ssh, +a ledgers, a released file never stays writable

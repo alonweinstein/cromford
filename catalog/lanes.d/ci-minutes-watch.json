@@ -1,0 +1,65 @@
+{
+  "id": "ci-minutes-watch",
+  "name": "CI minutes watch",
+  "scope": "hub",
+  "script": "bin/ci-minutes-watch.sh",
+  "cadence": "23 */6 * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-ci-minutes-watch",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "CI_MINUTES_DAY_MAX",
+      "type": "int",
+      "default": 25000,
+      "min": 0,
+      "zero_means": "off",
+      "note": "K1 (2026-09-24): estimated billed CI job-minutes over the last 24h (runner labels matching CI_MINUTES_RUNNER_MATCH) above this is ONE critical page a day (ci-minutes:fleet, bin/lib/page-critical.sh). MonkCI was billing ~120K/day when this was written; Default 25K (review); the operator decides the line. 0 = measure and log only. docs/CI-RUNNERS.md."
+    },
+    {
+      "env": "CI_MINUTES_MAX_PAGES",
+      "type": "int",
+      "default": 3,
+      "min": 1,
+      "max": 10,
+      "zero_means": null,
+      "note": "K1: at most this many 100-run pages of actions/runs per repo per tick. When they hold fewer runs than the endpoint's total_count, the estimate is extrapolated by total_count / runs read. The GitHub read budget per tick is repos x (this + CI_MINUTES_SAMPLE_RUNS)."
+    },
+    {
+      "env": "CI_MINUTES_SAMPLE_RUNS",
+      "type": "int",
+      "default": 10,
+      "min": 0,
+      "max": 20,
+      "zero_means": null,
+      "note": "K1: runs per repo whose jobs are read to measure each workflow's billed-job-minutes / wall-minutes ratio (runs sorted by workflow, spread evenly). 0 reads no jobs and estimates 0."
+    },
+    {
+      "env": "CI_MINUTES_BILL_MULT",
+      "type": "number",
+      "default": 2,
+      "min": 1,
+      "zero_means": null,
+      "note": "K1: billed minutes per rounded job-minute; decimals allowed. MonkCI bills its 4-vCPU runner at 2x (docs/CI-RUNNERS.md, the trial arithmetic); set 1 for a 1x runner."
+    },
+    {
+      "env": "CI_MINUTES_RUNNER_MATCH",
+      "type": "string",
+      "default": "monkci",
+      "zero_means": null,
+      "note": "K1: a job is billed when one of its runner labels (or its runner name) contains this text, case-insensitive. monkci = the MonkCI hosted fleet (CI_RUNNER \"monkci-ubuntu-24.04-4\", docs/CI-RUNNERS.md)."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/ci-minutes-watch.log"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "id": "merge-conductor-backstop",
+  "name": "Merge conductor keyed backstop",
+  "scope": "hub",
+  "factory_stop": "merge",
+  "script": "bin/merge-conductor-backstop.sh",
+  "cadence": "*/5 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-merge-conductor-backstop",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "MC_BACKSTOP_MAX_KEYS",
+      "type": "int",
+      "default": 6,
+      "min": 0,
+      "max": 200,
+      "unit": "PRs",
+      "zero_means": "unlimited",
+      "note": "PRs (WAIT_CI or READY, approved on their head) one backstop fire hands to the keyed conductor run: the keys the last fire deferred first, then the harness's own repo, then the oldest. The rest are logged as deferred and the next fire takes them first (state/merge-conductor/backstop-carry). The run also starts a PR worker only while 15 s or more are left before its worker cap (MC_BACKSTOP_TIMEOUT_S minus 45 s), and hands the rest to the next fire the same way, so a fire never takes more than it can finish. 6 fits one 240-290 s window (14 keys died at 290 s on 2026-10-08). 0 is no cap. Row: lane.merge-conductor-backstop.mc_backstop_max_keys"
+    },
+    {
+      "env": "MC_BACKSTOP_TIMEOUT_S",
+      "type": "int",
+      "default": 240,
+      "min": 60,
+      "max": 290,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "timeout on the keyed conductor run, which must end before the next */5 fire. Each PR worker of that run is capped at this minus 45 s, never under 30 s (BH-4918), so a slow PR is killed alone before the timeout kills the whole run. A non-number falls back to 240. Row: lane.merge-conductor-backstop.mc_backstop_timeout_s"
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/merge-conductor-backstop.log"
+  }
+}

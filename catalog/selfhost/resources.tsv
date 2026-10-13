@@ -1,0 +1,38 @@
+# catalog/selfhost/resources.tsv — BH-4081: every resource a self-host install
+# creates in the operator's OWN accounts. Read by bin/selfhost-install.sh, which
+# prints the plan from it (dry-run). Apply is not built yet (slice C0).
+#
+# Columns, TAB-separated, '#' lines and blank lines ignored:
+#   id        unique row id; named on SECRET needed-by= lines
+#   provider  cloudflare | fly | vm | github | model | chat
+#   kind      what the provider calls it (d1, worker, kv, r2, pages, app, ...)
+#   name      the resource name. ${KEY} expands from the install settings
+#             (env-templates/selfhost.conf.example), ${project} from each
+#             SELFHOST_PROJECTS entry. A fixed name is literal because the
+#             code addresses the resource by it (harness-jobs, harness-locks).
+#   from      the setting the name comes from, or 'fixed'
+#   when      comma list of terms that must ALL hold: always, hub=fly, hub=vm,
+#             pool=fly, pool=local, gh=app, gh=pat, model=oauth, model=api-key,
+#             chat=telegram, chat=slack, per-project (one row per project)
+#   secrets   comma list of secret NAMES (never values) the resource needs at
+#             apply, or '-'
+#   note      one line for the reader
+cf-d1-jobs	cloudflare	d1	harness-jobs	fixed	always	CLOUDFLARE_API_TOKEN	The jobs ledger D1 (worker/jobs/schema.sql).
+cf-d1-locks	cloudflare	d1	harness-locks	fixed	always	CLOUDFLARE_API_TOKEN	The locks D1 (locks-worker/schema.sql).
+cf-worker-jobs	cloudflare	worker	harness-jobs	fixed	always	CLOUDFLARE_API_TOKEN,HARNESS_SECRET,GITHUB_WEBHOOK_SECRET	The jobs worker, served on harness-jobs.<HARNESS_WORKERS_SUBDOMAIN>.workers.dev.
+cf-worker-locks	cloudflare	worker	harness-locks	fixed	always	CLOUDFLARE_API_TOKEN,HARNESS_TOKENS,ADMIN_TOKEN	The locks worker.
+cf-worker-watchdog	cloudflare	worker	harness-watchdog	fixed	always	CLOUDFLARE_API_TOKEN,HARNESS_SECRET,STAMP_SECRET	The outside dead-man watchdog worker.
+cf-kv-watchdog	cloudflare	kv	harness-watchdog	fixed	always	CLOUDFLARE_API_TOKEN	The watchdog's KV namespace.
+cf-r2-backup	cloudflare	r2	${BACKUP_S3_BUCKET}	BACKUP_S3_BUCKET	always	CLOUDFLARE_API_TOKEN,BACKUP_S3_ACCESS_KEY_ID,BACKUP_S3_SECRET_ACCESS_KEY	The off-box state backup bucket (bin/state-backup.sh).
+cf-pages-console	cloudflare	pages	${CONSOLE_PAGES_PROJECT}	CONSOLE_PAGES_PROJECT	always	CLOUDFLARE_API_TOKEN	The console (bin/console-pages-deploy.sh).
+fly-hub-app	fly	app	${HARNESS_HUB_BOX}	HARNESS_HUB_BOX	hub=fly	FLY_API_TOKEN	The hub as a Fly app in FLY_ORG.
+fly-hub-volume	fly	volume	${HARNESS_HUB_BOX}/hub_data	HARNESS_HUB_BOX	hub=fly	FLY_API_TOKEN	The hub's persistent volume (repos, state, logs).
+vm-hub-host	vm	host	${SELFHOST_HUB_HOST}	SELFHOST_HUB_HOST	hub=vm	-	A VM the operator already has, bootstrapped as the hub.
+fly-pool-app	fly	app	builder-${project}	SELFHOST_PROJECTS	pool=fly,per-project	FLY_API_TOKEN	One build-pool app per project (bin/fly-provision.sh naming).
+fly-pool-volume	fly	volume	builder-${project}/builder_data	SELFHOST_PROJECTS	pool=fly,per-project	FLY_API_TOKEN	The build-pool app's volume.
+gh-app	github	app-installation	${HARNESS_GH_OWNER}	HARNESS_GH_OWNER	gh=app	GH_APP_ID,GH_APP_PRIVATE_KEY_FILE	A GitHub App installed on the owner (env-templates/github-app.env.example).
+gh-pat	github	pat	${HARNESS_GH_OWNER}	HARNESS_GH_OWNER	gh=pat	GH_TOKEN	A personal access token with repo access on the owner.
+model-oauth	model	oauth-token	claude-code	fixed	model=oauth	CLAUDE_CODE_OAUTH_TOKEN	Claude Code subscription auth.
+model-api-key	model	api-key	anthropic	fixed	model=api-key	ANTHROPIC_API_KEY	Anthropic API key auth.
+chat-telegram	chat	telegram-bot	telegram	fixed	chat=telegram	TELEGRAM_BOT_TOKEN,TELEGRAM_CHAT_ID	Optional alerts to Telegram.
+chat-slack	chat	slack-bot	slack	fixed	chat=slack	SLACK_BOT_TOKEN	Optional alerts to Slack.

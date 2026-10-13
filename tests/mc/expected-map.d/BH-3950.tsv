@@ -1,0 +1,7 @@
+# tests/mc/expected-map.d/BH-3950.tsv — BH-3950: the stacked-orphan NONE arm. A child
+# whose parent never had a PR (or closed unmerged) is retargeted to the project base
+# and owes a head-bound re-review; origin=lib, new functions.
+rebase	mc_branch_exists	lib
+rebase	mc_stack_parent_key	lib
+rebase	mc_parent_pr_open	lib
+rebase	stack_orphan_retarget	lib

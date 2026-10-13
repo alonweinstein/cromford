@@ -1,0 +1,1 @@
+{"name":"plan-overlap-off","readers":["bin/plan-overlap.sh","bin/lib/rb/gates.sh"],"box_scoped":true,"what":"turns off the plan-overlap file-claim check, so a build is never deferred for overlapping a sibling's files (bin/lib/rb/gates.sh still reads only the file)"}

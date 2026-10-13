@@ -1,0 +1,1 @@
+Exempt by BH-3891 (part 4 of BH-3886, the operator's ticket). A sourced lib with no identity of its own: bin/main-red-detector.sh arms the repo's gh identity before the per-repo loop that calls it, so arming again here would be a second, divergent identity for the same tick. Full reason: the gh-identity line at the top of bin/lib/main-red-queue-dispatch.sh.

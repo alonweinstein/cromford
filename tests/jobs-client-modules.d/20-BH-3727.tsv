@@ -1,0 +1,4 @@
+# tests/jobs-client-modules.d/20-BH-3727.tsv — the private helpers of the real dqw_* bodies (BH-3727, BH-3719.1).
+dequeue-watch	_dqw_in
+dequeue-watch	_dqw_query
+dequeue-watch	_dqw_shape

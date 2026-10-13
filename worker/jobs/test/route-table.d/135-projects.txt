@@ -1,0 +1,3 @@
+# BH-4082: the console Projects form's registry (src/routes/projects.js).
+GET /api/projects
+PUT /api/projects

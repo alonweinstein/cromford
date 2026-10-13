@@ -1,0 +1,10 @@
+# @hub-lanes
+
+# ── ROUTE SHADOW REPORT (P4, 2026-09-25) ─────────────────────────────────────
+# Daily at 06:15Z: what the plan-driven route rules WOULD have done over the
+# last 24h of builds — how many would have left the live execute model, to
+# which role, per project and per rule — from the route_shadow rows every build
+# writes (bin/lib/route-rules.sh). Read-only; one fleet-topic message; an
+# unreadable worker is n/a, never "0 builds". docs/ROUTE-RULES.md.
+# Kill: flags/lane-off-route-shadow-report, or bin/harness-ctl.sh off route-shadow-report.
+15 6 * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/route-shadow-report.sh >/dev/null 2>&1

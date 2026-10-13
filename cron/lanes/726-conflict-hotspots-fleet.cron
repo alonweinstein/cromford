@@ -1,0 +1,1 @@
+23 3 * * 0 /root/harness/bin/conflict-hotspots-fleet.sh >> /root/harness/logs/conflict-hotspots.log 2>&1 # weekly, Sun 03:23Z: measure which files conflict or get rebased most in each project this box owns (bin/conflict-hotspots.sh against /root/repos/<project>) and PUT the rows to /api/conflict-hotspots for Mission Control (BH-5267)

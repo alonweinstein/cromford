@@ -1,0 +1,1 @@
+{"name":"gate-self-absorb-off","readers":["bin/lib/gate-self-comments.sh"],"box_scoped":true,"what":"turns off gate-self comment absorption, so the triage gate reads nothing, keeps no memo and wakes on every bump, as before it"}

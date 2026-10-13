@@ -1,0 +1,1 @@
+board brd_ia31: CHANGED 7430 "Drop the theme picker from onboarding" (comments: 1 -> 2; verdict: null -> needs_clarification; waitingOn: team -> client; activity)

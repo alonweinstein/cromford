@@ -1,0 +1,2 @@
+# @hub-lanes
+13 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/rules-drift-check.sh >/dev/null 2>&1 # every box's CLAUDE.md/RTK.md/settings.json still == the repo? drift alerts, never heals

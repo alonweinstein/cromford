@@ -1,0 +1,21 @@
+{
+  "libs": [
+    {
+      "id": "gh-pr-merge",
+      "file": "bin/lib/gh-pr-merge.sh",
+      "note": "BH-1940. The REST merge ladder's kill switch. Resolved by _gpm_knobs through lib_env_apply in a subshell, once per env value per process.",
+      "knobs": [
+        {
+          "env": "PR_MERGE_REST",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 1,
+          "zero_means": "off",
+          "required": true,
+          "note": "1 merges over the REST ladder (gh_pr_merge_rest). 0 turns the ladder off and every caller runs its own gh pr merge line, as before BH-892; flags/pr-merge-rest-off does the same. Read by bin/lib/gh-pr-merge.sh with no literal since BH-1940; was ${PR_MERGE_REST:-1}. If nothing resolves it the ladder stays on."
+        }
+      ]
+    }
+  ]
+}

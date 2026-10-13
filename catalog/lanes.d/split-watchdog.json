@@ -1,0 +1,114 @@
+{
+  "id": "split-watchdog",
+  "name": "Split-family watchdog",
+  "scope": "hub",
+  "script": "bin/split-watchdog.sh",
+  "cadence": "*/10 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-split-watchdog",
+    "aliases": []
+  },
+  "wired": true,
+  "per_project_hold": true,
+  "knobs": [
+    {
+      "env": "SPLIT_WATCHDOG_PROJECTS",
+      "type": "string",
+      "default": "",
+      "zero_means": "off",
+      "note": "BH-1793: the projects the lane walks, space or comma separated. Empty (the default) means the lane walks nothing and only writes its summary line. Read by bin/split-watchdog.sh as ${SPLIT_WATCHDOG_PROJECTS:-}. Settable from the console (the operator 2026-09-29): the value is only a FILTER over the fleet's own $PROJECTS (each name must also pass fleet-conf.sh), never a host, path or command, so a row can switch the watchdog on or off per existing project and nothing else; tests/lanes-registry-test.sh 17a lists it as a reviewed exception.",
+      "settable": true
+    },
+    {
+      "env": "SPLIT_WATCHDOG_N_MIN",
+      "type": "int",
+      "default": 10,
+      "min": 1,
+      "max": 1440,
+      "unit": "minutes",
+      "zero_means": null,
+      "note": "BH-1793: how long a family must sit in a state before the decider acts on it. Passed to sw_next_step. Read by bin/split-watchdog.sh as ${SPLIT_WATCHDOG_N_MIN:-10}."
+    },
+    {
+      "env": "SPLIT_WATCHDOG_RETRY_M_MIN",
+      "type": "int",
+      "default": 30,
+      "min": 1,
+      "max": 1440,
+      "unit": "minutes",
+      "zero_means": null,
+      "note": "BH-1793: how long after a failed queue row finished before the decider re-enqueues it. Passed to sw_next_step. Read by bin/split-watchdog.sh as ${SPLIT_WATCHDOG_RETRY_M_MIN:-30}."
+    },
+    {
+      "env": "SPLIT_WATCHDOG_TICK_CAP",
+      "type": "int",
+      "default": 5,
+      "min": 0,
+      "max": 100,
+      "zero_means": "off",
+      "note": "BH-1793: decisions (acted + skipped) per tick across all projects; a due family past it counts deferred. Read at lane level by bin/split-watchdog.sh as ${SPLIT_WATCHDOG_TICK_CAP:-5}. 0 means no decision is acted on and every due family counts deferred."
+    },
+    {
+      "env": "SPLIT_WATCHDOG_FAMILY_DAY_CAP",
+      "type": "int",
+      "default": 4,
+      "min": 0,
+      "max": 100,
+      "zero_means": "off",
+      "note": "BH-1793: acted steps per family per UTC day. Read by sw_act (bin/lib/split-watchdog-act.sh, BH-1809) as ${SPLIT_WATCHDOG_FAMILY_DAY_CAP:-4}; the lane only exports it through lane_env_apply. 0 means no action on any family.",
+      "read_in": "bin/lib/split-watchdog-act.sh"
+    },
+    {
+      "env": "SPLIT_WATCHDOG_STALL_K",
+      "type": "int",
+      "default": 3,
+      "min": 1,
+      "max": 100,
+      "zero_means": null,
+      "note": "BH-1793: repeats of the same step for the same child before sw_act reports stalled. Read by sw_act (bin/lib/split-watchdog-act.sh, BH-1809) as ${SPLIT_WATCHDOG_STALL_K:-3}; the lane only exports it through lane_env_apply.",
+      "read_in": "bin/lib/split-watchdog-act.sh"
+    },
+    {
+      "env": "SPLIT_WATCHDOG_MAX_FAMILIES",
+      "type": "int",
+      "default": 25,
+      "min": 1,
+      "max": 500,
+      "zero_means": null,
+      "note": "BH-1793: open families examined per project per tick, in ascending parent id; the rest count deferred. Read by bin/split-watchdog.sh as ${SPLIT_WATCHDOG_MAX_FAMILIES:-25}."
+    },
+    {
+      "env": "SPLIT_WATCHDOG_RETRY_REASONS",
+      "type": "string",
+      "default": "plan session produced no output|PLAN_STALE",
+      "zero_means": null,
+      "note": "BH-1793: the ERE of failed-queue reasons the decider may re-enqueue (jobs-watchdog's BUILD_DEFERRED/REFUSED class stays excluded). Passed to sw_next_step. Read by bin/split-watchdog.sh as ${SPLIT_WATCHDOG_RETRY_REASONS:-plan session produced no output|PLAN_STALE}."
+    },
+    {
+      "env": "SPLIT_WATCHDOG_FIXTURE",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Test seam: a file bin/split-watchdog.sh sources after the contract libs, only when HARNESS_TEST_SANDBOX=1 (tests/split-watchdog-lane.bh-1793-test.sh). NOT settable from the control plane: it names a file a root lane sources.",
+      "settable": false
+    },
+    {
+      "env": "HARNESS_TEST_SANDBOX",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Test seam gate: bin/split-watchdog.sh sources SPLIT_WATCHDOG_FIXTURE only when this is 1 (the test harness sets it). Never set on a box, and NOT settable from the control plane.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/split-watchdog.log"
+  }
+}

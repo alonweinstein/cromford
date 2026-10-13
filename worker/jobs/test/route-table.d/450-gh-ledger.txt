@@ -1,0 +1,4 @@
+# BH-1574: the fleet GitHub-call ledger, directly under the budget it
+# explains (src/index.js ROUTES: ...ghBudget, ...ghLedger, ...artifacts).
+POST /api/metrics/gh-ledger
+GET /api/metrics/gh-ledger

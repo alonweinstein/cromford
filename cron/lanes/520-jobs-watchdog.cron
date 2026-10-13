@@ -1,0 +1,7 @@
+24,54 * * * * /root/harness/bin/jobs-watchdog.sh --resume >> /root/harness/logs/resume-dead.log 2>&1
+# @box hub
+# @hub-lanes
+*/5 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/jobs-watchdog.sh >/dev/null 2>&1 # phase 3: claimed jobs that stopped heartbeating -> orphaned row + ONE alert
+# @box project-10
+# watchdog ping removed 2026-08-25 — box stopped by the operator; restore the fleet-standard ping line (and the BOXES entry in worker/watchdog/src/index.js) on boot
+24,54 * * * * /root/harness/bin/jobs-watchdog.sh --resume >> /root/harness/logs/resume-dead.log 2>&1

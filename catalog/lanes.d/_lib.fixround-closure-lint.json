@@ -1,0 +1,22 @@
+{
+  "libs": [
+    {
+      "id": "fixround-closure-lint",
+      "file": "bin/lib/fixround-closure-lint.sh",
+      "note": "BH-5064: bin/blocked-resolver.sh fix rounds run the scratch-closure rules-pack component (bin/rules-pack.sh --only scratch-closure) before the agent (its findings join the brief) and after it (red = not pushed). Read through lane_knob in libs scope by frcl_on; tests/fixround-closure-lint.bh-5064-test.sh drives it.",
+      "knobs": [
+        {
+          "env": "FIXROUND_CLOSURE_LINT",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 1,
+          "unit": "flag",
+          "zero_means": "off",
+          "required": false,
+          "note": "1 = a fix round whose worktree is red on the scratch-closure lint is not pushed, and the lint's findings are in the round's brief. 0 = off: fix rounds push on typecheck + unit alone, as before BH-5064. Any other answer is this default. Read by bin/lib/fixround-closure-lint.sh with no literal."
+        }
+      ]
+    }
+  ]
+}

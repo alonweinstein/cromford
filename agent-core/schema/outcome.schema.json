@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/example-org/cromford/agent-core/schema/outcome.schema.json",
+  "title": "Outcome",
+  "description": "A human verdict on one agent call. nextLevel and precision read a list of these.",
+  "type": "object",
+  "required": [
+    "agent",
+    "class",
+    "verdict",
+    "at"
+  ],
+  "properties": {
+    "agent": {
+      "type": "string",
+      "minLength": 1
+    },
+    "class": {
+      "type": "string",
+      "minLength": 1
+    },
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "agree",
+        "overrule",
+        "delegate"
+      ]
+    },
+    "at": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "additionalProperties": false
+}

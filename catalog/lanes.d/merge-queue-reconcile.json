@@ -1,0 +1,64 @@
+{
+  "id": "merge-queue-reconcile",
+  "name": "Merge-queue reconciler",
+  "scope": "hub",
+  "script": "bin/merge-queue-reconcile.sh",
+  "cadence": "*/2 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-merge-queue-reconcile",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "MERGIFY_API_TOKEN",
+      "type": "string",
+      "default": "",
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/merge-queue-reconcile.sh",
+      "note": "BH-5670: the Mergify application key the lane reads merge-queue/status with. Lives in env/global.env on the hub only. Unset or not token-shaped = the lane logs not-configured and sends nothing. A credential: NOT settable from the control plane.",
+      "settable": false
+    },
+    {
+      "env": "MERGIFY_API_URL",
+      "type": "string",
+      "default": "",
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/merge-queue-reconcile.sh",
+      "note": "BH-5670: the Mergify API base. Empty = https://api.mergify.com/v1, the documented fallback in the script. A host the token is sent to: NOT settable from the control plane.",
+      "settable": false
+    },
+    {
+      "env": "MQR_NOW",
+      "type": "string",
+      "default": "",
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/merge-queue-reconcile.sh",
+      "note": "Test seam: epoch seconds that replace the rotation clock. Honoured only under HARNESS_TEST_SANDBOX=1 and only when it is all digits. NOT settable from the control plane.",
+      "settable": false
+    },
+    {
+      "env": "HARNESS_TEST_SANDBOX",
+      "type": "string",
+      "default": "",
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/merge-queue-reconcile.sh",
+      "note": "Test seam gate: bin/merge-queue-reconcile.sh honours MQR_NOW only when this is 1 (the test harness sets it). Never set on a box, and NOT settable from the control plane.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/merge-queue-reconcile.log"
+  }
+}

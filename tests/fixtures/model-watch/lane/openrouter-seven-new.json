@@ -1,0 +1,127 @@
+{
+  "data": [
+    {
+      "id": "anthropic/claude-lyra-5.5",
+      "name": "Anthropic: Claude Lyra 5.5",
+      "created": 1767225600,
+      "context_length": 200000,
+      "pricing": {
+        "prompt": "0.000003",
+        "completion": "0.000015"
+      }
+    },
+    {
+      "id": "anthropic/claude-opus-5.5:free",
+      "name": "Anthropic: Claude Opus 5.5 (free)",
+      "created": 1767225600,
+      "pricing": {
+        "prompt": "0",
+        "completion": "0"
+      }
+    },
+    {
+      "id": "Anthropic/Claude-Vega-3",
+      "name": "Anthropic: Claude Vega 3",
+      "created": 1767225600,
+      "pricing": {
+        "prompt": "0.000001",
+        "completion": "0.000005"
+      }
+    },
+    {
+      "id": "anthropic/claude-orion-2:beta",
+      "name": "Anthropic: Claude Orion 2",
+      "created": 1767225600,
+      "pricing": {
+        "prompt": "0.000001",
+        "completion": "0.000005"
+      }
+    },
+    {
+      "id": "openai/gpt-zeta-9",
+      "name": "OpenAI: GPT Zeta 9",
+      "created": 1767225600,
+      "pricing": {
+        "prompt": "0.000001",
+        "completion": "0.000004"
+      }
+    },
+    {
+      "id": "anthropic/claude-lyra-5.7",
+      "name": "Anthropic: Claude Lyra 5.7",
+      "created": 1790208000,
+      "context_length": 400000,
+      "pricing": {
+        "prompt": "0.000002",
+        "completion": "0.00001",
+        "input_cache_read": "0.0000002"
+      }
+    },
+    {
+      "id": "anthropic/claude-lyra-5.8",
+      "name": "Anthropic: Claude Lyra 5.8",
+      "created": 1790208001,
+      "context_length": 400000,
+      "pricing": {
+        "prompt": "0.000002",
+        "completion": "0.00001",
+        "input_cache_read": "0.0000002"
+      }
+    },
+    {
+      "id": "anthropic/claude-lyra-5.9",
+      "name": "Anthropic: Claude Lyra 5.9",
+      "created": 1790208002,
+      "context_length": 400000,
+      "pricing": {
+        "prompt": "0.000002",
+        "completion": "0.00001",
+        "input_cache_read": "0.0000002"
+      }
+    },
+    {
+      "id": "anthropic/claude-lyra-5.10",
+      "name": "Anthropic: Claude Lyra 5.10",
+      "created": 1790208003,
+      "context_length": 400000,
+      "pricing": {
+        "prompt": "0.000002",
+        "completion": "0.00001",
+        "input_cache_read": "0.0000002"
+      }
+    },
+    {
+      "id": "anthropic/claude-lyra-5.11",
+      "name": "Anthropic: Claude Lyra 5.11",
+      "created": 1790208004,
+      "context_length": 400000,
+      "pricing": {
+        "prompt": "0.000002",
+        "completion": "0.00001",
+        "input_cache_read": "0.0000002"
+      }
+    },
+    {
+      "id": "anthropic/claude-lyra-5.12",
+      "name": "Anthropic: Claude Lyra 5.12",
+      "created": 1790208005,
+      "context_length": 400000,
+      "pricing": {
+        "prompt": "0.000002",
+        "completion": "0.00001",
+        "input_cache_read": "0.0000002"
+      }
+    },
+    {
+      "id": "anthropic/claude-lyra-5.13",
+      "name": "Anthropic: Claude Lyra 5.13",
+      "created": 1790208006,
+      "context_length": 400000,
+      "pricing": {
+        "prompt": "0.000002",
+        "completion": "0.00001",
+        "input_cache_read": "0.0000002"
+      }
+    }
+  ]
+}

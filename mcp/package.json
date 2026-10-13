@@ -1,0 +1,12 @@
+{
+  "name": "cromford-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "cromford-mcp": "server.mjs"
+  },
+  "scripts": {
+    "test": "node --test 'test/*.test.mjs'"
+  }
+}

@@ -1,0 +1,2 @@
+The ask looks obvious, but triage asked how the rep sets the discount once the toggle is gone and the client hasn't answered. Comment 1 is still the latest turn.
+VERDICT: waiting-on-client

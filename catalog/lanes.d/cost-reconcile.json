@@ -1,0 +1,128 @@
+{
+  "id": "cost-reconcile",
+  "name": "Cost reconcile",
+  "scope": "hub",
+  "script": "bin/cost-reconcile.sh",
+  "cadence": "50 * * * *; 50 4 * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-cost-reconcile",
+    "aliases": [
+      {
+        "name": "cost-reconcile-off",
+        "off_when": "present"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "COST_ACCOUNTS_FILE",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it ($H/catalog/cost-accounts.json). Read by bin/cost-reconcile.sh as ${COST_ACCOUNTS_FILE:-$H/catalog/cost-accounts.json}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "OPENROUTER_RECONCILE_KEYS",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/cost-reconcile.sh as ${OPENROUTER_RECONCILE_KEYS:-}. Registered by BH-3983 so it is visible and settable; a comma-separated list of OpenRouter key NAMES (never secrets) the daily OpenRouter reconcile compares; empty compares the whole account; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "RECONCILE",
+      "type": "int",
+      "default": 1,
+      "zero_means": null,
+      "note": "Read by bin/cost-reconcile.sh as ${RECONCILE:-1}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "RECONCILE_BLANK_ROWS_MAX",
+      "type": "int",
+      "default": 20,
+      "zero_means": null,
+      "note": "Read by bin/cost-reconcile.sh as ${RECONCILE_BLANK_ROWS_MAX:-20}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "RECONCILE_GAP_PCT",
+      "type": "int",
+      "default": 10,
+      "zero_means": null,
+      "note": "Read by bin/cost-reconcile.sh as ${RECONCILE_GAP_PCT:-10}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "RECONCILE_JOBS_LIMIT",
+      "type": "int",
+      "default": 500,
+      "zero_means": null,
+      "note": "Read by bin/cost-reconcile.sh as ${RECONCILE_JOBS_LIMIT:-500}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "RECONCILE_MAX_PAGES",
+      "type": "int",
+      "default": 10,
+      "zero_means": null,
+      "note": "Read by bin/cost-reconcile.sh as ${RECONCILE_MAX_PAGES:-10}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "RECONCILE_MIN_METER_USD",
+      "type": "int",
+      "default": 1,
+      "zero_means": null,
+      "note": "Read by bin/cost-reconcile.sh as ${RECONCILE_MIN_METER_USD:-1}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "RECONCILE_MIN_SPAN_MIN",
+      "type": "int",
+      "default": 30,
+      "zero_means": null,
+      "note": "Read by bin/cost-reconcile.sh as ${RECONCILE_MIN_SPAN_MIN:-30}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "RECONCILE_OR",
+      "type": "int",
+      "default": 1,
+      "zero_means": "off",
+      "note": "Read by bin/cost-reconcile.sh as ${RECONCILE_OR:-1}. Registered by BH-3983 so it is visible and settable; 0 turns the daily OpenRouter reconcile off; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "RECONCILE_OR_GAP_PCT",
+      "type": "int",
+      "default": 15,
+      "zero_means": null,
+      "note": "Read by bin/cost-reconcile.sh as ${RECONCILE_OR_GAP_PCT:-15}. Registered by BH-3983 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "RECONCILE_OR_MIN_USD",
+      "type": "int",
+      "default": 20,
+      "zero_means": null,
+      "note": "Read by bin/cost-reconcile.sh as ${RECONCILE_OR_MIN_USD:-20}. Registered by BH-3983 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "RECONCILE_PAGE_LIMIT",
+      "type": "int",
+      "default": 2000,
+      "zero_means": null,
+      "note": "Read by bin/cost-reconcile.sh as ${RECONCILE_PAGE_LIMIT:-2000}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "RECONCILE_WINDOW",
+      "type": "string",
+      "default": "24h",
+      "zero_means": null,
+      "note": "Read by bin/cost-reconcile.sh as ${RECONCILE_WINDOW:-24h}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/cost-reconcile.log"
+  }
+}

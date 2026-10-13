@@ -1,0 +1,75 @@
+{
+  "id": "served-sha-watch",
+  "name": "Served-sha watch (Vercel prod vs main HEAD)",
+  "scope": "hub",
+  "script": "bin/served-sha-watch.sh",
+  "cadence": "*/5 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-served-sha-watch",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "SERVED_SHA_LAG_MIN",
+      "type": "int",
+      "default": 20,
+      "min": 0,
+      "unit": "minutes",
+      "zero_means": "off",
+      "note": "Read by bin/served-sha-watch.sh as ${SERVED_SHA_LAG_MIN:-20}: a Vercel production domain still serving an older sha than main HEAD this many minutes after HEAD's committer date (or after the tick that first saw HEAD, when the date is missing) is judged alert. 0 turns the lane off before any request; a value that is not a whole number falls back to 20 and the fallback is logged."
+    },
+    {
+      "env": "SERVED_SHA_AUTODEPLOY",
+      "type": "int",
+      "default": 0,
+      "zero_means": "off",
+      "note": "Read by bin/served-sha-watch.sh as ${SERVED_SHA_AUTODEPLOY:-0} and handed to the served-sha-watch.d hooks as SSW_AUTODEPLOY (1 only when the value is exactly 1, else 0). Only 1 turns it on: one Vercel production deploy per stuck sha, the operator-only. BH-4936 reads and passes it and nothing more; the deploy hook is #4938."
+    },
+    {
+      "env": "SERVED_SHA_HTTP_TIMEOUT",
+      "type": "int",
+      "default": 20,
+      "min": 1,
+      "unit": "seconds",
+      "zero_means": null,
+      "read_in": "bin/lib/served-sha-watch.sh",
+      "note": "Read by bin/lib/served-sha-watch.sh's ssw_vapi as ${SERVED_SHA_HTTP_TIMEOUT:-20}: curl --max-time for each Vercel API call. 0 or non-numeric falls back to 20."
+    },
+    {
+      "env": "SERVED_SHA_NOW",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it ($(date -u +%s)). Read by bin/served-sha-watch.sh as ${SERVED_SHA_NOW:-$(date -u +%s)}: the one clock a tick measures HEAD's age and first_seen from. NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "SERVED_SHA_VERCEL_AUTH",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "read_in": "bin/lib/served-sha-watch.sh",
+      "note": "no static default — unset reads the Vercel CLI's /root/.local/share/com.vercel.cli/auth.json, then /root/.vercel/auth.json. Read by bin/lib/served-sha-watch.sh's ssw_vercel_token as ${SERVED_SHA_VERCEL_AUTH:-}: when set, the ONLY auth file whose .token is used. NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "SERVED_SHA_CONF",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it ($H/vercel.conf). Read by bin/served-sha-watch.sh as ${SERVED_SHA_CONF:-$H/vercel.conf}: the `<project> <teamId> <projectId> <domain>` rows the lane checks. NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/served-sha-watch.log"
+  }
+}

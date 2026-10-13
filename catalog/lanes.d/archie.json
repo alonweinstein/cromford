@@ -1,0 +1,277 @@
+{
+  "id": "archie",
+  "name": "Archie initiative checks (one Telegram message per due initiative, or silence)",
+  "scope": "hub",
+  "script": "bin/archie.sh",
+  "cadence": "*/15 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-archie",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "ARCHIE_ENABLED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "zero_means": "off",
+      "note": "BH-4062: 0 stops the tick before any request. Read by bin/archie.sh as ${ARCHIE_ENABLED:-1}; any value other than 0 or 1 is one warn line in logs/archie.log and the default.",
+      "settable": true
+    },
+    {
+      "env": "ARCHIE_MAX_PER_TICK",
+      "type": "int",
+      "default": 3,
+      "min": 1,
+      "max": 20,
+      "zero_means": null,
+      "note": "BH-4062: initiatives checked per tick, at most one model call each. More due than this: the rest stay due for the next tick (logged deferred). Read by bin/archie.sh as ${ARCHIE_MAX_PER_TICK:-3}; outside 1..20 is one warn line and the default.",
+      "settable": true
+    },
+    {
+      "env": "ARCHIE_DEFAULT_CADENCE_H",
+      "type": "int",
+      "default": 24,
+      "min": 1,
+      "max": 2160,
+      "zero_means": null,
+      "note": "BH-4062: hours between checks for an `Archie, track` message that names no `every:`. Read by bin/archie.sh intercept (archie_parse_track in bin/lib/archie.sh) as ${ARCHIE_DEFAULT_CADENCE_H:-24}; outside 1..2160 is one warn line and the default.",
+      "settable": true
+    },
+    {
+      "env": "ARCHIE_MAX_ATTEMPTS",
+      "type": "int",
+      "default": 2,
+      "min": 1,
+      "max": 10,
+      "zero_means": null,
+      "note": "BH-4062: billed model failures on one check before the slot is closed (advanced to the next cadence) with ONE ALERTS line. BH-4609: this covers ordinary billed failures; a slot whose last failure was a budget stop uses ARCHIE_RETRY_MAX instead. Read by bin/archie.sh as ${ARCHIE_MAX_ATTEMPTS:-2}; outside 1..10 is one warn line and the default.",
+      "settable": true
+    },
+    {
+      "env": "ARCHIE_TEXT_MAX_CHARS",
+      "type": "int",
+      "default": 600,
+      "min": 100,
+      "max": 2000,
+      "zero_means": null,
+      "note": "BH-4062: the recommendation line of a beat is cut to this many characters. Read by bin/archie.sh as ${ARCHIE_TEXT_MAX_CHARS:-600}; outside 100..2000 is one warn line and the default.",
+      "settable": true
+    },
+    {
+      "env": "ARCHIE_LLM_MAX_USD",
+      "type": "number",
+      "default": 0.6,
+      "min": 0,
+      "max": 1,
+      "unit": "usd",
+      "zero_means": "off",
+      "note": "BH-4062: USD cap on each check's model call (AGENT_CALL_BUDGET_USD_ARCHIE). 0 makes no model call: escalating rows stay due. BH-4609: the default is 0.60 because an Opus first turn through the claude CLI costs more than $0.10 (Archie's I2 hit a BUDGET STOP on 2026-10-05 and the hub settings row lane.archie.archie_llm_max_usd=0.60 fixed it there). Read by bin/archie.sh as ${ARCHIE_LLM_MAX_USD:-0.60}; not a number is one warn line and the default.",
+      "settable": true
+    },
+    {
+      "env": "ARCHIE_RETRY_MAX",
+      "type": "int",
+      "default": 6,
+      "min": 1,
+      "max": 48,
+      "zero_means": null,
+      "note": "BH-4609: the most billed attempts one check slot may make when its last failure was a budget stop (the call hit ARCHIE_LLM_MAX_USD). At the cap the slot closes to the next cadence with ONE ALERTS line. 1 means no retry. Worst case per slot is this times ARCHIE_LLM_MAX_USD. Read by bin/archie.sh as ${ARCHIE_RETRY_MAX:-6}; outside 1..48 is one warn line and the default.",
+      "settable": true
+    },
+    {
+      "env": "ARCHIE_RETRY_BACKOFF_MIN",
+      "type": "int",
+      "default": 60,
+      "min": 15,
+      "max": 1440,
+      "zero_means": null,
+      "note": "BH-4609: minutes between a budget stop and the next attempt on that check slot. The slot stays open (not advanced) and the tick skips it, before any metric read or spend, until the retry_after stored in the model_failed event's body. Read by bin/archie.sh as ${ARCHIE_RETRY_BACKOFF_MIN:-60}; outside 15..1440 is one warn line and the default.",
+      "settable": true
+    },
+    {
+      "env": "ARCHIE_UNREADABLE_RECHECK_H",
+      "type": "int",
+      "default": 24,
+      "min": 1,
+      "max": 168,
+      "zero_means": null,
+      "note": "BH-4609: hours until an initiative whose metric was unreadable is checked again, capped at its own cadence (a 6h initiative still re-checks every 6h). Each re-check is its own slot, so `unreadable` is recorded once per re-check. Once the metric reads, the next cadence counts from that check, so a weekly grid moves. Read by bin/archie.sh as ${ARCHIE_UNREADABLE_RECHECK_H:-24}; outside 1..168 is one warn line and the default.",
+      "settable": true
+    },
+    {
+      "env": "ARCHIE_DELEGATE_AFTER",
+      "type": "int",
+      "default": 5,
+      "min": 2,
+      "max": 50,
+      "zero_means": null,
+      "note": "BH-4067: agreements in a row on one class of call before Archie's reply offers to handle that class himself, and the least streak `Archie delegate <class>` accepts. Settings row lane.archie.archie_delegate_after (seeded 5 in worker/jobs/schema.sql). Read by bin/archie.sh intercept as ${ARCHIE_DELEGATE_AFTER:-5}; outside 2..50 is one warn line and the default.",
+      "settable": true
+    },
+    {
+      "env": "ARCHIE_BEAT_CAP_DAY",
+      "type": "int",
+      "default": 5,
+      "min": 0,
+      "max": 100,
+      "zero_means": null,
+      "note": "BH-4063: Archie beats sent per UTC day (ledger archie_beatday <day>); past it each beat is held (ledger archie_digest, queued) and the first allowed tick sends all held ones as ONE digest beat, which counts as one. 0 holds every beat and sends one digest a day. Read by bin/lib/archie-wake.sh as ${ARCHIE_BEAT_CAP_DAY:-5}; outside 0..100 is one warn line and the default.",
+      "settable": true,
+      "read_in": "bin/lib/archie-wake.sh"
+    },
+    {
+      "env": "ARCHIE_QUIET_FROM_H",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 23,
+      "zero_means": null,
+      "note": "BH-4063: start of Archie's quiet hours, UTC hour. Beats in from <= hour < to (wrapping midnight when from > to) are held for the digest. Equal from and to (the default 0/0) means no quiet hours. Read by bin/lib/archie-wake.sh as ${ARCHIE_QUIET_FROM_H:-0}; outside 0..23 is one warn line and the default.",
+      "settable": true,
+      "read_in": "bin/lib/archie-wake.sh"
+    },
+    {
+      "env": "ARCHIE_QUIET_TO_H",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 23,
+      "zero_means": null,
+      "note": "BH-4063: end of Archie's quiet hours, UTC hour (exclusive); see ARCHIE_QUIET_FROM_H. Read by bin/lib/archie-wake.sh as ${ARCHIE_QUIET_TO_H:-0}; outside 0..23 is one warn line and the default.",
+      "settable": true,
+      "read_in": "bin/lib/archie-wake.sh"
+    },
+    {
+      "env": "ARCHIE_WAKE_ALERT_SCOPE",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 2,
+      "zero_means": "off",
+      "note": "BH-4063: which logs/ALERTS.log lines wake Archie. 1: only lines naming an initiative's linked ticket (#N or BH-N). 2: every other line too, on the factory-watch initiative. 0: none. DAILY SPEND CAP lines always wake factory-watch. Read by bin/lib/archie-wake.sh as ${ARCHIE_WAKE_ALERT_SCOPE:-1}; outside 0..2 is one warn line and the default.",
+      "settable": true,
+      "read_in": "bin/lib/archie-wake.sh"
+    },
+    {
+      "env": "ARCHIE_TELEGRAM_TARGET",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "BH-4779: the Telegram chat every Archie message goes to (checks, follow-up-woken checks, the held digest, and bin/daily-digest.sh's daily report), shape <chat_id> or <chat_id>/<thread_id> (the thread only on a -100... supergroup). Blank means the operator's DM: the chat lib.lane-alert.lane_alert_dm_chat resolves to. A malformed value is one warn line in logs/archie.log and that default. Read by bin/archie-tg-send.sh through lane_knob.",
+      "settable": true,
+      "read_in": "bin/archie-tg-send.sh"
+    },
+    {
+      "env": "ARCHIE_NO_ACTION_RE",
+      "type": "string",
+      "default": "nothing (here )?for you|nothing (you need |that needs you )?to (do|decide|approve|act on)|nothing (is )?(needed|required) (from|of) you|no action (is )?(needed|required)|(don.{0,3}t|do not) need to do anything|no need for you to",
+      "zero_means": null,
+      "note": "BH-4779: case-insensitive ERE. A check answer whose sentence matches it, and matches neither ARCHIE_ASK_RE nor ARCHIE_NEWS_RE, says nothing is needed from the operator: the slot closes `empty`, no decision row, no message. Read by bin/lib/archie.sh (archie_no_action) as ${ARCHIE_NO_ACTION_RE:-<this default>}.",
+      "settable": true,
+      "read_in": "bin/lib/archie.sh"
+    },
+    {
+      "env": "ARCHIE_ASK_RE",
+      "type": "string",
+      "default": "\\?|\\b(can|could|would|will) you\\b|\\bplease\\b|\\bshould (i|we)\\b|\\bwant me to\\b|\\byour call\\b|\\bup to you\\b|\\blet me know\\b|\\b(approve|drop|change) i[0-9]+|\\bneeds? your (ok|okay|approval|decision|call|input|eyes)\\b|\\bdecide (whether|if|which|between|on)\\b",
+      "zero_means": null,
+      "note": "BH-4779: case-insensitive ERE for an ask in a check answer (a question mark, can/could you, please, should I, approve I<n>, your call...). An answer that matches it is always sent, whatever ARCHIE_NO_ACTION_RE says. Read by bin/lib/archie.sh (archie_no_action) as ${ARCHIE_ASK_RE:-<this default>}.",
+      "settable": true,
+      "read_in": "bin/lib/archie.sh"
+    },
+    {
+      "env": "ARCHIE_NEWS_RE",
+      "type": "string",
+      "default": "\\b(red|fail(s|ed|ing|ure|ures)?|broke|broken|down|outage|tripped|paused|stopped|halted|reverted|rolled back|re-?queued|block(s|ed|ing)?|stuck|overdue|over (budget|the cap)|lost|errors?|regress(ed|ion)?)\\b",
+      "zero_means": null,
+      "note": "BH-4779: case-insensitive ERE for news in a check answer (something went red, failed, tripped, was paused, reverted, re-queued or blocked). An answer that matches it is always sent, even when it also says nothing is needed from the operator: the guard silences only an answer whose sole content is that nothing is needed. Read by bin/lib/archie.sh (archie_no_action) as ${ARCHIE_NEWS_RE:-<this default>}.",
+      "settable": true,
+      "read_in": "bin/lib/archie.sh"
+    },
+    {
+      "env": "LLM_LANE_ENABLED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "zero_means": "off",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "0 makes this lane call no model at all. bin/lib/llm-gate.sh refuses BEFORE the vendor call and writes a zero-cost row_source=refused row, so the stop is visible in the ledger rather than being a lane that went quiet.",
+      "settable": true
+    },
+    {
+      "env": "LLM_RUNNER_ALLOWED",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Comma/space list of the ONLY ladder rungs this lane may reach. Empty is every rung, i.e. today's ladder unchanged. A rung outside the list is refused before the call.",
+      "settable": true
+    },
+    {
+      "env": "LLM_USD_CAP_DAY",
+      "type": "float",
+      "default": 0,
+      "min": 0,
+      "max": 10000,
+      "unit": "usd",
+      "zero_means": "unlimited",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Dollars this lane may spend in the current UTC day, summed from D1 cost_rows through GET /api/metrics/llm-spend, never from the box's own logs/cost.csv.",
+      "settable": true
+    },
+    {
+      "env": "ARCHIE_CMD_ID",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Not a knob: bin/orchestrate.sh's archie intercept block sets it per message to the chat command id, and bin/archie.sh intercept reads it as ${ARCHIE_CMD_ID:-} to key a reply (reply:<id>:<command id>; absent = a hash of the text). NOT settable from the control plane.",
+      "settable": false
+    },
+    {
+      "env": "JOBS_BODY",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/archie.sh intercept as ${JOBS_BODY:-}: the jobs worker's last response body, set by _jobs_req (bin/lib/jobs/req.sh), used to name the field a 400 refused. Plumbing, not a knob. NOT settable from the control plane.",
+      "settable": false
+    },
+    {
+      "env": "ARCHIE_NOW",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Test seam: epoch seconds bin/archie.sh uses as now, only when HARNESS_TEST_SANDBOX=1. NOT settable from the control plane.",
+      "settable": false
+    },
+    {
+      "env": "ARCHIE_FIXTURE",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Test seam: a file bin/archie.sh sources after its libs, only when HARNESS_TEST_SANDBOX=1. NOT settable from the control plane: it names a file a root lane sources.",
+      "settable": false
+    },
+    {
+      "env": "HARNESS_TEST_SANDBOX",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Test seam gate: bin/archie.sh honours ARCHIE_NOW and sources ARCHIE_FIXTURE only when this is 1 (the test harness sets it). Never set on a box, and NOT settable from the control plane.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": "archie",
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/archie.log"
+  }
+}

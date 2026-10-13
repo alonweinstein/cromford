@@ -1,0 +1,4 @@
+# BH-2427 (BH-2409 slice a): the bare reads of plan-overlap-off, planned-files-cheap-off,
+# postmerge-qa-disabled, pr-owner-sweep-off, pr-url-reconcile-off and remediation-disabled
+# in their six scripts, now read through lane_switch. Measured: 102 on main, 96 here.
+6

@@ -1,0 +1,2 @@
+# @ungated box-local executor: a box_commands row must be answered on the box that owns it, not only on the lease holder; the hub-lease gate is applied per row inside bin/box-ops.sh (it claims box=hub only while bin/hub-lease.sh check passes).
+* * * * * /root/harness/bin/box-ops.sh >> /root/harness/logs/box-ops.log 2>&1

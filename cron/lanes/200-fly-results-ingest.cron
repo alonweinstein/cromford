@@ -1,0 +1,2 @@
+# @hub-lanes
+*/2 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/fly-results-ingest.sh sweep

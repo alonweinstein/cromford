@@ -1,0 +1,5 @@
+PUT /api/metrics/flakes
+GET /api/metrics/flakes
+PUT /api/metrics/flakes/quarantine
+GET /api/metrics/flakes/quarantine
+GET /api/metrics/flakes/quarantine/changes

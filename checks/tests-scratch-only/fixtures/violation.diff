@@ -1,0 +1,9 @@
+diff --git a/bin/plan-sweep.sh b/bin/plan-sweep.sh
+--- a/bin/plan-sweep.sh
++++ b/bin/plan-sweep.sh
+@@ -10,3 +10,5 @@ sweep_stale_plans() {
+ for KEY in $KEYS; do
++  PLANDIR="$HARNESS/plans/$PROJECT-$KEY"
++  [ -s "$PLANDIR/plan.md" ] || rm -rf "$PLANDIR"
++  rm -rf "$HARNESS/builds/$PROJECT-$KEY-stale"
+ done

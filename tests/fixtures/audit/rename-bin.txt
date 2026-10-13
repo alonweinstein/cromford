@@ -1,0 +1,6 @@
+----
+time->Tue Sep 15 12:09:00 2026
+type=PROCTITLE msg=audit(09/15/2026 12:09:00.001:5600) : proctitle=mv /root/harness/bin/run-build.sh
+type=PATH msg=audit(09/15/2026 12:09:00.001:5600) : item=1 name=/root/harness/bin/run-build.sh inode=131 dev=fd:01 mode=file,755 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:09:00.001:5600) : cwd=/root/harness
+type=SYSCALL msg=audit(09/15/2026 12:09:00.001:5600) : arch=x86_64 syscall=renameat2 success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=4600 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=mv exe=/usr/bin/mv subj=unconfined key=harness

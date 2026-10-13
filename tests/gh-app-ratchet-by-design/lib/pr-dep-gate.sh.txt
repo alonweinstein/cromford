@@ -1,0 +1,1 @@
+Exempt by BH-877; moved here from tests/gh-app-ratchet-allowlist.txt by BH-1177. The same shape and the same reason as lib/block-gate.sh. Full reason: the gh-identity line at the top of bin/lib/pr-dep-gate.sh.

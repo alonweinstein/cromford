@@ -1,0 +1,6 @@
+# REVIEW_BLOCKED is an internal failure: one ALERTS.log line, mark the dir
+# COMMENTED, and say NOTHING on the client's board. `skip` (no board action) or
+# `escalate` (alerted for a human) are the correct decisions. A `comment` here
+# is a blocking failure, not a near miss — it tells a client about a review our
+# own reviewer blocked.
+TK-4762 :: skip|escalate

@@ -1,0 +1,15 @@
+# @hub-lanes
+
+# vendorspend — non-Anthropic vendor spend (operator line, outside managed
+# blocks; cost fix 5, 2026-09-14). Hourly at :33, which shares a tick with
+# nothing else on this box (*/10 quota-poll, :50 cost-reconcile, :55
+# orchestrator-burn, :13/:28/:43/:58 extra-usage). One pass polls every vendor
+# we hold a key for — OpenRouter (metered, the only one with a real spend API), xAI,
+# Fireworks and codex (no billing endpoint exists; probed, not assumed) and the
+# Fly pool (machine-seconds x catalog/fly-prices.json) — and writes one honest
+# row per vendor into logs/vendor-spend.csv and the vendor_spend table.
+# HUB ONLY: these are ACCOUNT-wide figures, not per-box ones, so a second poller
+# would write the same bill twice under two actors.
+# Kill: VENDOR_SPEND=0 in env/global.env, or flags/vendor-spend-off.
+# Per vendor: VENDOR_SKIP='xai,fly'. Knobs + the vendor table: COST.md.
+33 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/vendor-spend-pull.sh >/dev/null 2>&1

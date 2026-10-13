@@ -1,0 +1,9 @@
+{
+  "name": "harness-locks",
+  "main": "src/index.js",
+  "compatibility_date": "2026-07-01",
+  "vars": { "MINT_CAP": "20" },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "harness-locks", "database_id": "00000000-0000-0000-0000-000000000003" }
+  ]
+}

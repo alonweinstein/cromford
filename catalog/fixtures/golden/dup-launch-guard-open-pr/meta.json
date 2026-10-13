@@ -1,0 +1,6 @@
+{
+  "gate": "board-changed",
+  "project": "project-2",
+  "board_shape": "board-api",
+  "note": "The duplicate-work guard. The ticket reads perfectly buildable and the only thing standing between it and a twin PR is the pre-launch PR/branch search. TK-19 was built twice exactly this way."
+}

@@ -1,0 +1,22 @@
+# tests/no-hardcoded-deployment-allowlist.txt — BH-4080: files allowed to carry a
+# deployment literal (catalog/deployment-literals.tsv) in production code.
+#
+# Format: <repo-relative path><whitespace><family>[,family...]<whitespace><one-line reason>
+#
+# Read by bin/deployment-lint.sh (bin/config-inventory.py --deployment-lint) and
+# reported in docs/config-inventory/deployment.md. An entry with no reason fails,
+# an entry for a file that does not exist fails, and an entry for a family the
+# file no longer carries fails: an exception must not outlive what it excuses.
+# The homes below are the ONLY places a value is written down; everything else
+# reads it from them. Adding a line is a decision, not a default.
+
+# ── the documented-default homes ─────────────────────────────────────────────
+bin/lib/deployment.sh                        harness-repo,operator-login,operator-email,box-host  the shell's deployment defaults home: one `: "${X:=default}"` per knob, registered in catalog/lanes.d/_lib.deployment.json
+console-ui/src/lib/deployment.js             operator-login,workers-subdomain  the console's deployment defaults (a static Pages build has no box env; console-editable is #3979 wave 8)
+worker/jobs/src/lib/deployment-defaults.js   billing-account  the jobs worker's ANCHOR_DEFAULT_ACCOUNT_MAP fallback; env.COST_ANCHOR_ACCOUNT_MAP overrides it
+
+# ── vendor addresses, not ours ───────────────────────────────────────────────
+bin/lib/restore-drill-orgo.sh                orgo-host  the Orgo VM vendor's own API base, already the ORGO_API_BASE knob's default; another operator's vendor is a different drill driver, not a different host
+
+# ── the public-mirror sanitizer must name what it scrubs ─────────────────────
+bin/share/mapping.py                         billing-account,box-host,gh-org,operator-email,operator-login,tailnet-ip,workers-subdomain  maps every deployment literal to its example-org placeholder for the share mirror; it holds them BY DESIGN

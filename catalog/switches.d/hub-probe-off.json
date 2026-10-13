@@ -1,0 +1,1 @@
+{"name":"hub-probe-off","readers":["bin/hub-probe.sh"],"box_scoped":false,"what":"stops the hub-probe lane before it claims any request"}

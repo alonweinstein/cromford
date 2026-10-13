@@ -1,0 +1,6 @@
+{
+  "gate": "board-changed",
+  "project": "project-6",
+  "board_shape": "gh-issues",
+  "note": "The Blocked-by guard for project-6: the issue looks settled and ready, but its body carries Blocked-by: #7044 and #7044 is still OPEN."
+}

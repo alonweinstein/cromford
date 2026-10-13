@@ -1,0 +1,34 @@
+{
+  // harness-jobs — DB-driven job/stage/budget coordination for the fleet.
+  // Its OWN worker, like harness-locks and harness-watchdog: a bad deploy here
+  // must never be able to take down the console or the Telegram relay.
+  // Spec: docs/DB-COORDINATION-SPEC.md. Deploy notes: worker/jobs/README.md.
+  "name": "harness-jobs",
+  "main": "src/index.js",
+  "compatibility_date": "2026-07-01",
+  // @sentry/cloudflare imports node:async_hooks and other node: modules
+  // (BH-5618). Without this flag wrangler warns and the bundle is wrong.
+  "compatibility_flags": ["nodejs_compat"],
+  "account_id": "00000000000000000000000000000000",
+  "workers_dev": true,
+  "preview_urls": false,
+  "d1_databases": [
+    { "binding": "DB", "database_name": "harness-jobs", "database_id": "00000000-0000-0000-0000-000000000000" }
+  ],
+  // BH-5781: seconds an isolate reuses its settings snapshot (0..60, 0 = off).
+  // The `settings_cache_ttl_s` settings row overrides it. See src/lib/settings-cache.js.
+  "vars": { "SETTINGS_CACHE_TTL_S": "30" }
+  // secrets (wrangler secret put, never in this file):
+  //   HARNESS_SECRET — the same bearer every box already holds.
+  //   GITHUB_WEBHOOK_SECRET — the HMAC key for POST /webhooks/github, shared
+  //     with the org-level GitHub webhook and with nothing else. Set it with
+  //     `wrangler secret put GITHUB_WEBHOOK_SECRET` (the value is typed, never
+  //     committed, never echoed). UNSET IS THE SAFE STATE: the receiver answers
+  //     503 and writes no rows, so the fleet keeps ticking on cron alone.
+  //     Full ops steps: docs/EVENTS.md.
+  //   HARNESS_SENTRY_DSN — the Sentry DSN this worker reports exceptions to
+  //     (BH-5618). UNSET = no reporting, and the SDK is never loaded. Kill
+  //     switch without a deploy: the pause_flags row lane-off-sentry-report
+  //     with active=1, or `wrangler secret delete HARNESS_SENTRY_DSN`.
+  //     Optional plain var HARNESS_SENTRY_MAX_PER_FP_HOUR (default 6).
+}

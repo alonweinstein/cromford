@@ -1,0 +1,131 @@
+{
+  "id": "prompt-eval",
+  "name": "Prompt eval",
+  "scope": "hub",
+  "script": "bin/prompt-eval.sh",
+  "cadence": "50 6 * * 1",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-prompt-eval",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "PROMPT_EVAL_AGENT_CALL",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it ($SELF/agent-call.sh). Read by bin/prompt-eval.sh as ${PROMPT_EVAL_AGENT_CALL:-$SELF/agent-call.sh}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "PROMPT_EVAL_BASELINE",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it ($STATE/prompt-eval-baseline.json). Read by bin/prompt-eval.sh as ${PROMPT_EVAL_BASELINE:-$STATE/prompt-eval-baseline.json}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "PROMPT_EVAL_FIXTURES",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/prompt-eval.sh as ${PROMPT_EVAL_FIXTURES:-}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "PROMPT_EVAL_MAX_DROP",
+      "type": "int",
+      "default": 2,
+      "zero_means": null,
+      "note": "Read by bin/prompt-eval.sh as ${PROMPT_EVAL_MAX_DROP:-2}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "PROMPT_EVAL_MODEL",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Empty by default since BH-1510.2: unset, the eval grades on TRIAGE_MODEL, else model_routes role 'triage' for the project under eval (bin/prompt-eval.sh:model_for_gate). Set it to grade on a different model."
+    },
+    {
+      "env": "PROMPT_EVAL_MODEL_LIGHT",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Empty by default since BH-1510.2: unset, the eval grades sweep gates on TRIAGE_MODEL_LIGHT, else model_routes role 'triage.light' for the project under eval (bin/prompt-eval.sh:model_for_gate). Set it to grade on a different model."
+    },
+    {
+      "env": "PROMPT_EVAL_PROJECTS",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it ($(\"$SELF/fleet-conf.sh\" --projects 2>/dev/null | tr '\\n' ' ')). Read by bin/prompt-eval.sh as ${PROMPT_EVAL_PROJECTS:-$(\"$SELF/fleet-conf.sh\" --projects 2>/dev/null | tr '\\n' ' ')}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "PROMPT_EVAL_TIMEOUT",
+      "type": "int",
+      "default": 1800,
+      "zero_means": null,
+      "note": "Read by bin/prompt-eval.sh as ${PROMPT_EVAL_TIMEOUT:-1800}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "TRIAGE_MODEL",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Empty by default since BH-1510.2: the model is a database row, model_routes role 'triage', read through bin/prompt-eval.sh:model_for_gate. Set this only to override that row on this box/lane; no reviewed min/max, nothing is clamped."
+    },
+    {
+      "env": "TRIAGE_MODEL_LIGHT",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Empty by default since BH-1510.2: the model is a database row, model_routes role 'triage.light', read through bin/prompt-eval.sh:model_for_gate. Set this only to override that row on this box/lane; no reviewed min/max, nothing is clamped."
+    },
+    {
+      "env": "LLM_LANE_ENABLED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "0 makes this lane call no model at all. bin/lib/llm-gate.sh refuses BEFORE the vendor call and writes a zero-cost row_source=refused row, so the stop is visible in the ledger rather than being a lane that went quiet."
+    },
+    {
+      "env": "LLM_RUNNER_ALLOWED",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Comma/space list of the ONLY ladder rungs this lane may reach. Empty is every rung, i.e. today's ladder unchanged. A rung outside the list is refused before the call, so a cliff or a failure on the standing lane cannot descend into one that costs ~100x (#1141, the $793 descent)."
+    },
+    {
+      "env": "LLM_USD_CAP_DAY",
+      "type": "float",
+      "default": 0,
+      "min": 0,
+      "max": 10000,
+      "unit": "usd",
+      "zero_means": "unlimited",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Dollars this lane may spend in the current UTC day, summed from D1 cost_rows through GET /api/metrics/llm-spend — never from the box's own logs/cost.csv. A second, project-scoped ceiling is the lane.<id>.<project>.llm_usd_cap_day row, which is read only when somebody wrote it."
+    }
+  ],
+  "stats": {
+    "cost_stage": "eval",
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/prompt-eval.log"
+  }
+}

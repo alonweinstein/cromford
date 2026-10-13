@@ -1,0 +1,61 @@
+{
+  "id": "conflict-hotspots-fleet",
+  "name": "Conflict hotspots",
+  "scope": "box",
+  "script": "bin/conflict-hotspots-fleet.sh",
+  "cadence": "23 3 * * 0",
+  "boxes": [
+    "project-4",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-conflict-hotspots-fleet"
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "CONFLICT_HOTSPOTS_DAYS",
+      "type": "int",
+      "default": 30,
+      "min": 1,
+      "max": 365,
+      "unit": "days",
+      "zero_means": null,
+      "note": "BH-5267: the window bin/conflict-hotspots-fleet.sh hands bin/conflict-hotspots.sh --days, per project. Code fallback 30; a value that is not a whole number in 1..365 makes that project's run `error` naming the knob, never clamped."
+    },
+    {
+      "env": "CONFLICT_HOTSPOTS_TOP",
+      "type": "int",
+      "default": 200,
+      "min": 1,
+      "max": 500,
+      "unit": "rows",
+      "zero_means": null,
+      "note": "BH-5267: rows stored per project in conflict_hotspots (the route refuses more than 500). files_total still counts every file, so the console says when the list is capped. Code fallback 200; outside 1..500 the run is `error`, never clamped."
+    },
+    {
+      "env": "CONFLICT_HOTSPOTS_TIMEOUT_S",
+      "type": "int",
+      "default": 1800,
+      "min": 60,
+      "max": 86400,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "BH-5267: wall clock for one project's bin/conflict-hotspots.sh run (under nice -n 19); past it the run is `timeout` and the last good window stays. Code fallback 1800; outside 60..86400 the run is `error`, never clamped."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/conflict-hotspots.log"
+  }
+}

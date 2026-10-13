@@ -1,0 +1,33 @@
+{
+  "libs": [
+    {
+      "id": "fix-delta-review",
+      "file": "bin/lib/fix-delta-review.sh",
+      "note": "BH-2546. How big a merged fix round's own change may be and still have its re-review read only the delta (range-diff of the reviewed head vs the fixed head, plus the prior findings) instead of the whole branch diff, capped in lines AND bytes. Resolved by fdr_knob through lib_env_apply in a subshell, then from this file's own default in the checkout.",
+      "knobs": [
+        {
+          "env": "FIX_DELTA_REVIEW_MAX_LINES",
+          "type": "int",
+          "default": 200,
+          "min": 0,
+          "max": 5000,
+          "unit": "lines",
+          "zero_means": "off",
+          "required": true,
+          "note": "Added+deleted lines (git diff --numstat FIX_FROM HEAD) at or under which the merged re-review reads the delta only. Over it, or 0, the re-review reads the whole branch diff as before. Read by bin/lib/fix-delta-review.sh with no literal."
+        },
+        {
+          "env": "FIX_DELTA_REVIEW_MAX_BYTES",
+          "type": "int",
+          "default": 48000,
+          "min": 0,
+          "max": 80000,
+          "unit": "bytes",
+          "zero_means": "off",
+          "required": true,
+          "note": "Byte ceiling on the delta text (git range-diff + git diff, the file $BUILD/fix-delta.diff) the merged re-review carries INLINE in its prompt. Lines are not bytes: one numstat line can be a 100KB minified file, and the prompt is one argv element to bin/agent-call.sh (AGENT_ARGV_MAX 96000, MAX_ARG_STRLEN 128KB). Over it, or 0, the re-review reads the whole branch diff as before. The max stays under AGENT_ARGV_MAX minus the prompt body. Read by bin/lib/fix-delta-review.sh with no literal."
+        }
+      ]
+    }
+  ]
+}

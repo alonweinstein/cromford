@@ -1,0 +1,17 @@
+diff --git a/worker/jobs/schema.sql b/worker/jobs/schema.sql
+index c6ac5ce..58f8a89 100644
+--- a/worker/jobs/schema.sql
++++ b/worker/jobs/schema.sql
+@@ -1,7 +1,12 @@
+ -- worker/jobs/schema.sql: the jobs worker's D1 tables.
+ -- Applied statement by statement by bin/harness-sync.sh.
++-- BH-9999: added the foo table
+ 
+ CREATE TABLE IF NOT EXISTS jobs (
+   id TEXT PRIMARY KEY,
+   status TEXT NOT NULL
+ );
++
++CREATE TABLE IF NOT EXISTS foo (
++  id TEXT PRIMARY KEY
++);

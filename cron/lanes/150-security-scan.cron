@@ -1,0 +1,5 @@
+0 14 * * 0 /root/harness/bin/security-scan.sh project-4
+# @box project-1
+0 8 * * 0 /root/harness/bin/security-scan.sh project-1
+# @box project-2
+0 10 * * 0 /root/harness/bin/security-scan.sh project-2

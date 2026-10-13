@@ -1,0 +1,7 @@
+# BH-2538 (lead fix round): the repeat context-kill escalation's knobs —
+# how many kills of one piece of work in the window go to a person and stop the
+# retries, the window, and how many of cost.csv's newest rows are read. Read by bin/agent-call.sh ctx_kill_repeat_max /
+# ctx_kill_repeats.
+CONTEXT_KILL_REPEAT_MAX
+CONTEXT_KILL_REPEAT_WINDOW_S
+CONTEXT_KILL_REPEAT_SCAN_ROWS

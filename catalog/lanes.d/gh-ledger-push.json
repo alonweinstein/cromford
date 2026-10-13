@@ -1,0 +1,38 @@
+{
+  "id": "gh-ledger-push",
+  "name": "GitHub-call ledger push",
+  "scope": "box",
+  "script": "bin/gh-ledger-push.sh",
+  "cadence": "3,13,23,33,43,53 * * * *",
+  "boxes": [
+    "project-4",
+    "hub",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-10",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-gh-ledger-push",
+    "aliases": [
+      {
+        "name": "gh-ledger-push-off",
+        "off_when": "present"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/gh-ledger-push.log"
+  }
+}

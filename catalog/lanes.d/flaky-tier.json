@@ -1,0 +1,89 @@
+{
+  "id": "flaky-tier",
+  "name": "Flaky suite auto-quarantine",
+  "scope": "hub",
+  "script": "bin/flaky-tier.sh",
+  "cadence": "20 9 * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-flaky-tier",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "FLAKY_TIER_MIN",
+      "type": "int",
+      "default": 3,
+      "zero_means": null,
+      "note": "Read by bin/flaky-tier.sh: distinct flaky heads in the window before a suite is quarantined. Not a positive integer = the default, logged."
+    },
+    {
+      "env": "FLAKY_TIER_WINDOW_DAYS",
+      "type": "int",
+      "default": 7,
+      "zero_means": null,
+      "note": "Read by bin/flaky-tier.sh: days of flake ledger read per tick. Not a positive integer = the default, logged."
+    },
+    {
+      "env": "FLAKY_TIER_MAX_NEW",
+      "type": "int",
+      "default": 3,
+      "zero_means": null,
+      "note": "Read by bin/flaky-tier.sh: more candidates than this in one tick quarantines none and pages flaky-tier-mass:<slug> once."
+    },
+    {
+      "env": "FLAKY_TIER_RELEASE_CLEAN",
+      "type": "int",
+      "default": 5,
+      "zero_means": null,
+      "note": "Read by the release sibling through ft_release (bin/lib/flaky-tier-release.sh): clean nightly runs in a row that lift a quarantine. bin/flaky-tier.sh also quotes it in the ticket body."
+    },
+    {
+      "env": "FLAKY_TIER_RELEASE_ACTORS",
+      "type": "string",
+      "default": "flaky-tier main-red-bisect",
+      "zero_means": null,
+      "note": "Read by the release sibling through ft_release (bin/lib/flaky-tier-release.sh): only rows written by these actors are ever auto-released; a /ci row is not. bin/flaky-tier.sh exports it with this default so ft_release always sees a value."
+    },
+    {
+      "env": "FLAKY_TIER_ACT",
+      "type": "int",
+      "default": 1,
+      "zero_means": null,
+      "note": "Read by bin/flaky-tier.sh and ft_release: 0 makes the tick a dry run (prints would:, writes no ticket, row, variable, alert or state)."
+    },
+    {
+      "env": "FLAKY_TIER_NIGHTLY_RUNS",
+      "type": "int",
+      "default": 10,
+      "zero_means": null,
+      "note": "Read by the release sibling through ft_release (bin/lib/flaky-tier-release.sh): how many recent nightly runs it reads. bin/flaky-tier.sh only validates it."
+    },
+    {
+      "env": "FLAKY_TIER_REPO",
+      "type": "string",
+      "default": "example-org/cromford",
+      "zero_means": null,
+      "note": "Read by bin/flaky-tier.sh: the repo whose suites are quarantined, unless the argument is an owner/repo slug. settable:false (lanes-registry section 17): a repo is an identity the lane files tickets and writes a variable in, so only env/global.env on the box moves it.",
+      "settable": false
+    },
+    {
+      "env": "FLAKY_TIER_NOW",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "No static default: the script computes it ($(date -u +%s)). Read by bin/flaky-tier.sh as its one clock read; a test seam, so settable:false and only env/global.env on the box moves it.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/flaky-tier.log"
+  }
+}

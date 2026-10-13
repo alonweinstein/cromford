@@ -1,0 +1,83 @@
+{
+  "libs": [
+    {
+      "id": "build-tripwire",
+      "file": "bin/lib/build-tripwire.sh",
+      "note": "BH-3481.4: the mid-build spend tripwire. A build trips when its spend (the build's cost.csv plus the live session) passes BUILD_TRIPWIRE_MULT x expected, where expected = usd_per_pr x the plan's shape factor, or when BUILD_TRIPWIRE_REPEAT_MAX paid rows carry one guard_fp. A trip writes $BUILD/TRIPWIRE, the ledger row build-tripwire \"<project> <KEY>\" = paused and one critical page; the next launch of the ticket is refused until an operator writes `released`. Thresholds are multiples of the operator's own usd_per_pr (conf.cost-caps.* rows / catalog/cost-caps.conf through cost_budget_for); there is no dollar budget anywhere in the tripwire. Resolved at call time with lib_env_apply build-tripwire; tests/build-tripwire.bh-3501-test.sh drives it.",
+      "knobs": [
+        {
+          "env": "BUILD_TRIPWIRE",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 1,
+          "zero_means": "off",
+          "required": false,
+          "note": "Master switch for the build tripwire. 1 = on, 0 = off: no new trips (a build whose dir already holds TRIPWIRE stays paused). Read as ${BUILD_TRIPWIRE:-1}."
+        },
+        {
+          "env": "BUILD_TRIPWIRE_MULT",
+          "type": "float",
+          "default": 5,
+          "min": 1.5,
+          "max": 100,
+          "unit": "x expected",
+          "zero_means": null,
+          "required": false,
+          "note": "The spend rule: a build trips when its spend is more than this many times its expected spend (usd_per_pr x shape factor). Thresholds are multiples of the operator's own usd_per_pr (conf.cost-caps.* rows / catalog/cost-caps.conf through cost_budget_for); there is no dollar budget anywhere in the tripwire. Read as ${BUILD_TRIPWIRE_MULT:-5}."
+        },
+        {
+          "env": "BUILD_TRIPWIRE_SHAPE_S",
+          "type": "float",
+          "default": 0.5,
+          "min": 0.1,
+          "unit": "x usd_per_pr",
+          "zero_means": null,
+          "required": false,
+          "note": "The factor on usd_per_pr for a build whose plan's last `SIZE:` line is S: expected = usd_per_pr x this. Read by bin/lib/build-tripwire.sh as ${BUILD_TRIPWIRE_SHAPE_S:-0.5}."
+        },
+        {
+          "env": "BUILD_TRIPWIRE_SHAPE_M",
+          "type": "float",
+          "default": 1,
+          "min": 0.1,
+          "unit": "x usd_per_pr",
+          "zero_means": null,
+          "required": false,
+          "note": "The factor on usd_per_pr for a build whose plan's last `SIZE:` line is M: expected = usd_per_pr x this. Read by bin/lib/build-tripwire.sh as ${BUILD_TRIPWIRE_SHAPE_M:-1}."
+        },
+        {
+          "env": "BUILD_TRIPWIRE_SHAPE_L",
+          "type": "float",
+          "default": 2,
+          "min": 0.1,
+          "unit": "x usd_per_pr",
+          "zero_means": null,
+          "required": false,
+          "note": "The factor on usd_per_pr for a build whose plan's last `SIZE:` line is L: expected = usd_per_pr x this. Read by bin/lib/build-tripwire.sh as ${BUILD_TRIPWIRE_SHAPE_L:-2}."
+        },
+        {
+          "env": "BUILD_TRIPWIRE_SHAPE_XL",
+          "type": "float",
+          "default": 3,
+          "min": 0.1,
+          "unit": "x usd_per_pr",
+          "zero_means": null,
+          "required": false,
+          "note": "The factor on usd_per_pr for a build whose plan's last `SIZE:` line is XL, and also a build with no plan.md or no readable SIZE line: expected = usd_per_pr x this. Read by bin/lib/build-tripwire.sh as ${BUILD_TRIPWIRE_SHAPE_XL:-3}."
+        },
+        {
+          "env": "BUILD_TRIPWIRE_REPEAT_MAX",
+          "type": "int",
+          "default": 4,
+          "min": 2,
+          "max": 50,
+          "unit": "rows",
+          "zero_means": "unarmed",
+          "required": false,
+          "note": "The repeat rule: this many paid rows (cost_usd > 0) in one build's cost.csv with the same non-empty guard_fp trip the build. 0 = unarmed, via env or a zero_means row; a settings row is clamped to 2..50. Read as ${BUILD_TRIPWIRE_REPEAT_MAX:-4}."
+        }
+      ]
+    }
+  ]
+}

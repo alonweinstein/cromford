@@ -1,0 +1,7 @@
+# @hub-lanes
+# Merge conductor keyed backstop (BH-3436.2): every 5 minutes, hand the PRs that
+# pr-state.tsv says are WAIT_CI/READY and approved on their head to ONE keyed
+# conductor run (MC_ONLY_PR), so green -> queued is at most 5 minutes while the
+# full tick in 410 stays */30. Reads a local file only; no candidate = no GitHub
+# call. Off: bin/harness-ctl.sh off merge-conductor-backstop.
+*/5 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/merge-conductor-backstop.sh >> /root/harness/logs/merge-conductor-backstop.log 2>&1

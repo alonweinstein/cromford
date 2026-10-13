@@ -1,0 +1,1 @@
+{"name":"daily-digest-off","readers":["bin/daily-digest.sh"],"box_scoped":true,"what":"stops the daily Telegram digest"}

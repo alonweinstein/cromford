@@ -1,0 +1,14 @@
+# @hub-lanes
+
+# ── ARCHIE SELF-IMPROVEMENT LOOP (BH-4587) ──────────────────────────────────
+# Hourly at :43, clear of the watch (:07/:27/:47) and the queue doctor. A tick
+# reads the archie_actions rows of the last window_days + verify_days + 1 days,
+# fingerprints each by cause, and files ONE ai-build issue on the harness repo
+# for a cause that recurred archie.improve.recur_n times in the window. It
+# comments new occurrences on the open issue, tracks the closed issue to its
+# merged PR, reopens it with evidence on a recurrence, and records it verified
+# after archie.improve.verify_days of silence. Every GitHub write is an
+# archie_actions row claimed first; flock -n dedupes. It never writes the fix.
+# Off: ARCHIE_FMI_ENABLED=0, flags/lane-off-archie-fm-improve,
+# bin/harness-ctl.sh off archie-fm-improve, or the settings row archie.manage=off.
+43 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/archie-fm-improve.sh >/dev/null 2>&1

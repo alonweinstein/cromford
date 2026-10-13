@@ -1,0 +1,82 @@
+{
+  "id": "fly-idle-check",
+  "name": "Fly idle machine alert",
+  "scope": "hub",
+  "script": "bin/fly-idle-check.sh",
+  "cadence": "37 6 * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-fly-idle-check",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "FLY_IDLE_HOURS",
+      "type": "int",
+      "default": 2,
+      "min": 1,
+      "unit": "hours",
+      "zero_means": null,
+      "note": "Read by bin/fly-idle-check.sh as ${FLY_IDLE_HOURS:-2}: a started machine with no pool build, dispatcher job or queue claim is idle once it has been up MORE than this many hours. 0 or non-numeric falls back to 2 and the fallback is logged."
+    },
+    {
+      "env": "FLY_IDLE_IGNORE_APPS",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/fly-idle-check.sh as ${FLY_IDLE_IGNORE_APPS:-}: a comma list of Fly app names (exact match) whose machines are never read or flagged — an always-on service that is meant to run idle. Counted as ignored= in the lane log."
+    },
+    {
+      "env": "FLY_IDLE_MAX_APPS",
+      "type": "int",
+      "default": 60,
+      "min": 1,
+      "unit": "apps",
+      "zero_means": null,
+      "note": "Read by bin/fly-idle-check.sh as ${FLY_IDLE_MAX_APPS:-60}: the most apps whose machines one run reads, in API order. Apps past it are named in the alert as `partial: K apps not checked`, never dropped silently."
+    },
+    {
+      "env": "FLY_IDLE_HTTP_TIMEOUT",
+      "type": "int",
+      "default": 25,
+      "min": 1,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "Read by bin/fly-idle-check.sh as ${FLY_IDLE_HTTP_TIMEOUT:-25}: curl -m for each GET against the Fly Machines API."
+    },
+    {
+      "env": "FLY_PRICES",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it ($H/catalog/fly-prices.json). Read by bin/fly-idle-check.sh as ${FLY_PRICES:-$H/catalog/fly-prices.json}, the table fly_price_per_s prices each idle machine's hourly burn from. NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "FLY_IDLE_NOW",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it ($(date -u +%s)). Read by bin/fly-idle-check.sh as ${FLY_IDLE_NOW:-$(date -u +%s)}: the clock the lane measures uptime and the UTC day marker from. NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "JOBS_URL",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — bin/lib/endpoints.sh supplies it on the box. Read by bin/fly-idle-check.sh as ${JOBS_URL:-}: the jobs worker the lane asks for live queue claims before calling a machine idle; unset leaves the queue column unread(not configured). NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/fly-idle-check.log"
+  }
+}

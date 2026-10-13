@@ -1,0 +1,69 @@
+diff --git a/worker/jobs/src/routes/usage.js b/worker/jobs/src/routes/usage.js
+index 373c323..76094dd 100644
+--- a/worker/jobs/src/routes/usage.js
++++ b/worker/jobs/src/routes/usage.js
+@@ -32,18 +32,22 @@ export const routes = [
+       await env.DB.prepare(
+         `INSERT INTO extra_usage_snapshots (box, ts, session_pct, weekly_pct, weekly_resets_at,
+                                             extra_enabled, extra_used_usd, spend_limit_reached, in_overage,
+-                                            extra_limit_usd, extra_pct, status)
+-         VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12)
++                                            extra_limit_usd, extra_pct, status, error_body)
++         VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13)
+          ON CONFLICT(box, ts) DO UPDATE SET
+            session_pct=?3, weekly_pct=?4, weekly_resets_at=?5, extra_enabled=?6,
+            extra_used_usd=?7, spend_limit_reached=?8, in_overage=?9,
+            extra_limit_usd=COALESCE(?10, extra_limit_usd), extra_pct=COALESCE(?11, extra_pct),
+-           status=COALESCE(?12, status)`
++           status=COALESCE(?12, status), error_body=COALESCE(?13, error_body)`
+       ).bind(box, ts, numOrNull(body.session_pct), numOrNull(body.weekly_pct),
+              str(body.weekly_resets_at, 64), boolInt(body.extra_enabled),
+              numOrNull(body.extra_used_usd), boolInt(body.spend_limit_reached),
+              boolInt(body.in_overage), numOrNull(body.extra_limit_usd),
+-             numOrNull(body.extra_pct), euStatus).run();
++             numOrNull(body.extra_pct), euStatus,
++             // BH-3985: what the vendor answered on a failed poll, already
++             // scrubbed of credentials by the poller. A replay that sends none
++             // keeps the stored one.
++             str(body.error_body, 2000)).run();
+       const row = await env.DB.prepare(
+         "SELECT * FROM extra_usage_snapshots WHERE box=?1 AND ts=?2").bind(box, ts).first();
+       return json(200, { snapshot: row });
+@@ -55,14 +59,20 @@ export const routes = [
+     async ({ env, url, t }) => {
+       const box = url.searchParams.get("box");
+       const lim = Math.min(Math.max(Number(url.searchParams.get("limit")) || 200, 1), 1000);
+-      const rows = box
+-        ? await env.DB.prepare(
+-            `SELECT * FROM extra_usage_snapshots WHERE box=?1 ORDER BY ts DESC LIMIT ${lim}`
+-          ).bind(box).all()
+-        : await env.DB.prepare(
+-            `SELECT * FROM extra_usage_snapshots ORDER BY ts DESC LIMIT ${lim}`
+-          ).all();
+-      return json(200, { snapshots: rows.results || [], as_of: t });
++      // `until` (BH-3985) is the cost-rows convention: inclusive, newest-first.
++      // A caller that got a full page asks again with until = the oldest ts it
++      // saw and dedupes on (box, ts), the PK; it is done at a short page. box
++      // is the second sort key so the order is total and two pages never
++      // split same-second rows differently.
++      const until = str(url.searchParams.get("until"), 64);
++      const where = [], binds = [];
++      if (box) { binds.push(box); where.push(`box=?${binds.length}`); }
++      if (until) { binds.push(until); where.push(`ts<=?${binds.length}`); }
++      const rows = await env.DB.prepare(
++        `SELECT * FROM extra_usage_snapshots${where.length ? " WHERE " + where.join(" AND ") : ""}
++         ORDER BY ts DESC, box DESC LIMIT ${lim}`
++      ).bind(...binds).all();
++      return json(200, { snapshots: rows.results || [], until: until || null, as_of: t });
+     },
+   ],
+ 
+@@ -143,7 +153,7 @@ export const routes = [
+     },
+   ],
+   // BH-167 account usage: per auth_account dollars and tokens from cost_rows
+-  // over a trailing 5h/7d window, with the vendor meter as a cross-check. Three
++  // over a trailing 5h/12h/7d window, with the vendor meter as a cross-check. Three
+   // capped reads, then one span sum per meter account that can be compared
+   // (at most ANCHOR_MAX_ACCOUNTS). A read that comes back at its LIMIT sets its
+   // truncated flag rather than passing a partial answer off as whole.

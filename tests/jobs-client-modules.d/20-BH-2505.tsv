@@ -1,0 +1,4 @@
+# tests/jobs-client-modules.d/20-BH-2505.tsv — the per-box cache behind job_ticket_abandoned (BH-2505).
+jobs	_jta_cache_path
+jobs	_jta_cache_get
+jobs	_jta_cache_put

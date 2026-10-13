@@ -1,0 +1,34 @@
+{
+  "issues": [
+    {
+      "expand": "operations,versionedRepresentations,editmeta,changelog,renderedFields",
+      "id": "10002",
+      "self": "https://api.atlassian.com/ex/jira/33333333-3333-3333-3333-333333333333/rest/api/3/issue/10002",
+      "key": "CROM-2",
+      "fields": {
+        "summary": "Fee toggle",
+        "status": {
+          "name": "To Do",
+          "id": "1",
+          "statusCategory": {
+            "id": 2,
+            "key": "new",
+            "name": "To Do"
+          }
+        },
+        "labels": [
+          "ai-build"
+        ],
+        "customfield_10050": {
+          "value": "Client",
+          "id": "10101"
+        },
+        "customfield_10051": {
+          "value": "needs_clarification",
+          "id": "10111"
+        }
+      }
+    }
+  ],
+  "isLast": true
+}

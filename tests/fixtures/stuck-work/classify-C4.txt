@@ -1,0 +1,4 @@
+# C4 dequeued label and Mergify failed: dequeue-watch owns it
+# want: dequeued	dequeue-watch
+# decide: - page
+pr	o/r#12	https://github.com/o/r/pull/12	0	ai-build,dequeued	success	1799991000	MERGE	abc	1799991000	abc	failed	-	-	-	1799998100	-	-	-	-	-	1799990001

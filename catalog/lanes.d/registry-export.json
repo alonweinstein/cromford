@@ -1,0 +1,42 @@
+{
+  "id": "registry-export",
+  "name": "Registry export (nightly D1 fleet registry snapshot)",
+  "scope": "box",
+  "script": "bin/registry-export.sh",
+  "cadence": "41 3 * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-registry-export",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "REGISTRY_EXPORT_KEEP",
+      "type": "int",
+      "default": 14,
+      "min": 0,
+      "max": 365,
+      "zero_means": null,
+      "note": "BH-5651: how many nightly snapshots bin/registry-export.sh --snapshot keeps under state/registry/export/ (newest first; older ones are deleted). Read as ${REGISTRY_EXPORT_KEEP:-14} after the settings resolution; 0 and a non-numeric value also mean 14, because a snapshot lane that keeps nothing is no disaster-recovery copy. --keep N on the command line wins.",
+      "settable": true
+    },
+    {
+      "env": "REGISTRY_EXPORT_NOW",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Test seam: epoch seconds bin/registry-export.sh --snapshot names the snapshot directory after, instead of now (tests/registry-export.bh-5651-test.sh runs several snapshots in one second). NOT settable from the control plane.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/registry-export.log"
+  }
+}

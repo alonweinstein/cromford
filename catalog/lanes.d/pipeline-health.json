@@ -1,0 +1,408 @@
+{
+  "id": "pipeline-health",
+  "name": "Pipeline health",
+  "scope": "hub",
+  "script": "bin/pipeline-health.sh",
+  "cadence": "*/10 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-pipeline-health",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "PH_NOPROGRESS_ALERT_MIN",
+      "type": "int",
+      "default": 120,
+      "min": 0,
+      "max": 10080,
+      "unit": "minutes",
+      "zero_means": null,
+      "note": "BH-5967: how long a project's stranded-ticket count (the stranded watch's state/stranded-watch/<p>/.count) or its parked-PR count (conductor rows BLOCKED_HUMAN or RED_TWICE) may stand above 0 before ONE alert per metric per day names the project. A count of 0 ends the episode, and the epilogue resolves the page (noprogress is in RETRACT_NS). 0 pages on the first tick above 0."
+    },
+    {
+      "env": "PH_NOPROGRESS_COUNT_MAX_AGE_S",
+      "type": "int",
+      "default": 5400,
+      "min": 60,
+      "max": 86400,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "BH-5967: a stranded-ticket count older than this is not read (no number is not 0). 5400 is three runs of the 30-minute stranded watch."
+    },
+    {
+      "env": "COST_AUTOHALT_MULTIPLE",
+      "type": "int",
+      "default": 2,
+      "zero_means": null,
+      "note": "Read by bin/pipeline-health.sh's cost budget block (cb_knob): the multiple of a project's $/PR budget at which the autohalt holds its new builds (flags/spend-hold-<p>, BH-5526). The autohalt is ON by default since K1 (2026-09-24); COST_AUTOHALT and flags/cost-autohalt-off are its kill switches. docs/COST.md."
+    },
+    {
+      "env": "COST_AUTOHALT",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "zero_means": "off",
+      "note": "K1 (2026-09-24): 1 = the cost breakers HOLD a project's new builds at the build launch gate (flags/spend-hold-<p>, the flag row; work already in progress continues, BH-5526) when it crosses COST_AUTOHALT_MULTIPLE x its $/PR budget or the zero-merge rule; 0 = page only. Was an opt-in file (flags/cost-autohalt-optin) no box had. The file flags/cost-autohalt-off is the second kill switch and wins. docs/COST.md."
+    },
+    {
+      "env": "COST_AUTOHALT_REARM_S",
+      "type": "int",
+      "default": 86400,
+      "min": 0,
+      "zero_means": null,
+      "note": "K1: after the breaker holds a project it does not hold the same project again for this many seconds (state/costhalt/<p>), so an operator who lifted the hold is not overruled by the same 24h/7d window. docs/COST.md."
+    },
+    {
+      "env": "COST_ZM_24H_USD",
+      "type": "number",
+      "default": 300,
+      "min": 0,
+      "zero_means": "off",
+      "note": "K1 zero-merge breaker, 24h window: at least this much DELIVERY spend over 24h with fewer than COST_ZM_MIN_MERGES merged in 24h. HOLDS new builds only when the project's 7d merges (max of merged_prs_7d and merged_prs_24h) are also under the minimum; a project that merged this week and not today is paged, never held (a fleet-wide merge stop must not hold every board). Only spend after the last halt stamp is judged. Per project: lane.pipeline-health.<project>.cost_zm_24h_usd. docs/COST.md."
+    },
+    {
+      "env": "COST_ZM_7D_USD",
+      "type": "number",
+      "default": 400,
+      "min": 0,
+      "zero_means": "off",
+      "note": "K1 zero-merge breaker, 7d window (project-9: $643/7d, 0 merged): at least this much delivery spend over 7d with fewer than COST_ZM_MIN_MERGES merged (by MERGE date) in 7d holds the project's new builds. Judged only once the 7d window lies wholly after the last halt. Per project: lane.pipeline-health.<project>.cost_zm_7d_usd. docs/COST.md."
+    },
+    {
+      "env": "COST_ZM_MIN_MERGES",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "zero_means": "off",
+      "note": "K1 zero-merge breaker: fewer merged PRs than this in the window counts as 'zero merges'. Per project: lane.pipeline-health.<project>.cost_zm_min_merges. docs/COST.md."
+    },
+    {
+      "env": "COST_UNPRICED_ROW_USD",
+      "type": "number",
+      "default": 2,
+      "min": 0,
+      "zero_means": null,
+      "note": "K1: the dollars the fleet ceiling charges an rc-0 cost row that reported NO usage and carries no cost_usd. Rows WITH tokens and no cost are priced at their model's rate, or the price table's top rate for an unknown model; subscription (billing_mode) rows add nothing. Brake arithmetic only; no report reads it. docs/COST.md."
+    },
+    {
+      "env": "COST_UNPRICED_RUNNER_HOUR_MAX",
+      "type": "int",
+      "default": 60,
+      "min": 0,
+      "zero_means": null,
+      "note": "K1: more than this many unpriced cost rows from ONE runner in the last hour pages critical (costunpriced:<runner>, once a day). docs/COST.md."
+    },
+    {
+      "env": "COST_CHECK_INTERVAL_S",
+      "type": "int",
+      "default": 1800,
+      "zero_means": null,
+      "note": "Read by bin/pipeline-health.sh as ${COST_CHECK_INTERVAL_S:-1800}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "COST_ROLLUP_INTERVAL_S",
+      "type": "int",
+      "default": 3600,
+      "zero_means": null,
+      "note": "Read by bin/pipeline-health.sh as ${COST_ROLLUP_INTERVAL_S:-3600}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "COST_ROLLUP_STALE_MULT",
+      "type": "int",
+      "default": 2,
+      "zero_means": null,
+      "note": "Read by bin/pipeline-health.sh as ${COST_ROLLUP_STALE_MULT:-2}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "FLAKERATE_EVERY",
+      "type": "int",
+      "default": 3600,
+      "zero_means": null,
+      "note": "Read by bin/pipeline-health.sh as ${FLAKERATE_EVERY:-3600}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "HEALTH_TMP_ROOT",
+      "type": "string",
+      "default": "/tmp",
+      "zero_means": null,
+      "note": "Read by bin/pipeline-health.sh as ${HEALTH_TMP_ROOT:-/tmp}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "HUB_SYNC_CRITICAL_S",
+      "type": "int",
+      "default": 14400,
+      "zero_means": null,
+      "note": "Read by bin/pipeline-health.sh as ${HUB_SYNC_CRITICAL_S:-14400}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "HUB_SYNC_STALL_S",
+      "type": "int",
+      "default": 3600,
+      "zero_means": null,
+      "note": "Read by bin/pipeline-health.sh as ${HUB_SYNC_STALL_S:-3600}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "PERMARED_EVERY",
+      "type": "int",
+      "default": 3600,
+      "zero_means": null,
+      "note": "Read by bin/pipeline-health.sh as ${PERMARED_EVERY:-3600}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "DEPLOY_WORKERS_EVERY",
+      "type": "int",
+      "default": 3600,
+      "min": 0,
+      "unit": "seconds",
+      "zero_means": null,
+      "read_in": "bin/pipeline-health.sh",
+      "note": "BH-3905 (BH-4089): seconds between reads of the newest completed main run of the Deploy workers workflow (deploy-workers.yml); a non-success run pages deployworkers:<slug> (state/deploy-workers.stamp). 0 = every tick. Non-numeric falls back to 3600."
+    },
+    {
+      "env": "PERMARED_MIN_DAYS",
+      "type": "int",
+      "default": 3,
+      "zero_means": null,
+      "note": "Read by bin/pipeline-health.sh as ${PERMARED_MIN_DAYS:-3}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "PERMARED_MIN_RUNS",
+      "type": "int",
+      "default": 3,
+      "zero_means": null,
+      "note": "Read by bin/pipeline-health.sh as ${PERMARED_MIN_RUNS:-3}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "STARVED_SECS",
+      "type": "int",
+      "default": 7200,
+      "zero_means": null,
+      "note": "Read by bin/pipeline-health.sh as ${STARVED_SECS:-7200}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "STRANDED_QUEUE_MIN",
+      "type": "int",
+      "default": 60,
+      "min": 1,
+      "unit": "minutes",
+      "zero_means": null,
+      "note": "BH-3316: bin/pipeline-health.sh's 'stranded queue row' block pages strandedqueue:<p>:<key> for a queued build_queue row this many minutes old whose target nothing will claim (target=local on a fly1/pool-routed project, or fly while routing is halted). A value that is not a whole number falls back to 60."
+    },
+    {
+      "env": "STALE_DEQUEUE_MIN",
+      "type": "int",
+      "default": 30,
+      "min": 1,
+      "unit": "minutes",
+      "zero_means": null,
+      "note": "BH-3480: bin/pipeline-health.sh's 'stale dequeue' block pages staledequeue:<p>:<n> for an open PR carrying merge-queue whose newest Mergify payload has said dequeued for this many minutes with no head committed since. A value that is not a positive whole number falls back to 30."
+    },
+    {
+      "env": "LEAD_MERGE_UNQUEUED_MIN",
+      "type": "int",
+      "default": 30,
+      "min": 1,
+      "unit": "minutes",
+      "zero_means": null,
+      "note": "BH-3778: bin/pipeline-health.sh's 'lead merge unqueued' block pages leadunqueued:<owner/repo>#<n>:<head12> once per head for an open, non-draft PR on a LEAD_REVIEW_AUTO_REPOS repo, based on the default branch, whose head has carried lead-verdict success for at least this many minutes while Mergify is not holding it (no queued / checking label). A junk value reads as 30."
+    },
+    {
+      "env": "SWEEPSTALL_SECS",
+      "type": "int",
+      "default": 600,
+      "zero_means": null,
+      "note": "Read by bin/pipeline-health.sh as ${SWEEPSTALL_SECS:-600}: how long an APPROVE'd, OPEN, CLEAN PR may sit outside the merge queue (and not STACKED_WAIT) before the sweepstall page, which names the conductor's row and last log line. Lane D (2026-09-24) cut it from 1800: with the enqueue lock-free a CLEAN approved PR is queued within a tick, so ten minutes unqueued is a bug with a name, not a wait. Registered by BH-1165; no reviewed min/max yet."
+    },
+    {
+      "env": "SWEEPSTALL_HOLD_TICKS",
+      "type": "int",
+      "default": 3,
+      "min": 1,
+      "max": 288,
+      "unit": "ticks",
+      "zero_means": null,
+      "note": "The sweepstall detector (bin/pipeline-health.sh, 'sweep should have landed') skips an APPROVE + OPEN + CLEAN PR whose merge-conductor row is READY when the conductor recorded a hold reason for that head (state/merge-conductor/ready-why/<key>, written by mc_ready_why every tick the READY arm holds it) within this many conductor ticks (a tick = max(MC_TICK_SECS, 300)s). Older than that, the conductor stopped saying why and the PR pages, quoting that reason. A MERGE_HELD or PR-dependency-gate log line for the head exempts it regardless."
+    },
+    {
+      "env": "TMP_FULL_PCT",
+      "type": "int",
+      "default": 80,
+      "zero_means": null,
+      "note": "Read by bin/pipeline-health.sh as ${TMP_FULL_PCT:-80}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "RESTORE_DRILL_STALE_DAYS",
+      "type": "int",
+      "default": 8,
+      "zero_means": null,
+      "note": "Read by bin/pipeline-health.sh as ${RESTORE_DRILL_STALE_DAYS:-8}: days without a passing restore drill (counted from the first run when none has passed) before restoredrillstale pages. A value that is not a positive whole number is logged and 8 is used. BH-400.3."
+    },
+    {
+      "env": "HARNESS_HEAD_GRACE_S",
+      "type": "int",
+      "default": 5400,
+      "min": 3900,
+      "zero_means": null,
+      "note": "BH-2529: section 8 (fleet checkout freshness) judges each remote box's harness HEAD, read from box_status, against the newest first-parent origin/main commit older than this many seconds, and ignores a report older than it (logged as unknown, not paged). Must exceed the hourly lane-gate HEAD report (3600 s) plus fleet-propagate's ~5 min, or a box that synced correctly pages until its next report."
+    },
+    {
+      "env": "HARNESS_CHECKOUT",
+      "type": "string",
+      "default": "/root/harness-checkout",
+      "zero_means": null,
+      "note": "Read by bin/pipeline-health.sh as ${HARNESS_CHECKOUT:-/root/harness-checkout} for section 8 (fleet checkout freshness, BH-2529). The checkout path a test seam overrides; NOT settable from the control plane — only env/global.env on the box moves it.",
+      "settable": false
+    },
+    {
+      "env": "PAUSE_EXPIRY_WARN_S",
+      "type": "int",
+      "default": 7200,
+      "min": 0,
+      "max": 604800,
+      "unit": "seconds",
+      "zero_means": "off",
+      "note": "Read by bin/pipeline-health.sh's pause expiry warning block: a live pauses row (state/pauses.json, refreshed by pause_refresh) whose expires_at falls within this many seconds pages once per (scope, what, expires_at), so a board pause never lapses unannounced. 0 = off; a value that is not a whole number falls back to 7200."
+    },
+    {
+      "env": "PREPLAN_HIT_ZERO_MIN_BUILDS",
+      "type": "int",
+      "default": 10,
+      "min": 0,
+      "zero_means": "off",
+      "note": "BH-3437: bin/pipeline-health.sh's pre-plan hit rate block fires a warn digest (preplanzero:<p>, retractable) when a project has at least this many builds (adopted + stale + miss) in PREPLAN_HIT_WINDOW_DAYS and adopted none. 0 = off; the hit-rate line in logs/pipeline-health.log is written either way. A value that is not a whole number falls back to 10."
+    },
+    {
+      "env": "PREPLAN_HIT_WINDOW_DAYS",
+      "type": "int",
+      "default": 7,
+      "min": 1,
+      "max": 30,
+      "unit": "days",
+      "zero_means": null,
+      "note": "BH-3437: the window the pre-plan hit rate block asks GET /api/preplans/adoption for (the route refuses outside 1-30). Out of range or not a whole number falls back to 7."
+    },
+    {
+      "env": "WAKE_ARMED_WATCH_S",
+      "type": "int",
+      "default": 3600,
+      "min": 0,
+      "unit": "seconds",
+      "zero_means": "off",
+      "required": true,
+      "note": "BH-4060: bin/pipeline-health.sh's wake classes armed block pages once (wakearmed:hub, retractable) when a wake-lanes-<class> flag is on but bin/wake-loop.sh has not logged 'wake classes armed:' in logs/wake-loop.log for this many seconds. 0 = off. Required: the script has no literal default; a value that is not a whole number turns the check off with one logs/pipeline-health.log line. docs/EVENTS.md section 9."
+    },
+    {
+      "env": "CONSOLE_PAGES_DRIFT_S",
+      "type": "int",
+      "default": 7200,
+      "min": 0,
+      "unit": "seconds",
+      "zero_means": "off",
+      "read_in": "bin/pipeline-health.sh",
+      "note": "BH-3554: seconds the Cloudflare Pages production deploy of console-ui may trail the newest first-parent origin/main console-ui commit before the console pages drift block pages (consolepagesdrift:hub). 0 turns the check off (no Cloudflare call). Non-numeric falls back to 7200."
+    },
+    {
+      "env": "CONSOLE_PAGES_DRIFT_UNREADABLE_N",
+      "type": "int",
+      "default": 3,
+      "min": 1,
+      "zero_means": null,
+      "read_in": "bin/pipeline-health.sh",
+      "note": "BH-3554: consecutive ticks the drift check may fail to read the Pages project (curl failure, success=false, no production commit hash) before it pages consolepagesdrift:unreadable. 3 ticks = 30 min at */10. Non-numeric or 0 falls back to 3."
+    },
+    {
+      "env": "SPEND_ALERT_INTERVAL_S",
+      "type": "int",
+      "default": 3600,
+      "min": 0,
+      "zero_means": null,
+      "note": "Read by bin/pipeline-health.sh's spend alerts block (sa_knob, BH-5526 C2). Seconds between spend alert runs (own stamp state/spend-alerts.stamp). 0 = every pipeline-health tick. Each run makes one since-midnight cost_rows read."
+    },
+    {
+      "env": "SPEND_ALERT_P99_MULT",
+      "type": "number",
+      "default": 1.5,
+      "min": 0,
+      "zero_means": null,
+      "note": "Read by bin/pipeline-health.sh's spend alerts block (sa_knob, BH-5526 C2). A project or lane alerts when today's UTC spend reaches this multiple of its own p99 daily spend. Alert only: nothing is refused or held."
+    },
+    {
+      "env": "SPEND_ALERT_DAYS",
+      "type": "int",
+      "default": 14,
+      "min": 0,
+      "zero_means": null,
+      "note": "Read by bin/pipeline-health.sh's spend alerts block (sa_knob, BH-5526 C2). The complete UTC days of cost_rows the p99 daily spend is measured over. The p99 table is cached once a UTC day in state/spend-alerts/baseline-<day>.tsv."
+    },
+    {
+      "env": "SPEND_ALERT_MIN_DAYS",
+      "type": "int",
+      "default": 7,
+      "min": 0,
+      "zero_means": null,
+      "note": "Read by bin/pipeline-health.sh's spend alerts block (sa_knob, BH-5526 C2). A project or lane needs this many days with cost rows in the window before it has an alert line at all."
+    },
+    {
+      "env": "SPEND_ALERT_PERPR_MULT",
+      "type": "number",
+      "default": 3,
+      "min": 0,
+      "zero_means": null,
+      "note": "Read by bin/pipeline-health.sh's spend alerts block (sa_knob, BH-5526 C2). A project alerts when its 7d cost per merged PR (state/cost/summary.json) is above this multiple of the fleet median. Alert only."
+    },
+    {
+      "env": "SPEND_ALERT_PERPR_MIN_PRS",
+      "type": "int",
+      "default": 3,
+      "min": 0,
+      "zero_means": null,
+      "note": "Read by bin/pipeline-health.sh's spend alerts block (sa_knob, BH-5526 C2). A project needs this many merged PRs in 7d to count toward the fleet median or alert. Fewer than 3 such projects: no median, no alert."
+    },
+    {
+      "env": "SPEND_ALERT_PERPR_HOLD_S",
+      "type": "int",
+      "default": 172800,
+      "min": 0,
+      "zero_means": null,
+      "note": "Read by bin/pipeline-health.sh's spend alerts block (sa_knob, BH-5526 C2). How long a project must stay above the per-PR line before it alerts (state/spend-alerts/perpr-over.tsv holds the start). 0 = alert at first sight."
+    },
+    {
+      "env": "SPEND_CEILING_SEED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "zero_means": "off",
+      "note": "Read by bin/pipeline-health.sh's spend ceiling seed block (sa_knob, BH-5526 C3). 1 = once per UTC day, bin/spend-ceiling-seed.sh writes spend.ceiling.<lane>.day_usd for each lane that has no row yet (insert-if-absent; an existing row is never rewritten). 0 = no row is seeded; rows that exist stay and are still enforced."
+    },
+    {
+      "env": "SPEND_CEILING_P99_MULT",
+      "type": "number",
+      "default": 3,
+      "min": 1,
+      "zero_means": null,
+      "note": "Read by bin/pipeline-health.sh's spend ceiling seed block (sa_knob, BH-5526 C3). A seeded runaway ceiling is this multiple of the lane's p99 daily spend, rounded up to the cent. Changes only rows not yet seeded."
+    },
+    {
+      "env": "SPEND_CEILING_MIN_DAYS",
+      "type": "int",
+      "default": 7,
+      "min": 7,
+      "zero_means": null,
+      "note": "Read by bin/pipeline-health.sh's spend ceiling seed block (sa_knob, BH-5526 C3). A lane gets a seeded ceiling only with at least this many UTC days of cost_rows in the p99 table. The block reads a value under 7 as 7."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/pipeline-health.log"
+  }
+}

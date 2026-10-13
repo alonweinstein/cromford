@@ -1,0 +1,10 @@
+# @hub-lanes
+
+# ── RULE ADOPT (BH-3715, BH-3692.2) ────────────────────────────────────────
+# bin/rule-adopt.sh tick — every 15 min, land the rule miner's lint-backed
+# rules PR (rules/mined-<date>-lint) through the normal lead lane: guard its
+# authorship and files, ask for a lead review of the live head, and hand a
+# head-bound lead MERGE to mc_enqueue. Then one warn per merged -lint PR naming
+# each adopted rule, its check and its incidents. No model call, never merges.
+# Off via flags/lane-off-rule-adopt. Log: logs/rule-adopt.log.
+*/15 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/rule-adopt.sh tick >/dev/null 2>&1

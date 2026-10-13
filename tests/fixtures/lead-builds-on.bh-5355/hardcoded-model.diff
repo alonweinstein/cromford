@@ -1,0 +1,16 @@
+diff --git a/agents/summarize.js b/agents/summarize.js
+index 4c8a386..84f0422 100644
+--- a/agents/summarize.js
++++ b/agents/summarize.js
+@@ -1,9 +1,9 @@
+ // agents/summarize.js — summarise one ticket thread for the board.
+-import { resolveModel } from "../lib/model-config.js";
+ import { withHumanVoice } from "../lib/voice.js";
+ 
+ export async function summarize(client, thread) {
+-  const model = await resolveModel("summarize");
++  // Sonnet is fast enough for a summary; no need for the config lookup.
++  const model = "claude-sonnet-4-5";
+   const res = await client.messages.create({
+     model,
+     max_tokens: 800,

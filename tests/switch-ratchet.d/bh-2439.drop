@@ -1,0 +1,4 @@
+# BH-2439: bin/lib/split-chain.sh split_chain_on and bin/lib/test-home-lib.sh th_enabled
+# now read split-chain-off / test-reroute-off through lane_switch. The
+# wake-lanes.sh `[ ! -f` read never matched bare_count.
+2

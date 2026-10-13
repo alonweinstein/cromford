@@ -1,0 +1,21 @@
+{
+  "libs": [
+    {
+      "id": "caller-check",
+      "file": "bin/lib/caller-check.sh",
+      "note": "BH-5791. The caller check after the build's main merge: the `caller check` block in bin/lib/rb/pr.sh runs bin/caller-check.sh after the rebase verify and puts `## Interface callers (BH-5791)` into the PR body. Read per project through lib_env_apply caller-check <project> in cc_conf. Doc: docs/notes/2026-10-10-BH-5791-design-collisions.md.",
+      "knobs": [
+        {
+          "env": "CALLER_CHECK_MAX_LINES",
+          "type": "int",
+          "default": 60,
+          "min": 0,
+          "max": 500,
+          "zero_means": "off",
+          "required": false,
+          "note": "How many caller bullets the PR body section prints; the rest are counted and stay in callers.txt on the build box. 0 = the caller check is off: it does not run and the PR body carries no section. A value that is not a whole number uses 60."
+        }
+      ]
+    }
+  ]
+}

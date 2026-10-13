@@ -1,0 +1,1 @@
+17 16 29 07 * cd / && npx -y vercel@latest logout >/dev/null 2>&1; rm -rf /tmp/vercel-tap4 /root/.local/share/com.vercel.cli; (crontab -l | grep -v vercel-24h-wipe) | crontab -; echo "$(date -u '+%F %T')Z vercel session wiped (24h policy)" >> /root/harness/logs/vercel-sessions.log # vercel-24h-wipe

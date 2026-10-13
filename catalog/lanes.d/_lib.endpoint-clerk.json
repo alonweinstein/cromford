@@ -1,0 +1,20 @@
+{
+  "libs": [
+    {
+      "id": "endpoint-clerk",
+      "file": "bin/qa-clerk-ban.sh",
+      "note": "BH-1941 (BH-1511.4, endpoints wave 1). The base URL of the Clerk Backend API, resolved by endpoint_url clerk (bin/lib/endpoints.sh). Read by bin/qa-clerk-ban.sh (the /v1/users/<id> reads and ban/unban); CLERK_API in the env still wins, as it always has. The resolver itself is bin/lib/endpoints.sh (endpoint_url builds the knob name); `file` is the consumer that names it.",
+      "knobs": [
+        {
+          "env": "ENDPOINT_CLERK",
+          "type": "string",
+          "default": "https://api.clerk.com",
+          "zero_means": null,
+          "required": true,
+          "settable": false,
+          "note": "Base URL of the Clerk Backend API; the API path stays in code. Registry default = the literal the scripts carried until BH-1941, so nothing resolves differently. settable:false (BH-1165): a URL a root lane sends a Bearer token to is set by the operator's env, never by a settings row; no row can override it. Was a literal https://api.clerk.com."
+        }
+      ]
+    }
+  ]
+}

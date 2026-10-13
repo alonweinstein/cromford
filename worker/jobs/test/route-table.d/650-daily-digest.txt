@@ -1,0 +1,3 @@
+# DAILY-DIGEST (BH-3703, BH-3688): one UTC day of the fleet for the daily
+# digest, appended after cost-breakdown at the END of the table.
+GET /api/metrics/daily-digest

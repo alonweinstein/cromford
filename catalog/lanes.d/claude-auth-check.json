@@ -1,0 +1,88 @@
+{
+  "id": "claude-auth-check",
+  "name": "Claude auth check",
+  "scope": "hub",
+  "script": "bin/claude-auth-check.sh",
+  "cadence": "51 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-claude-auth-check",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "AUTH_CHECK_LIB",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/claude-auth-check.sh as ${AUTH_CHECK_LIB:-}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "AUTH_FALLBACK_MODEL",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Empty by default since BH-1510.2: the model is a database row, model_routes role 'auth.fallback', read through bin/claude-auth-check.sh (resolved on the hub, written into the probe; a box env still wins there). Set this only to override that row on this box/lane; no reviewed min/max, nothing is clamped."
+    },
+    {
+      "env": "TRIAGE_MODEL",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Empty by default since BH-1510.2: the model is a database row, model_routes role 'triage', read through bin/claude-auth-check.sh (resolved on the hub, written into the probe; a box env still wins there). Set this only to override that row on this box/lane; no reviewed min/max, nothing is clamped."
+    },
+    {
+      "env": "LANE_DOWN_TTL_S",
+      "type": "int",
+      "default": 7200,
+      "zero_means": null,
+      "note": "Read by bin/claude-auth-check.sh (ld_mark in bin/lib/lane-down.sh, and auth_lane_row for lane claude <box>) as ${LANE_DOWN_TTL_S:-7200}: seconds a fleet `lane` row (bin/lib/fleet-cooldown.sh) stays live after a mark; every mark refreshes it; a non-numeric or 0 value falls back to 7200. Registered by BH-2359, the change that introduced the read; no reviewed min/max yet, so nothing is clamped.",
+      "read_in": "bin/lib/lane-down.sh",
+      "settable": true
+    },
+    {
+      "env": "LLM_LANE_ENABLED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "0 makes this lane call no model at all. bin/lib/llm-gate.sh refuses BEFORE the vendor call and writes a zero-cost row_source=refused row, so the stop is visible in the ledger rather than being a lane that went quiet."
+    },
+    {
+      "env": "LLM_RUNNER_ALLOWED",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Comma/space list of the ONLY ladder rungs this lane may reach. Empty is every rung, i.e. today's ladder unchanged. A rung outside the list is refused before the call, so a cliff or a failure on the standing lane cannot descend into one that costs ~100x (#1141, the $793 descent)."
+    },
+    {
+      "env": "LLM_USD_CAP_DAY",
+      "type": "float",
+      "default": 0,
+      "min": 0,
+      "max": 10000,
+      "unit": "usd",
+      "zero_means": "unlimited",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Dollars this lane may spend in the current UTC day, summed from D1 cost_rows through GET /api/metrics/llm-spend — never from the box's own logs/cost.csv. A second, project-scoped ceiling is the lane.<id>.<project>.llm_usd_cap_day row, which is read only when somebody wrote it."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/claude-auth-check.log"
+  }
+}

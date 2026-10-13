@@ -1,0 +1,8 @@
+First, I owe you the BH-4701 rebuild report. It was due at 08:00Z and it is now
+6 hours late. It covers why the rebuild ran twice and what changed in the plan.
+You get it by 16:00Z today.
+
+Now your question. Decomposed rework is 12.5% this week in this recorded case,
+flat on last week. No new cause showed up in the rollup.
+
+VERDICT: lead-owed

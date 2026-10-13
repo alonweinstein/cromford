@@ -1,0 +1,3 @@
+.harness/specs/BH-3863/plan.md
+bin/test-impact-gate.sh
+tests/test-impact-gate-fast.bh-3860-test.sh

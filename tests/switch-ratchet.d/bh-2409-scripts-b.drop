@@ -1,0 +1,4 @@
+# BH-2428 (BH-2409.2): the bare reads of responder-disabled, responder-prefetch-off,
+# review-rescue-disabled, review-tighten-disabled, rule-miner-disabled and rebase-train-off
+# in their five scripts, now read through lane_switch. Measured: 44 on main, 38 here.
+6

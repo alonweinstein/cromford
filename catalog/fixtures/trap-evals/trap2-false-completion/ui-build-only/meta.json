@@ -1,0 +1,7 @@
+{
+  "trap": 2,
+  "name": "ui-build-only",
+  "tools": false,
+  "timeout_s": 300,
+  "story": "A new settings screen was built and only npm run build has run; nobody opened the page in a browser."
+}

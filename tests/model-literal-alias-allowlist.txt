@@ -1,0 +1,1 @@
+bin/oauth-refresh.sh	--model haiku at the CLI refresh call; removed by BH-2549.3 (#2561), which owns that line. Delete this line when it lands.

@@ -1,0 +1,23 @@
+{
+  "note": "BH-5617 (BH-5611.1): knobs read by bin/lib/sentry-report.sh, the bash Sentry reporter that merge-conductor (autoenqueue ledger skip, WORKER_DEADLINE) and review-prs (/tmp cap) call. It is a lib, not a lane, so its knobs live in the registry's `libs` scope, keyed lib.sentry-report.<env lowercased>. HARNESS_SENTRY_DSN is NOT here: it is a secret, set only in env/global.env, and a secret is never a registry knob.",
+  "libs": [
+    {
+      "id": "sentry-report",
+      "file": "bin/lib/sentry-report.sh",
+      "note": "Resolved through lib_env_apply sentry-report inside a subshell, so the gate's fail-closed exit 75 can never fail the caller. The kill switch is flags/lane-off-sentry-report or the pause_flags row of the same name.",
+      "knobs": [
+        {
+          "env": "SENTRY_MAX_PER_FP_HOUR",
+          "type": "int",
+          "default": 6,
+          "min": 0,
+          "max": 60,
+          "required": true,
+          "settable": true,
+          "zero_means": "off",
+          "note": "Sentry events one fingerprint ([lane, project, reason]) may send in a rolling hour. The ledger state/sentry-report/<key>.sends counts each attempt BEFORE the send, so a failed send counts too. 0 = send nothing. bin/lib/sentry-report.sh has no literal for it: row > cached row > env > this default; with none of them it logs cap-unresolved and sends nothing."
+        }
+      ]
+    }
+  ]
+}

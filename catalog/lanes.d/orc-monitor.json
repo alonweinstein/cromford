@@ -1,0 +1,141 @@
+{
+  "id": "orc-monitor",
+  "name": "Orchestrator monitor",
+  "scope": "hub",
+  "script": "/root/orchestrator/bin/orc-monitor.sh",
+  "cadence": "*/5 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-orc-monitor",
+    "aliases": [
+      {
+        "name": "monitor-off",
+        "off_when": "present"
+      }
+    ]
+  },
+  "wired": false,
+  "knobs": [
+    {
+      "env": "LLM_LANE_ENABLED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "0 makes the orchestrator's turn call no model at all: the primary turn (bin/claude-cost.sh, BH-2534) and the survival turn (bin/agent-call.sh) are both refused BEFORE the vendor call with a zero-cost row_source=refused row, and the orchestrator answers from its bash floor."
+    },
+    {
+      "env": "LLM_RUNNER_ALLOWED",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Comma/space list of the ONLY runners the orchestrator's turn may reach. Empty is every runner, i.e. today's ladder unchanged. The primary turn is runner claude (bin/claude-cost.sh); the survival turn names its own runner through bin/agent-call.sh. A runner outside the list is refused before the call."
+    },
+    {
+      "env": "LLM_USD_CAP_DAY",
+      "type": "float",
+      "default": 0,
+      "min": 0,
+      "max": 10000,
+      "unit": "usd",
+      "zero_means": "unlimited",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Dollars the orchestrator's turns may spend in the current UTC day, summed from D1 cost_rows stamped lane_id=orc-monitor on stage orchestrator through GET /api/metrics/llm-spend, never from the box's own logs/cost.csv. Checked before both the primary (bin/claude-cost.sh) and the survival (bin/agent-call.sh) turn."
+    },
+    {
+      "env": "ORC_REPLY_LEDGER_TRIES",
+      "type": "int",
+      "default": 3,
+      "min": 1,
+      "max": 10,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/orc-reply-ledger.sh",
+      "note": "How many times bin/orchestrate.sh posts a turn's chat_reply ledger beat (BEAT_STRICT=1, rkey chat:<command id>) before it gives up and writes one ALERTS line naming the command id. Only turns with a console command id post. The retries run inside the turn (other turns run in parallel), so the worst case adds (tries-1) x backoff seconds plus each try's beat timeout to the turn."
+    },
+    {
+      "env": "ORC_REPLY_LEDGER_BACKOFF_S",
+      "type": "int",
+      "default": 2,
+      "min": 0,
+      "max": 30,
+      "unit": "seconds",
+      "zero_means": null,
+      "read_in": "bin/lib/orc-reply-ledger.sh",
+      "note": "Seconds slept between two chat_reply ledger beat attempts (none after the last). Bounded at 30 because the wait happens inside the turn (other turns run in parallel)."
+    },
+    {
+      "env": "ORC_REPLY_LEDGER_MAX_CHARS",
+      "type": "int",
+      "default": 14000,
+      "min": 1000,
+      "max": 14000,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/orc-reply-ledger.sh",
+      "note": "Characters of the reply text the chat_reply ledger beat carries; a longer reply is cut 120 characters short of this and ends with a cut marker. Telegram still gets the whole reply, and the full text is in /root/orchestrator/last-reply.txt."
+    },
+    {
+      "env": "ORC_CMD_STATUS",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "read_in": "bin/lib/orc-reply-ledger.sh",
+      "note": "1 makes the orchestrator ack the console command row with answered:<iso> (POST /api/commands/<id>/ack) after the reply leaves the turn. 0 sends no command-status ack; the chat_reply ledger beat still posts. The ack is fail-open: a failed POST is silent and never alerts."
+    },
+    {
+      "env": "ORC_TURN_CONCURRENCY",
+      "type": "int",
+      "default": 4,
+      "min": 0,
+      "max": 32,
+      "unit": "turns",
+      "zero_means": null,
+      "read_in": "bin/lib/orc-turns.sh",
+      "note": "BH-5336: how many orchestrator turns (bin/orchestrate.sh, one per chat message) run at once. A message starts its turn as soon as a slot is free; while it waits its command row says queued_behind:<oldest running id>. 0 = no configured cap: the cap is MemAvailable / ORC_TURN_WORKER_MEM_MB (1 to 32), like LEAD_REVIEW_BOX_MAX. Forced to 1 while flags/orchestrator-continue is active, because -c continues one shared claude conversation."
+    },
+    {
+      "env": "ORC_TURN_WORKER_MEM_MB",
+      "type": "int",
+      "default": 1024,
+      "min": 128,
+      "max": 16384,
+      "unit": "MB",
+      "zero_means": null,
+      "read_in": "bin/lib/orc-turns.sh",
+      "note": "BH-5336: memory one orchestrator turn is sized at when ORC_TURN_CONCURRENCY is 0. The cap is then MemAvailable divided by this."
+    },
+    {
+      "env": "ORC_TURN_STALE_S",
+      "type": "int",
+      "default": 90,
+      "min": 5,
+      "max": 3600,
+      "unit": "seconds",
+      "zero_means": null,
+      "read_in": "bin/lib/orc-turns.sh",
+      "note": "BH-5336: a turn claim ($ORC/state/turns/<key>.json) not touched by its heartbeat for this long is stale. The gate ignores it and a re-delivered copy of the command reclaims it. The heartbeat touches the claim every ORC_TURN_STALE_S/6 seconds while the turn's bash, or anything else in its process group, is alive."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/orc-monitor.log"
+  },
+  "external": true,
+  "external_reason": "the script lives in /root/orchestrator, a different repo; this registry can name the lane and carry its switch but cannot add the gate to a file it does not ship"
+}

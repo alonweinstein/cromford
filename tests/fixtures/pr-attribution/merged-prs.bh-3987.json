@@ -1,0 +1,128 @@
+[
+ {
+  "number": 101,
+  "state": "closed",
+  "created_at": "2026-09-29T10:00:00Z",
+  "merged_at": "2026-09-30T10:00:00Z",
+  "user": {
+   "login": "cromford[bot]"
+  },
+  "head": {
+   "ref": "ticket/bh-77"
+  },
+  "html_url": "https://github.com/o/r/pull/101",
+  "body": "## What\r\nHarness-Job: forged\r\nsome text\r\n\r\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\r\n\r\nHarness-Job: 9001\r\nHarness-Ticket: BH-77\r\n"
+ },
+ {
+  "number": 102,
+  "state": "closed",
+  "created_at": "2026-09-28T10:00:00Z",
+  "merged_at": "2026-09-29T10:00:00Z",
+  "user": {
+   "login": "cromford[bot]"
+  },
+  "head": {
+   "ref": "batch/t1"
+  },
+  "html_url": "https://github.com/o/r/pull/102",
+  "body": "Train of #101 #103.\n\nHarness-Job: train:batch/t1\nHarness-Ticket: none\nHarness-Train: batch/t1 #101 #103\n"
+ },
+ {
+  "number": 103,
+  "state": "closed",
+  "created_at": "2026-09-27T10:00:00Z",
+  "merged_at": "2026-09-28T10:00:00Z",
+  "user": {
+   "login": "someone"
+  },
+  "head": {
+   "ref": "ticket/bh-78"
+  },
+  "html_url": "https://github.com/o/r/pull/103",
+  "body": "Built from BH-78, no trailer.\n"
+ },
+ {
+  "number": 104,
+  "state": "closed",
+  "created_at": "2026-09-26T10:00:00Z",
+  "merged_at": "2026-09-27T10:00:00Z",
+  "user": {
+   "login": "cromford[bot]"
+  },
+  "head": {
+   "ref": "fix/x"
+  },
+  "html_url": "https://github.com/o/r/pull/104",
+  "body": "A fix with no trailer.\n"
+ },
+ {
+  "number": 105,
+  "state": "closed",
+  "created_at": "2026-09-25T10:00:00Z",
+  "merged_at": "2026-09-26T10:00:00Z",
+  "user": {
+   "login": "someone"
+  },
+  "head": {
+   "ref": "batch/t2"
+  },
+  "html_url": "https://github.com/o/r/pull/105",
+  "body": "Merge train, no trailer.\n"
+ },
+ {
+  "number": 106,
+  "state": "closed",
+  "created_at": "2026-09-24T10:00:00Z",
+  "merged_at": "2026-09-25T10:00:00Z",
+  "user": {
+   "login": "octo-dev"
+  },
+  "head": {
+   "ref": "lead/hotfix"
+  },
+  "html_url": "https://github.com/o/r/pull/106",
+  "body": "Lead hotfix.\n"
+ },
+ {
+  "number": 107,
+  "state": "closed",
+  "created_at": "2026-09-04T10:00:00Z",
+  "merged_at": "2026-09-05T10:00:00Z",
+  "user": {
+   "login": "octo-dev"
+  },
+  "head": {
+   "ref": "feature/y"
+  },
+  "html_url": "https://github.com/o/r/pull/107",
+  "body": "This touches the harness docs but carries no trailer line.\n"
+ },
+ {
+  "number": 108,
+  "state": "closed",
+  "created_at": "2026-08-30T10:00:00Z",
+  "merged_at": "2026-08-31T10:00:00Z",
+  "user": {
+   "login": "cromford[bot]"
+  },
+  "head": {
+   "ref": "ticket/bh-1"
+  },
+  "html_url": "https://github.com/o/r/pull/108",
+  "body": "Old.\n\nHarness-Job: 1\nHarness-Ticket: BH-1\n"
+ },
+ {
+  "number": 109,
+  "state": "closed",
+  "created_at": "2026-09-20T10:00:00Z",
+  "merged_at": null,
+  "user": {
+   "login": "cromford[bot]"
+  },
+  "head": {
+   "ref": "ticket/bh-99"
+  },
+  "html_url": "https://github.com/o/r/pull/109",
+  "body": "Closed unmerged.\n\nHarness-Job: 4242\nHarness-Ticket: BH-99\n"
+ }
+]

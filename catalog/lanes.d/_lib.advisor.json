@@ -1,0 +1,19 @@
+{
+  "libs": [
+    {
+      "id": "advisor",
+      "file": "bin/lib/advisor.sh",
+      "note": "BH-3491. Whether a claude session through bin/agent-call.sh gets `--advisor <model>`. The MODEL is not a knob here: it is the settings row advisor.<project>, else advisor.default (fable | opus | sonnet | a full claude-* id | off), read like account.<project>; env AGENT_ADVISOR_MODEL is read only when the box has no settings answer at all. No row = no advisor. Applied by agent-call.sh with lib_env_apply advisor, next to the other lib knobs.",
+      "knobs": [
+        {
+          "env": "AGENT_ADVISOR_STAGES",
+          "type": "string",
+          "default": "execute fix",
+          "zero_means": null,
+          "required": true,
+          "note": "The agent-call stages that may carry --advisor, space or comma separated; `none` = no stage. execute covers run-build execute and the resolver fix round; fix covers in-build review fixes, the QA fix and the lander conflict fix. Read as ${AGENT_ADVISOR_STAGES:-}: unset (no registry) means no stage."
+        }
+      ]
+    }
+  ]
+}

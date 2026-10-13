@@ -1,0 +1,6 @@
+# BH-2659 (BH-2518.1): box commands, directly after box-console-commands
+# (565), where src/index.js puts it. 567 sorts between 565 and 570-llm-sites.
+POST /api/box-commands
+GET /api/box-commands
+POST /api/box-commands/claim
+POST re:/^\/api\/box-commands\/(\d+)\/result$/

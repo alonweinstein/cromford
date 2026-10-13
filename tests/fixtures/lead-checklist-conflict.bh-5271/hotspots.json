@@ -1,0 +1,4 @@
+{"hotspots":[
+  {"file":"worker/jobs/schema.sql","conflicts":17,"rebases":9,"window_days":30},
+  {"file":"bin/blocked-resolver.sh","conflicts":11,"rebases":4,"window_days":30}],
+ "run":{"last_ok_at":"2026-10-05T03:00:00Z","window_days":30},"total":2,"limit":10,"truncated":false}

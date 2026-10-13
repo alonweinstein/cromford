@@ -1,0 +1,141 @@
+{
+  "id": "tmp-sweep",
+  "name": "/tmp sweep (every 15 min)",
+  "scope": "box",
+  "script": "bin/tmp-sweep.sh",
+  "cadence": "8,23,38,53 * * * *",
+  "boxes": [
+    "project-4",
+    "hub",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-tmp-sweep"
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "HARNESS_ROOT",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "read_in": "bin/tmp-sweep.sh",
+      "note": "no static default — the script computes it (${HARNESS:-/root/harness}). Read by bin/tmp-sweep.sh as ${HARNESS_ROOT:-${HARNESS:-/root/harness}}. A test seam for BH-5007's sweep; NOT settable from the control plane — it is a path a root lane uses, so only env/global.env on the box moves it.",
+      "settable": false
+    },
+    {
+      "env": "MIN_AGE_MIN",
+      "type": "int",
+      "default": 180,
+      "min": 30,
+      "zero_means": null,
+      "read_in": "bin/tmp-sweep.sh",
+      "note": "Minutes since the NEWEST write anywhere inside a /tmp top-level entry before bin/tmp-sweep.sh may remove it. Protects the live scratch of a running job: an entry with any write inside it in this many minutes is kept. Each firing costs nothing; it only frees space. Not a whole number at or over 30 skips the sweep with a log line. BH-5007, BH-5608."
+    },
+    {
+      "env": "TMP_ALERT_PCT",
+      "type": "int",
+      "default": 85,
+      "min": 50,
+      "max": 99,
+      "zero_means": null,
+      "read_in": "bin/tmp-sweep.sh",
+      "note": "/tmp Use% strictly over which bin/tmp-sweep.sh raises tmp-high-<host> (warn, the batched digest) after its sweep; resolved when /tmp is back at or under it. BH-5007."
+    },
+    {
+      "env": "TMP_SWEEP_SCAN_TIMEOUT_S",
+      "type": "int",
+      "default": 60,
+      "min": 5,
+      "zero_means": null,
+      "read_in": "bin/tmp-sweep.sh",
+      "note": "Seconds bin/tmp-sweep.sh may spend reading the newest mtime inside one /tmp entry; an entry whose age is not read in time is kept and counted skipped_unreadable. BH-5007."
+    },
+    {
+      "env": "TMP_SWEEP_RUN_DEADLINE_S",
+      "type": "int",
+      "default": 900,
+      "min": 30,
+      "zero_means": null,
+      "read_in": "bin/tmp-sweep.sh",
+      "note": "Total seconds for one bin/tmp-sweep.sh run; entries past it are left for the next run and counted left=. Not box-housekeeping's TMP_SWEEP_DEADLINE_S (disk-clean lane). BH-5007."
+    },
+    {
+      "env": "TMP_SWEEP_PATTERNS",
+      "type": "string",
+      "default": "pb*-proto pb*-sg bh*-proto bh*-rp scratch.* impact-gate.* rules-pack.* rv* wt* r[0-9]* bh[0-9]* pr[0-9]* lr[0-9]* rules-pack-snap.* pb*-* lanes-build.* review-prs-*",
+      "zero_means": null,
+      "read_in": "bin/tmp-sweep.sh",
+      "note": "Space-separated basename globs bin/tmp-sweep.sh may remove from the top level of /tmp. This is the deletion scope of a root lane, so it is NOT settable from the control plane; only env/global.env on the box moves it. BH-5007, BH-5608, BH-6041.",
+      "settable": false
+    },
+    {
+      "env": "TMP_SWEEP_ROOT",
+      "type": "string",
+      "default": "/tmp",
+      "zero_means": null,
+      "read_in": "bin/tmp-sweep.sh",
+      "note": "Read by bin/tmp-sweep.sh as ${TMP_SWEEP_ROOT:-...}. A test seam for BH-5007's sweep; NOT settable from the control plane — it is a path a root lane deletes under, so only env/global.env on the box moves it.",
+      "settable": false
+    },
+    {
+      "env": "TMP_SWEEP_PROC",
+      "type": "string",
+      "default": "/proc",
+      "zero_means": null,
+      "read_in": "bin/tmp-sweep.sh",
+      "note": "Read by bin/tmp-sweep.sh as ${TMP_SWEEP_PROC:-...}. A test seam for BH-5007's sweep; NOT settable from the control plane — it is a path a root lane uses, so only env/global.env on the box moves it.",
+      "settable": false
+    },
+    {
+      "env": "TMP_SWEEP_NOW",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "read_in": "bin/tmp-sweep.sh",
+      "note": "no static default — the script computes it ($(date +%s)). Read by bin/tmp-sweep.sh as ${TMP_SWEEP_NOW:-...}. A test seam for BH-5007's sweep; NOT settable from the control plane — it is a clock a root lane uses, so only env/global.env on the box moves it.",
+      "settable": false
+    },
+    {
+      "env": "TMP_SWEEP_STOPGAP_FILE",
+      "type": "string",
+      "default": "/etc/cron.d/tmp-sweep",
+      "zero_means": null,
+      "read_in": "bin/tmp-sweep.sh",
+      "note": "The hand-made stopgap cron file bin/tmp-sweep.sh removes after a real sweep when its only line is the BH-5007 stopgap. A test seam; NOT settable from the control plane — it is a path a root lane deletes, so only env/global.env on the box moves it.",
+      "settable": false
+    },
+    {
+      "env": "TMP_SWEEP_CLAIMS",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "read_in": "bin/tmp-sweep.sh",
+      "note": "no static default — the script computes it ($HARNESS_ROOT/state/claims). The live job claims dir bin/tmp-sweep.sh reads: a claim line naming a path under a /tmp entry keeps that entry. A test seam for BH-5608; NOT settable from the control plane — it is a path a root lane uses, so only env/global.env on the box moves it.",
+      "settable": false
+    },
+    {
+      "env": "HARNESS_TEST_SANDBOX",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "read_in": "bin/tmp-sweep.sh",
+      "note": "Test seam gate: when this is 1 and TMP_SWEEP_ROOT is unset, bin/tmp-sweep.sh skips the sweep with a log line, so a suite never sweeps the real /tmp (the test harness sets it). Never set on a box, and NOT settable from the control plane. BH-5608.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/tmp-sweep.log"
+  }
+}

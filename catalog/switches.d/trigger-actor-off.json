@@ -1,0 +1,1 @@
+{"name":"trigger-actor-off","readers":["bin/lib/trigger-actor.sh"],"box_scoped":true,"what":"turns off the trigger actor gate (BH-4490): every build is allowed whoever added the ai-build label or moved the ticket, with no allowlist, events or ledger read"}

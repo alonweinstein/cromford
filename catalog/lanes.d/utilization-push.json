@@ -1,0 +1,70 @@
+{
+  "id": "utilization-push",
+  "name": "Utilization snapshot collector",
+  "scope": "hub",
+  "script": "bin/utilization-push.sh",
+  "cadence": "7 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-utilization-push",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "UTIL_PUSH_ENABLED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "read_in": "bin/utilization-push.sh",
+      "note": "BH-4008: read by bin/utilization-push.sh as ${UTIL_PUSH_ENABLED:-1}; the code literal is the documented fallback. 0 writes ` disabled` and stops.",
+      "settable": true
+    },
+    {
+      "env": "UTIL_RETENTION_DAYS",
+      "type": "int",
+      "default": 35,
+      "min": 7,
+      "max": 90,
+      "unit": "days",
+      "zero_means": null,
+      "read_in": "bin/utilization-push.sh",
+      "note": "BH-4008: days of hourly snapshots kept per project. Read by bin/utilization-push.sh as ${UTIL_RETENTION_DAYS:-35} (the code literal is the documented fallback) and sent as retention_days; PUT /api/utilization clamps it to 7..90 and prunes that project's older rows.",
+      "settable": true
+    },
+    {
+      "env": "UTIL_PUSH_DEADLINE_S",
+      "type": "int",
+      "default": 600,
+      "min": null,
+      "max": null,
+      "unit": "seconds",
+      "zero_means": null,
+      "read_in": "bin/utilization-push.sh",
+      "note": "Test seam: replaces the collector's 600 s deadline. Honoured only under HARNESS_TEST_SANDBOX=1 and only when it is all digits. NOT settable from the control plane.",
+      "settable": false
+    },
+    {
+      "env": "HARNESS_TEST_SANDBOX",
+      "type": "string",
+      "default": "",
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/utilization-push.sh",
+      "note": "Test seam gate: bin/utilization-push.sh honours UTIL_PUSH_DEADLINE_S only when this is 1 (the test harness sets it). Never set on a box, and NOT settable from the control plane.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/utilization-push.log"
+  }
+}

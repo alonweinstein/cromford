@@ -1,0 +1,7 @@
+# tests/mc/expected-map.d/BH-4596.tsv — 2026-10-05: a rebound approval publishes
+# the lead-verdict status on the new head (mc_rebind_publish), and the QUEUED/READY
+# TTL re-kick republishes it from a standing verdict (mc_vs_ttl_republish, which
+# reads the head's state with mc_vs_state_on); origin=lib, all three are new.
+settle	mc_rebind_publish	lib
+classify	mc_vs_state_on	lib
+classify	mc_vs_ttl_republish	lib

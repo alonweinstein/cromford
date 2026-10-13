@@ -1,0 +1,12 @@
+diff --git a/worker/jobs/schema.sql b/worker/jobs/schema.sql
+index c6ac5ce..ff0403d 100644
+--- a/worker/jobs/schema.sql
++++ b/worker/jobs/schema.sql
+@@ -5,3 +5,7 @@ CREATE TABLE IF NOT EXISTS jobs (
+   id TEXT PRIMARY KEY,
+   status TEXT NOT NULL
+ );
++
++CREATE TABLE IF NOT EXISTS foo (
++  id TEXT PRIMARY KEY
++);

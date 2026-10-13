@@ -1,0 +1,11 @@
+diff --git a/docs/notes/2026-09-16-BH-1-x.md b/docs/notes/2026-09-16-BH-1-x.md
+new file mode 100644
+index 0000000..3333333
+--- /dev/null
++++ b/docs/notes/2026-09-16-BH-1-x.md
+@@ -0,0 +1,5 @@
++# The wake loop drains every 15s
++
++Doc: EVENTS
++
++What changed, why, and which state it touches.

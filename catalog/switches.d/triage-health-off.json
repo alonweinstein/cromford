@@ -1,0 +1,1 @@
+{"name":"triage-health-off","readers":["bin/lib/triage-throttle.sh"],"box_scoped":true,"what":"stops the health precondition in front of a paid triage tick"}

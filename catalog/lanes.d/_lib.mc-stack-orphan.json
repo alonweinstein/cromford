@@ -1,0 +1,22 @@
+{
+  "libs": [
+    {
+      "id": "mc-stack-orphan",
+      "file": "bin/lib/mc/rebase.sh",
+      "note": "BH-3950. The merge conductor's stacked-orphan path: a child whose parent CLOSED unmerged or never had a PR is retargeted to the project base (stack_orphan_retarget in bin/merge-conductor.sh) and then owes a head-bound re-review before it may merge. Applied by rebase.sh at file scope, in a subshell; the code literal after the read is the documented fallback when there is no registry. The STACKED_WAIT TTL the NONE arm reads is the existing MC_TTL_STACKED_WAIT (mc_ttl), not a knob here.",
+      "knobs": [
+        {
+          "env": "MC_RETARGET_REREVIEW",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 1,
+          "unit": "flag",
+          "zero_means": "a retarget off a closed or absent parent keeps the review it had (pre-BH-3950), and a NONE parent whose branch is gone is no longer judged on the conflict half alone: the full mc_orphan_clean check runs and parks it orphaned-child",
+          "required": true,
+          "note": "1 writes `rtreview <key> <head>` after a retarget off a CLOSED-unmerged or PR-less parent, and holds the row on WAIT_REVIEW `retargeted off closed parent - re-review owed` until a claude head-bound re-review of that head, bought after the retarget, APPROVES (`rtcleared <key> <head>`; a provcleared row or verdict that predates the retarget does not release it). It is also what lets a NONE parent's gone branch be judged on the conflict half alone (carry=0). The MERGED arm never owes one. Read as ${MC_RETARGET_REREVIEW:-1}."
+        }
+      ]
+    }
+  ]
+}

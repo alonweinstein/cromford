@@ -1,0 +1,6 @@
+{
+  "gate": "board-changed",
+  "project": "project-2",
+  "board_shape": "board-api",
+  "note": "The client answered the triage question and the mechanism is confirmed; nothing blocks the build. The baseline positive case — if this stops scoring launch, the SOP has stopped building anything."
+}

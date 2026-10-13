@@ -1,0 +1,66 @@
+{
+  "id": "heartbeat-reaper",
+  "name": "Heartbeat reaper",
+  "scope": "hub",
+  "script": "bin/heartbeat-reaper.sh",
+  "cadence": "*/5 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-heartbeat-reaper",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "HB_BOOT_AT",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/heartbeat-reaper.sh as ${HB_BOOT_AT:-}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "HB_RESTART_PER_HOUR",
+      "type": "int",
+      "default": 3,
+      "zero_means": null,
+      "note": "Read by bin/heartbeat-reaper.sh as ${HB_RESTART_PER_HOUR:-3}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "BOX_NAME",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Fallback for this box's own name when state/box-name is absent. Read by bin/heartbeat-reaper.sh as ${BOX_NAME:-}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "HB_SILENT_FLOOR_S",
+      "type": "int",
+      "default": 120,
+      "min": 0,
+      "unit": "seconds",
+      "zero_means": "off",
+      "read_in": "bin/lib/heartbeat.sh",
+      "note": "Silence floor for the lane heartbeat: a live lane is called silent only past max(interval x HB_STALE_MULT, this). 0 = off (the pre-BH-4717 arithmetic). Read by bin/lib/heartbeat.sh hb_state as ${HB_SILENT_FLOOR_S:-120}; the reaper puts the settings row in the environment via lane_env_apply, env/global.env is the fallback."
+    },
+    {
+      "env": "HB_STALE_MULT",
+      "type": "int",
+      "default": 3,
+      "min": 1,
+      "zero_means": null,
+      "read_in": "bin/lib/heartbeat.sh",
+      "note": "A live lane is silent past interval x this (never under HB_SILENT_FLOOR_S). Read by bin/lib/heartbeat.sh hb_state as ${HB_STALE_MULT:-3}; the reaper puts the settings row in the environment via lane_env_apply, env/global.env is the fallback."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/heartbeat-reaper.log"
+  }
+}

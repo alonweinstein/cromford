@@ -1,0 +1,14 @@
+# @hub-lanes
+
+# ── DOORBELL COVERAGE (2026-09-16) ───────────────────────────────────────────
+# Daily at 05:50Z, ten minutes after the CLI sweep: does every repo in
+# fleet.conf still have a LIVE webhook pointing at the harness-jobs receiver?
+# The doorbell is armed PER REPO (docs/EVENTS.md §4.3 — the org-level hook it
+# was designed as answers 403 for our PAT), which means a project onboarded
+# after the one-time arming gets none, and a hook someone deletes leaves no
+# trace. cromford spent its first day exactly there: zero wakes, triage
+# braked to 45-minute ticks, 76 open ai-build issues behind a 5-per-tick
+# reconciler, and not one line anywhere saying why. Read-only, one ALERTS line
+# per repo per day, and the alert carries the arming command because the shared
+# secret is pasted by a human and no script here can read it.
+50 5 * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/doorbell-coverage-check.sh --quiet >/dev/null 2>&1

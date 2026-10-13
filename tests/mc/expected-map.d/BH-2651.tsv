@@ -1,0 +1,3 @@
+# BH-2651 (BH-2613.3): the root the rebase module resolves hold.sh and gh-token.sh
+# from — MC_H, then HARNESS, then H, and nothing with none of them.
+rebase	_mc_root	lib

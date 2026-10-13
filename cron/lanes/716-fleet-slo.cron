@@ -1,0 +1,17 @@
+# @hub-lanes
+
+# ── FLEET SLO (K1, 2026-09-24) ──────────────────────────────────────────────
+# bin/fleet-slo.sh — five fleet-level rates (build refusal, lane death, stale
+# running rows, silent boxes, main red), one incident alert in and one resolve
+# out (docs/SLO.md). It has been in the repo since 2026-09-15 and documented
+# as "hub cron */10", but no fragment ever scheduled it.
+#
+# SHIPPED DARK: --dry-run. The detector has never run against the live fleet,
+# it has no hysteresis (one tick opens an incident, one tick resolves it), and
+# flags/slo.conf's thresholds were never checked against a real week. Dry-run
+# measures and writes every BREACH / summary line to logs/fleet-slo.log and
+# pages nothing, opens no incident and writes no status.json. Turning it on is
+# deleting `--dry-run` here, after a day of that log says the thresholds are
+# real (and hysteresis lands). Thresholds: flags/slo.conf.
+# Kill: flags/fleet-slo-off, or bin/harness-ctl.sh off fleet-slo.
+*/10 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/fleet-slo.sh --dry-run >/dev/null 2>&1

@@ -1,0 +1,14 @@
+GET /api/lanes/registry
+GET /api/lanes/status
+# Review round 2 of #1565: the boxes that tick lanes, for the seed's fleet gate.
+GET /api/lanes/tick-boxes
+POST any:/api/lanes/all-off|/api/lanes/all-on
+GET /api/lanes
+PUT /api/lanes
+POST /api/lanes/tick
+# BH-1165 added both of these to the table and to this fixture in the
+# position the table puts them, which is what the header above asks for: a
+# route added after the split is added to BOTH lists, deliberately.
+POST /api/lanes/liveness
+POST /api/lanes/flag-seen
+PATCH /api/lanes/alert

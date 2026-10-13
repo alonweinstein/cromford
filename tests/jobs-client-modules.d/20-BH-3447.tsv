@@ -1,0 +1,12 @@
+# tests/jobs-client-modules.d/20-BH-3447.tsv — the hub-probe request ledger verbs and their private helpers (BH-3447, BH-3434.0).
+hub-probe	hp_request
+hub-probe	hp_claim
+hub-probe	hp_result
+hub-probe	hp_commented
+hub-probe	hp_list
+hub-probe	hp_count_today
+hub-probe	hp_d1_count
+hub-probe	_hp_uri
+hub-probe	_hp_rows
+hub-probe	_hp_count
+hub-probe	_hp_ok

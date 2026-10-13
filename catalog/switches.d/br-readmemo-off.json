@@ -1,0 +1,1 @@
+{"name":"br-readmemo-off","readers":["bin/lib/br/opt/readmemo.sh"],"box_scoped":true,"what":"turns off the per-run read memo of bin/blocked-resolver.sh (bin/lib/br/opt/readmemo.sh): every read goes to GitHub"}

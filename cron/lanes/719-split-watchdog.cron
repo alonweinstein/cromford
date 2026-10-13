@@ -1,0 +1,9 @@
+# @hub-lanes
+
+# ── SPLIT-FAMILY WATCHDOG (BH-1793) ─────────────────────────────────────────
+# Every 10 min: walk the split families of the projects in
+# SPLIT_WATCHDOG_PROJECTS (empty by default, so it walks nothing) and take at
+# most one step per family through sw_next_step/sw_act. One summary line per
+# tick in logs/split-watchdog.log. flock -n dedupes; a held lock skips the tick.
+# Off: flags/lane-off-split-watchdog, or bin/harness-ctl.sh off split-watchdog.
+*/10 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/split-watchdog.sh >/dev/null 2>&1

@@ -1,0 +1,21 @@
+# BH-1063: the ringing summary, added to BOTH lists as the comment above
+# says — above `GET /api/wakes`, which is where the table puts it.
+GET /api/wakes/summary
+# BH-2636: claim, cursor and the fleet cooldown, added to BOTH lists between
+# the summary and `GET /api/wakes`, which is where the table puts them.
+POST /api/wakes/claim
+GET /api/wakes/cursor
+PUT /api/wakes/cursor
+POST /api/wakes/cooldown/take
+GET /api/wakes
+POST /api/wakes/ack
+# BH-1267: the retention prune, added to BOTH lists as the comment above says
+# — directly under the ack, which is the last of the wakes family and where
+# the table puts it.
+POST /api/wakes/prune
+# BH-2754: the nudge producer, added to BOTH lists as the comment above says
+# — directly under the prune, where the table puts it.
+POST /api/wakes/nudge
+# BH-4057: the lead-chain lane doorbell, directly under the nudge, where the
+# table puts it.
+POST /api/wakes/lane

@@ -1,0 +1,5 @@
+@STAMP_IN@ [project-3] POST-MERGE PROD QA FAILED for project-3-12 (1a2b3c4d, https://github.com/example-org/project-3/pull/43): FAIL: the invoices table renders empty for a client with invoices
+@STAMP_IN@ [project-3] POST-MERGE PROD QA NOT RUN for project-3-13 (5e6f7a8b, https://github.com/example-org/project-3/pull/49): no prod credentials on this box
+@STAMP_IN@ [project-3] POST-MERGE PROD QA BLOCKED for project-3-14 (9c0d1e2f, https://github.com/example-org/project-3/pull/50): sign-in wall, needs a test account from the operator
+@STAMP_OLD@ [project-3] POST-MERGE PROD QA FAILED for project-3-15 (3a4b5c6d, https://github.com/example-org/project-3/pull/51): FAIL: old failure outside the window
+@STAMP_IN@ [blocked-resolver] ABANDONED project-3/project-3-project-3-8 (ladder): unrelated line

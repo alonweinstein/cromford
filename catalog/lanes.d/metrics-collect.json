@@ -1,0 +1,26 @@
+{
+  "id": "metrics-collect",
+  "name": "Metrics collect",
+  "scope": "box",
+  "script": "bin/metrics-collect.sh",
+  "cadence": "38 * * * *",
+  "boxes": [
+    "project-4",
+    "hub",
+    "project-1",
+    "project-2"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-metrics-collect",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/metrics-collect.log"
+  }
+}

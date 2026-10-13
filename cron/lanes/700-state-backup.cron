@@ -1,0 +1,4 @@
+# state-backup (operator line, outside managed blocks; BH-448 for #396): every 15 min bin/state-backup.sh ships an age-encrypted tarball of this box's harness state off-box; the stamp is written only after the remote copy is verified. Until BACKUP_* is set it logs "not configured" each run and alerts once per UTC day (the handoff signal, not a bug).
+# Off: STATE_BACKUP=0 in global.env or flags/state-backup-off. flock -n dedupes; minutes 5/20/35/50 share no tick with the */15 apply-migrations and alert-flush lanes.
+# Restore path: docs/RESTORE.md (#449).
+5,20,35,50 * * * * /root/harness/bin/state-backup.sh >/dev/null 2>&1

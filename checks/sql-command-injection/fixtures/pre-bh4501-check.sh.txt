@@ -1,0 +1,35 @@
+#!/bin/bash
+# checks/sql-command-injection/check.sh
+#
+# FAMILY 53e19b60469c — "Injection (SQL / command / path)", 5 recurrences in 30
+# days across project-4, pool-project-4, pool-project-3 and pool-project-2.
+#
+# WHAT IT CATCHES. Three concrete shapes, each one an added line a tool can see:
+#   1. Prisma's by-name-unsafe escape hatches, $queryRawUnsafe / $executeRawUnsafe.
+#   2. SQL assembled inside a template literal that interpolates (`... ${x} ...`).
+#      The TAGGED form (prisma.$queryRaw`SELECT ... ${id}`) is parameterized and
+#      is NOT flagged — only a template literal used as a plain string is.
+#   3. A shell command assembled by template interpolation and handed to
+#      exec/execSync/spawn.
+#
+# Reads the normalized added-line stream on stdin (path<TAB>line<TAB>text).
+# Prints "path:line<TAB>reason" per hit. rc 0 = clean, rc 1 = hits.
+# DETECTION ONLY: it reads stdin and writes stdout. Nothing else.
+set -uo pipefail
+OUT=$(awk -F'\t' '
+{
+  t=$3
+  if (t ~ /[$](query|execute)RawUnsafe[[:space:]]*\(/) {
+    r="raw SQL through $queryRawUnsafe/$executeRawUnsafe — use the tagged $queryRaw`` form, which parameterizes"
+  } else if (t ~ /[$]queryRaw[[:space:]]*[(`]/ || t ~ /[$]executeRaw[[:space:]]*[(`]/) {
+    next   # the tagged/parameterized form is the fix, not the finding
+  } else if (t ~ /`[^`]*(SELECT|INSERT INTO|UPDATE |DELETE FROM|DROP |WHERE |FROM )[^`]*[$][{]/) {
+    r="SQL built by string interpolation inside a template literal — parameterize it"
+  } else if (t ~ /(execSync|execFileSync|spawnSync|[^A-Za-z_.]exec|^exec)[[:space:]]*\(/ && t ~ /`[^`]*[$][{]/) {
+    r="shell command built by template interpolation — pass an argv array, never an interpolated string"
+  } else next
+  printf "%s:%s\t%s (family 53e19b60469c)\n", $1, $2, r
+}')
+[ -n "$OUT" ] || exit 0
+printf '%s\n' "$OUT"
+exit 1

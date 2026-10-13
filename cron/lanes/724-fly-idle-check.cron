@@ -1,0 +1,12 @@
+# @hub-lanes
+
+# ── FLY IDLE MACHINE ALERT (BH-4020) ────────────────────────────────────────
+# Daily at 06:37Z: list every machine in FLY_ORG and write ONE logs/ALERTS.log
+# line per UTC day naming each machine that is `started`, up more than
+# FLY_IDLE_HOURS (default 2), and held by no pool build, dispatcher job or
+# queue claim, with its hourly burn. Hub only: the hub holds FLY_API_TOKEN and
+# sees every box's queue claims. GET requests only — it never stops, destroys
+# or POSTs to a machine. Knobs: FLY_IDLE_HOURS, FLY_IDLE_IGNORE_APPS,
+# FLY_IDLE_MAX_APPS, in this lane's catalog/lanes.d/ registry entry.
+# Off via the lane's flags/lane-off-<id> flag (bin/harness-ctl.sh off <id>).
+37 6 * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/fly-idle-check.sh >/dev/null 2>&1

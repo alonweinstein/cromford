@@ -1,0 +1,11 @@
+#!/bin/bash
+# bin/lane-shims/prisma — act-time iron-law fence shim (SDLC item 8, 2026-09-06).
+#
+# NOT A TOOL. This file is on PATH only inside a fenced non-claude build lane
+# (bin/agent-call.sh prepends this directory), where it hands `prisma` to the same
+# classifier the claude lane's PreToolUse hook uses and then execs the real
+# binary further down PATH. Every shim in here is identical below this comment;
+# the command each one fences is its own FILENAME. All the logic, the modes and
+# the honest limits are in _fence.sh beside it.
+D="${0%/*}"; [ "$D" = "$0" ] && D=.
+exec "$D/_fence.sh" --shim "prisma" "$@"

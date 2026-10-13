@@ -1,0 +1,6 @@
+# tests/mc/expected-map.d/BH-5819.tsv — BH-5819: the ejected-head policy and the
+# culprit mark (a human dequeue, a failed solo check), the per-head strike count;
+# origin=lib, new module functions.
+queue	mc_ejected_hold	lib
+queue	mc_eject_culprit_mark	lib
+queue	mc_eject_head_strikes	lib

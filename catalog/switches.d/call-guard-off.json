@@ -1,0 +1,1 @@
+{"name":"call-guard-off","readers":["bin/lib/call-guard.sh"],"box_scoped":true,"what":"turns off the pre-call guard that stops agent-call.sh paying twice for the same work"}

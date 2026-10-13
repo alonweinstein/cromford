@@ -1,0 +1,10 @@
+diff --git a/src/app/api/reports/route.ts b/src/app/api/reports/route.ts
+--- a/src/app/api/reports/route.ts
++++ b/src/app/api/reports/route.ts
+@@ -10,4 +10,8 @@ import { prisma } from "@/lib/db"
+ export async function POST(req: Request) {
+   const { clientId, ref } = await req.json()
++  const rows = await prisma.$queryRaw`SELECT * FROM "Invoice" WHERE "clientId" = ${clientId}`
++  execFileSync("git", ["show", ref])
++  return Response.json(rows)
+ }

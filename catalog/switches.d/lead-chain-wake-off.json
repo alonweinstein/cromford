@@ -1,0 +1,1 @@
+{"name":"lead-chain-wake-off","readers":["bin/lib/lead-chain-wake.sh","bin/wake-loop.sh"],"box_scoped":true,"what":"turns off the lead-chain doorbell, so a lead review is no longer rung from the enqueue and the wake loop launches no lead review or land; the crons cover both"}

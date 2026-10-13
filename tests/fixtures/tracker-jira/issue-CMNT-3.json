@@ -1,0 +1,32 @@
+{
+  "expand": "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations",
+  "id": "10203",
+  "self": "https://api.atlassian.com/ex/jira/33333333-3333-3333-3333-333333333333/rest/api/3/issue/10203",
+  "key": "CMNT-3",
+  "fields": {
+    "summary": "Comment-tier ticket",
+    "description": null,
+    "status": {
+      "name": "To Do",
+      "id": "1",
+      "statusCategory": {
+        "id": 2,
+        "key": "new",
+        "name": "To Do"
+      }
+    },
+    "labels": [],
+    "project": {
+      "self": "https://api.atlassian.com/ex/jira/33333333-3333-3333-3333-333333333333/rest/api/3/project/10000",
+      "id": "10000",
+      "key": "CMNT",
+      "name": "Sandbox CMNT",
+      "projectTypeKey": "software"
+    },
+    "issuetype": {
+      "name": "Task"
+    },
+    "customfield_10050": null,
+    "customfield_10051": null
+  }
+}

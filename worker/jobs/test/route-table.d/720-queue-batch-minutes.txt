@@ -1,0 +1,4 @@
+# QUEUE BATCH MINUTES (BH-5374, BH-5356.2): the queue waste ledger, one row per
+# Mergify batch draft run, appended after pool-state at the END of the table.
+PUT /api/queue-batch-minutes
+GET /api/queue-batch-minutes/daily

@@ -1,0 +1,2 @@
+agent-call spent $41 by 10:00Z against a $50 cap, up from $12 at this hour yesterday. At this rate it passes the cap well before the day ends. I'd find what changed before lunch. I'm not touching the cap.
+VERDICT: warn

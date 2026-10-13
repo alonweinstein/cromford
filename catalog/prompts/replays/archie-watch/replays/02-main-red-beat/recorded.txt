@@ -1,0 +1,5 @@
+FINDING: Main on cromford is red for 40 min. harness-ci fails on tests/render-cron-test.sh at merge 8807748b, and no fix PR is open.
+CAUSE: tests/render-cron-test.sh at merge 8807748b
+LEVER: main-red-bisect on example-org/cromford
+SAY: beat
+VERDICT: beat

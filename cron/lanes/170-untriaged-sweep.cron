@@ -1,0 +1,2 @@
+# @hub-lanes
+8,38 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/untriaged-sweep.sh

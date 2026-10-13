@@ -1,0 +1,1 @@
+The PR-lane slice of the App-token rollout — scripts whose job is to open, review, rebase, land or reconcile pull requests. BH-498's batch resolver arrived after the #425 census (2026-09-15), so BH-439 shipped that slice without it, and the parent #425 closed on 2026-09-22 without converting it. BH-2006 owns it now.

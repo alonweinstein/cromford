@@ -1,0 +1,2 @@
+# BH-3150 (BH-2510.0): the QUEUES panel's build-queue action, LAST in the table after route-rules. BH-3151 (BH-2510.1) fills it: RELEASE / DROP, audited.
+POST /api/queue/action

@@ -1,0 +1,5 @@
+# tests/jobs-client-modules.d/20-BH-2635.tsv — the wake claim/cursor/cooldown verbs (BH-2635, BH-2525.0).
+queue	wakes_claim
+queue	wake_cursor_get
+queue	wake_cursor_put
+queue	wake_cooldown_take

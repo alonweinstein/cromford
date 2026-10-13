@@ -1,0 +1,8 @@
+# tests/mc/expected-map.d/BH-4641.tsv — BH-4641: the append-union conflict step
+# in the rebase lane (rebase, beside mc_resolve_md_union and the generated-path
+# allowlist it mirrors); origin=lib because they are new module functions.
+rebase	mc_union_globs	lib
+rebase	mc_path_is_union	lib
+rebase	mc_union_trailer	lib
+rebase	mc_resolve_append_union	lib
+rebase	mc_union_renumber_fragments	lib

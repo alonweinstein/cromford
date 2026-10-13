@@ -1,0 +1,32 @@
+{
+  "id": "fleet-slo",
+  "name": "Fleet SLO",
+  "scope": "hub",
+  "script": "bin/fleet-slo.sh",
+  "cadence": "*/10 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-fleet-slo",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "SLO_CONF",
+      "type": "string",
+      "default": "/root/harness/flags/slo.conf",
+      "zero_means": null,
+      "note": "Read by bin/fleet-slo.sh as ${SLO_CONF:-$H/flags/slo.conf}: the thresholds file (docs/SLO.md). A path and a test seam; NOT settable from the control plane.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/fleet-slo.log"
+  }
+}

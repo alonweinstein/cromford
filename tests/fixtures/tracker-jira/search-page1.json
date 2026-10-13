@@ -1,0 +1,35 @@
+{
+  "issues": [
+    {
+      "expand": "operations,versionedRepresentations,editmeta,changelog,renderedFields",
+      "id": "10001",
+      "self": "https://api.atlassian.com/ex/jira/33333333-3333-3333-3333-333333333333/rest/api/3/issue/10001",
+      "key": "CROM-1",
+      "fields": {
+        "summary": "Ledger export",
+        "status": {
+          "name": "To Do",
+          "id": "1",
+          "statusCategory": {
+            "id": 2,
+            "key": "new",
+            "name": "To Do"
+          }
+        },
+        "labels": [
+          "ai-build"
+        ],
+        "customfield_10050": {
+          "value": "Team",
+          "id": "10100"
+        },
+        "customfield_10051": {
+          "value": "ready",
+          "id": "10110"
+        }
+      }
+    }
+  ],
+  "nextPageToken": "CAEaAggD",
+  "isLast": false
+}

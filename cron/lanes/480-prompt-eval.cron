@@ -1,0 +1,7 @@
+# @hub-lanes
+# Weekly prompt/SOP regression eval. Every scenario is a REAL metered LLM call on
+# stage `eval` (~$1/project floor) — never wire this into per-PR CI. Sessions run
+# under AGENT_CALL_NO_TOOLS=1 with a credential-scrubbed env, so a replayed board
+# state cannot reach a real board. Regressions, coverage shrinks and projects with
+# no scenarios all write an ALERTS line + a fleet_alert beat. docs/PROMPT-EVALS.md
+50 6 * * 1 /root/harness/bin/hub-lease.sh check && /root/harness/bin/prompt-eval.sh --cron >> /root/harness/logs/prompt-eval.log 2>&1

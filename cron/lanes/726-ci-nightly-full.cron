@@ -1,0 +1,11 @@
+# @hub-lanes
+
+# ── DAILY FULL CI RUN (BH-4970, slice 3 of BH-4964) ─────────────────────────
+# bin/ci-nightly-full.sh — a merge-queue batch runs only its impact set, so once
+# a UTC day this starts one FULL harness-ci run on main (from CI_NIGHTLY_FULL_HOUR,
+# default 03:17, never while a PR carries merge-queue) and files its red as a
+# map gap: one ai-build issue, or a comment on the open one. dispatch is hourly
+# so a skipped or failed start retries the same night; collect is hourly.
+# Kill: bin/harness-ctl.sh off ci-nightly-full.
+17 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/ci-nightly-full.sh dispatch >/dev/null 2>&1
+41 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/ci-nightly-full.sh collect >/dev/null 2>&1

@@ -1,0 +1,12 @@
+# @ungated reads THIS hub's own state/fleet-heartbeat/ records from the jobs API and rewrites them in place; the registry gives the lane to the hub alone, and a record it cannot refresh ages out on its own. Reproduces the line BH-1031 (#1150) committed with no lease check.
+
+# backup-records-sync (operator line, outside managed blocks; BH-1031). Every box
+# now STATES its own backup freshness on the tick that produced it
+# (bin/state-backup.sh -> box_backup_set); this turns those rows back into
+# state/fleet-heartbeat/backup-<box>, the record bin/fleet-status-push.sh,
+# bin/pipeline-health.sh and the console Fleet column have always read. It
+# replaces the ssh collection that rode the 15-minute fleet heartbeat hop this
+# slice deletes: nine hops an hour become one GET. Fail-open — a record it
+# cannot refresh ages out on its own.
+# docs/verification-map/backup-freshness.md
+*/5 * * * * /root/harness/bin/backup-records-sync.sh >/dev/null 2>&1

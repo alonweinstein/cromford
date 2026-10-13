@@ -1,0 +1,136 @@
+{
+  "libs": [
+    {
+      "id": "mc-queue",
+      "file": "bin/lib/mc/queue.sh",
+      "note": "BH-1939 (BH-1511.2). The merge conductor's queue module, sourced through bin/lib/merge-conductor-lib.sh by 14 lanes. Applied by queue.sh at file scope, in a subshell. Five names are settable:false: they already have a key on a lane (lane.merge-conductor.*, lane.batch-resolve.*), and that lane row reaches this file as env because lane_env_apply runs before the lib is sourced.",
+      "knobs": [
+        {
+          "env": "MC_QUEUE_TTL",
+          "type": "int",
+          "default": 300,
+          "min": 0,
+          "max": 86400,
+          "unit": "seconds",
+          "zero_means": "no cache",
+          "required": true,
+          "note": "How long a repo's merge-queue provider probe (github|mergify|none) is cached. Was ${MC_QUEUE_TTL:-300}."
+        },
+        {
+          "env": "MC_MERGE_SETTLE",
+          "type": "int",
+          "default": 5,
+          "min": 0,
+          "max": 120,
+          "unit": "seconds",
+          "zero_means": "no wait",
+          "required": true,
+          "note": "The pause between gh pr merge and the read that verifies the merge. Was ${MC_MERGE_SETTLE:-5}."
+        },
+        {
+          "env": "MC_ENQUEUE_SETTLE",
+          "type": "int",
+          "default": 2,
+          "min": 0,
+          "max": 120,
+          "unit": "seconds",
+          "zero_means": "no wait",
+          "required": true,
+          "note": "The pause between a native-queue enqueue and the read that verifies it. Was ${MC_ENQUEUE_SETTLE:-2}."
+        },
+        {
+          "env": "MC_MERGIFY_SETTLE",
+          "type": "int",
+          "default": 15,
+          "min": 0,
+          "max": 300,
+          "unit": "seconds",
+          "zero_means": "no wait",
+          "required": true,
+          "note": "The step of the wait for Mergify to acknowledge a queued PR. Was ${MC_MERGIFY_SETTLE:-15}."
+        },
+        {
+          "env": "MC_MERGIFY_WAIT_S",
+          "type": "int",
+          "default": 90,
+          "min": 0,
+          "max": 600,
+          "unit": "seconds",
+          "zero_means": "no wait",
+          "required": true,
+          "note": "The bound on that wait. Was ${MC_MERGIFY_WAIT_S:-90}."
+        },
+        {
+          "env": "MC_MERGIFY_REASK_S",
+          "type": "int",
+          "default": 21600,
+          "min": 0,
+          "max": 604800,
+          "unit": "seconds",
+          "zero_means": "one per head",
+          "required": true,
+          "note": "Review round 3 (2026-09-24): the same `@mergifyio queue` on the same head is posted at most once per this window; a new head or command asks at once. Unset reads as once per head."
+        },
+        {
+          "env": "MC_EJECT_REBASE",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 1,
+          "zero_means": "off",
+          "required": true,
+          "settable": false,
+          "note": "BH-1677 base-conflict ejections are not strikes. Default only here: operators set lane.merge-conductor.mc_eject_rebase. Was ${MC_EJECT_REBASE:-1}."
+        },
+        {
+          "env": "MC_MERGIFY_STUCK_SECS",
+          "type": "int",
+          "default": 300,
+          "min": 0,
+          "max": 86400,
+          "unit": "seconds",
+          "zero_means": "off",
+          "required": true,
+          "settable": false,
+          "note": "How long a green batch draft waits before one @mergifyio refresh. Default only here: operators set lane.merge-conductor.mc_mergify_stuck_secs. Was ${MC_MERGIFY_STUCK_SECS:-300}."
+        },
+        {
+          "env": "MC_MERGIFY_REFRESH_WINDOW_SECS",
+          "type": "int",
+          "default": 3600,
+          "min": 0,
+          "max": 86400,
+          "unit": "seconds",
+          "zero_means": "one per head",
+          "required": true,
+          "settable": false,
+          "note": "One refresh per stuck draft per window. Default only here: operators set lane.merge-conductor.mc_mergify_refresh_window_secs. Was ${MC_MERGIFY_REFRESH_WINDOW_SECS:-3600}."
+        },
+        {
+          "env": "MC_MERGIFY_STUCK_ALERT_SECS",
+          "type": "int",
+          "default": 600,
+          "min": 60,
+          "max": 86400,
+          "unit": "seconds",
+          "zero_means": null,
+          "required": true,
+          "settable": false,
+          "note": "Still stuck this long after a refresh was due is one alert a day. Default only here: operators set lane.merge-conductor.mc_mergify_stuck_alert_secs. Was ${MC_MERGIFY_STUCK_ALERT_SECS:-600}."
+        },
+        {
+          "env": "BATCH_TRAIN_MIN",
+          "type": "int",
+          "default": 1,
+          "min": 1,
+          "max": 50,
+          "unit": "members",
+          "zero_means": null,
+          "required": true,
+          "settable": false,
+          "note": "The train size that makes the conductor spawn batch-resolve. Default only here: operators set lane.batch-resolve.batch_train_min, which mc_batch_should_spawn reads through lane_knob first. Was ${BATCH_TRAIN_MIN:-1}."
+        }
+      ]
+    }
+  ]
+}

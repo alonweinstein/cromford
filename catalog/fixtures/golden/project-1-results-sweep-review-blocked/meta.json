@@ -1,0 +1,6 @@
+{
+  "gate": "results-sweep",
+  "project": "project-1",
+  "board_shape": "board-api",
+  "note": "REVIEW_BLOCKED on project-1: the SOP says one ALERTS.log line and NO board comment. Catches a session that reports an internal review failure to the client as progress."
+}

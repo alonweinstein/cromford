@@ -1,0 +1,8 @@
+# PR #612 merged, so TK-4790's gating condition is satisfied and both slots are
+# free. TK-4790 must launch — a queue line whose blocker cleared and still does
+# not launch is how tickets starve.
+TK-4790 :: launch
+# TK-4791 is equally unblocked and the second slot is free, so launching it is
+# correct; leaving it queued behind the first build this tick is also defensible
+# under the one-build-per-free-slot rule. Both, and nothing else.
+TK-4791 :: launch|queue

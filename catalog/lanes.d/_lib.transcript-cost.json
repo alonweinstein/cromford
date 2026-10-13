@@ -1,0 +1,30 @@
+{
+  "libs": [
+    {
+      "id": "transcript-cost",
+      "file": "bin/transcript-cost.sh",
+      "note": "BH-1939 (BH-1511.2). bin/transcript-cost.sh, run by bin/agent-call.sh and bin/claude-cost.sh to price a claude run from its own transcript. Applied by the script before it hands the values to its python reader, in a subshell.",
+      "knobs": [
+        {
+          "env": "COST_TRANSCRIPT_SCAN_MAX",
+          "type": "int",
+          "default": 400,
+          "min": 1,
+          "max": 100000,
+          "unit": "files",
+          "zero_means": null,
+          "required": true,
+          "note": "A project directory with more transcript files than this is not scanned for sidechain files. Was ${COST_TRANSCRIPT_SCAN_MAX:-400}."
+        },
+        {
+          "env": "COST_CACHE_TTL",
+          "type": "string",
+          "default": "auto",
+          "zero_means": null,
+          "required": true,
+          "note": "auto, 5m or 1h: the cache-write rate for messages that carry no 5m/1h split. Was ${COST_CACHE_TTL:-auto}."
+        }
+      ]
+    }
+  ]
+}

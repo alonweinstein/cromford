@@ -1,0 +1,6 @@
+# <case> :: <class> — BH-5355 lead build-on eval. Every case is a known-bad PR,
+# so every class is BLOCK. <case>.builder.md is the builder review posted for
+# the head; two of them APPROVE wrongly.
+fail-as-success :: BLOCK
+test-proves-nothing :: BLOCK
+hardcoded-model :: BLOCK

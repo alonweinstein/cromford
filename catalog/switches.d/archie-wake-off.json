@@ -1,0 +1,1 @@
+{"name":"archie-wake-off","readers":["bin/lib/archie-wake.sh"],"box_scoped":true,"what":"stops Archie's event wake-ups and follow-up firing (bin/lib/archie-wake.sh); his scheduled initiative checks and the beat gate keep running"}

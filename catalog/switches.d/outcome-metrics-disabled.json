@@ -1,0 +1,1 @@
+{"name":"outcome-metrics-disabled","readers":["bin/outcome-metrics.sh"],"box_scoped":true,"what":"stops outcome-metrics.sh checking whether the fleet's merged PRs held, the signal the rule miner reads"}

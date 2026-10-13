@@ -1,0 +1,1 @@
+BH-572. It pins the driver's own shape after the cut: that bin/run-build.sh is 400 lines or fewer and carries exactly one bare call per stage, in runtime order. The flatten replaces every one of those call lines with its body, so the thing this suite measures is exactly what the flatten erases. Its flatten checks (marker floors, line arithmetic) read rb_all's output.

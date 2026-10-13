@@ -1,0 +1,178 @@
+{
+  "id": "sentry-triage",
+  "name": "Sentry triage (Sentry issues become tickets)",
+  "scope": "hub",
+  "script": "bin/sentry-triage.sh",
+  "cadence": "11,41 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-sentry-triage",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "SENTRY_TRIAGE_MIN_EVENTS",
+      "type": "int",
+      "default": 3,
+      "min": 1,
+      "max": 100000,
+      "zero_means": null,
+      "read_in": "bin/lib/sentry-triage.sh",
+      "note": "BH-5620: the lifetime event count a Sentry issue needs before the lane acts on it. Below it: no ledger row and no model call. Read in bin/lib/sentry-triage.sh as ${SENTRY_TRIAGE_MIN_EVENTS:-3}; outside 1..100000 is one log line and the default.",
+      "settable": true
+    },
+    {
+      "env": "SENTRY_TRIAGE_MAX_TICKETS_DAY",
+      "type": "int",
+      "default": 5,
+      "min": 0,
+      "max": 50,
+      "zero_means": "off",
+      "read_in": "bin/lib/sentry-triage.sh",
+      "note": "BH-5620: new tickets the lane may file per UTC day (ledger row sentry-triage-day/<date>). At the cap an issue gets no model call and no row, and is offered again the next day while it is inside the lookback. 0 files no new ticket. Read in bin/lib/sentry-triage.sh as ${SENTRY_TRIAGE_MAX_TICKETS_DAY:-5}.",
+      "settable": true
+    },
+    {
+      "env": "SENTRY_TRIAGE_MAX_CALLS_DAY",
+      "type": "int",
+      "default": 10,
+      "min": 0,
+      "max": 200,
+      "zero_means": "off",
+      "read_in": "bin/lib/sentry-triage.sh",
+      "note": "BH-5620: diagnosis calls the lane may start per UTC day, counted in the day row sentry-triage-day/<date> BEFORE each call. With SENTRY_TRIAGE_MAX_USD this bounds the day's spend at calls x MAX_USD (default 10 x 0.50). At the cap an issue gets no call and no row. 0 makes no call. Read in bin/lib/sentry-triage.sh as ${SENTRY_TRIAGE_MAX_CALLS_DAY:-10}; outside 0..200 is one log line and the default.",
+      "settable": true
+    },
+    {
+      "env": "SENTRY_TRIAGE_LOOKBACK_H",
+      "type": "int",
+      "default": 24,
+      "min": 1,
+      "max": 336,
+      "zero_means": null,
+      "read_in": "bin/lib/sentry-triage.sh",
+      "note": "BH-5620: the lane reads unresolved issues seen in the last this many hours (query lastSeen:-<H>h). Read in bin/lib/sentry-triage.sh as ${SENTRY_TRIAGE_LOOKBACK_H:-24}.",
+      "settable": true
+    },
+    {
+      "env": "SENTRY_TRIAGE_HOTFIX_EVENTS_24H",
+      "type": "int",
+      "default": 50,
+      "min": 1,
+      "max": 1000000,
+      "zero_means": null,
+      "read_in": "bin/lib/sentry-triage.sh",
+      "note": "BH-5620: a new ticket gets the hotfix label only when the issue's events in the last 24 h are over this number. Read in bin/lib/sentry-triage.sh as ${SENTRY_TRIAGE_HOTFIX_EVENTS_24H:-50}.",
+      "settable": true
+    },
+    {
+      "env": "SENTRY_TRIAGE_LOG_LINES",
+      "type": "int",
+      "default": 40,
+      "min": 0,
+      "max": 200,
+      "zero_means": "off",
+      "read_in": "bin/lib/sentry-triage.sh",
+      "note": "BH-5620: lane log lines the diagnosis prompt may carry (the ticket body shows 20 at most). 0 sends none. Read in bin/lib/sentry-triage.sh as ${SENTRY_TRIAGE_LOG_LINES:-40}.",
+      "settable": true
+    },
+    {
+      "env": "SENTRY_TRIAGE_LOG_WINDOW_MIN",
+      "type": "int",
+      "default": 10,
+      "min": 1,
+      "max": 120,
+      "zero_means": null,
+      "read_in": "bin/lib/sentry-triage.sh",
+      "note": "BH-5620: log lines whose leading timestamp is within this many minutes of the event's dateCreated are the ones read. Read in bin/lib/sentry-triage.sh as ${SENTRY_TRIAGE_LOG_WINDOW_MIN:-10}.",
+      "settable": true
+    },
+    {
+      "env": "SENTRY_TRIAGE_MAX_USD",
+      "type": "number",
+      "default": 0.5,
+      "min": 0,
+      "max": 5,
+      "unit": "usd",
+      "zero_means": "off",
+      "read_in": "bin/lib/sentry-triage.sh",
+      "note": "BH-5620: USD cap on each diagnosis call, passed as AGENT_CALL_BUDGET_USD_SENTRY_TRIAGE. 0 makes no call and writes no row. Read in bin/lib/sentry-triage.sh as ${SENTRY_TRIAGE_MAX_USD:-0.50}.",
+      "settable": true
+    },
+    {
+      "env": "SENTRY_TRIAGE_PROJECT",
+      "type": "string",
+      "default": "cromford-harness",
+      "zero_means": null,
+      "read_in": "bin/lib/sentry-triage.sh",
+      "note": "BH-5620: the Sentry project slug the lane reads. An identity, NOT settable from the control plane. Read in bin/lib/sentry-triage.sh as ${SENTRY_TRIAGE_PROJECT:-cromford-harness}.",
+      "settable": false
+    },
+    {
+      "env": "LLM_LANE_ENABLED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "zero_means": "off",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "0 makes this lane call no model at all. bin/lib/llm-gate.sh refuses BEFORE the vendor call and writes a zero-cost row_source=refused row, so the stop is visible in the ledger rather than being a lane that went quiet.",
+      "settable": true
+    },
+    {
+      "env": "LLM_RUNNER_ALLOWED",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Comma/space list of the ONLY ladder rungs this lane may reach. Empty is every rung, i.e. today's ladder unchanged. A rung outside the list is refused before the call.",
+      "settable": true
+    },
+    {
+      "env": "LLM_USD_CAP_DAY",
+      "type": "float",
+      "default": 0,
+      "min": 0,
+      "max": 10000,
+      "unit": "usd",
+      "zero_means": "unlimited",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Dollars this lane may spend in the current UTC day, summed from D1 cost_rows through GET /api/metrics/llm-spend, never from the box's own logs/cost.csv.",
+      "settable": true
+    },
+    {
+      "env": "SENTRY_TRIAGE_NOW",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Test seam: epoch seconds bin/sentry-triage.sh uses as now, only when HARNESS_TEST_SANDBOX=1. NOT settable from the control plane.",
+      "settable": false
+    },
+    {
+      "env": "SENTRY_TRIAGE_FIXTURE",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Test seam: a file bin/sentry-triage.sh sources after its libs, only when HARNESS_TEST_SANDBOX=1. NOT settable from the control plane: it names a file a root lane sources.",
+      "settable": false
+    },
+    {
+      "env": "HARNESS_TEST_SANDBOX",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Test seam gate: bin/sentry-triage.sh honours SENTRY_TRIAGE_NOW and sources SENTRY_TRIAGE_FIXTURE only when this is 1 (the test harness sets it). Never set on a box, and NOT settable from the control plane.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": "sentry-triage",
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/sentry-triage.log"
+  }
+}

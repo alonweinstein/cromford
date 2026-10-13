@@ -1,0 +1,60 @@
+{
+  "libs": [
+    {
+      "id": "stale-parent",
+      "file": "bin/lib/stale-parent.sh",
+      "note": "BH-5234: a stacked child that still carries its parent's OLD commits. mc_restack finds a rewritten parent's landed copy by patch-id and replays only the child's own commits; hold_push refuses to rewrite a branch with open stacked children; bin/unblocked-children.sh and the run-build stacked-child block wait for a parent to merge under STACK_WAIT_PARENT_MERGE; bin/pipeline-health.sh pages staleparent:<project>:<pr>. Resolved at call time with lib_env_apply stale-parent; docs/notes/2026-10-07-BH-5234-stale-parent.md.",
+      "knobs": [
+        {
+          "env": "STACK_WAIT_PARENT_MERGE",
+          "type": "string",
+          "default": "rollouts",
+          "zero_means": null,
+          "required": false,
+          "note": "off | rollouts | all. When a stacked child waits for its parent to merge instead of building on the parent's open branch: off = never (pre-BH-5234), rollouts = a rollout wave child (an issue body line 'Rollout wave N of M:'), all = every child. An invalid value is rollouts, with one line in logs/stale-parent.log. Read by sp_wait_mode."
+        },
+        {
+          "env": "HOLD_PUSH_REWRITE_GUARD",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 1,
+          "zero_means": "a rewrite push no longer checks for open children (pre-BH-5234)",
+          "required": false,
+          "note": "1 = bin/lib/hold-push.sh refuses a rewrite push (the lease is not an ancestor of what is pushed) to a branch that open PRs are based on (rc 5), or whose children cannot be read (rc 4). Read as ${HOLD_PUSH_REWRITE_GUARD:-1}."
+        },
+        {
+          "env": "STALE_PARENT_CHECK",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 1,
+          "zero_means": "off",
+          "required": false,
+          "note": "Master switch for bin/pipeline-health.sh's stale-parent section (staleparent:<project>:<pr>). Read as ${STALE_PARENT_CHECK:-1}."
+        },
+        {
+          "env": "STALE_PARENT_MAX_PRS",
+          "type": "int",
+          "default": 30,
+          "min": 1,
+          "max": 100,
+          "unit": "PRs per project per tick",
+          "zero_means": null,
+          "required": false,
+          "note": "At most this many open PRs per project are fetched and judged by the stale-parent section; past it one page-cut alert names the cut. Read as ${STALE_PARENT_MAX_PRS:-30}."
+        },
+        {
+          "env": "STALE_PARENT_SCAN_MAX",
+          "type": "int",
+          "default": 20,
+          "min": 1,
+          "unit": "commits",
+          "zero_means": null,
+          "required": false,
+          "note": "How many of a branch's first-parent commits over its base are walked when looking for a fork point or stale commits by patch-id. Read by _sp_scan_max, default 20."
+        }
+      ]
+    }
+  ]
+}

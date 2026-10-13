@@ -1,0 +1,1 @@
+{"name":"rule-miner-disabled","readers":["bin/rule-miner.sh"],"box_scoped":true,"what":"stops the weekly rule-miner lane mining the week's incidents into rules"}

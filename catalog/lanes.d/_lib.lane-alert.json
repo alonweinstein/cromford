@@ -1,0 +1,21 @@
+{
+  "note": "BH-1938 (BH-1511.1 slice): knobs read by bin/lane-alert.sh, the one alert path every detached orchestrator lane calls. It is a script, not a lane, so its knobs live in the registry's `libs` scope, keyed lib.lane-alert.<env lowercased>, applied by lane-alert.sh itself through lib_env_apply lane-alert.",
+  "libs": [
+    {
+      "id": "lane-alert",
+      "file": "bin/lane-alert.sh",
+      "note": "Resolved only on the --critical path with the orchestrator monitor off, inside a subshell so the gate's fail-closed exit 75 can never fail the caller.",
+      "knobs": [
+        {
+          "env": "LANE_ALERT_DM_CHAT",
+          "type": "string",
+          "default": "100000000",
+          "required": true,
+          "settable": true,
+          "zero_means": null,
+          "note": "The Telegram chat a --critical lane alert is DMed to while the orchestrator monitor is off (the operator's DM). A string, because a Telegram group chat id is negative (-100...). bin/lane-alert.sh has no literal for it: row > cached row > env > this default; with none of them it sends no DM and writes one ALERTS line."
+        }
+      ]
+    }
+  ]
+}

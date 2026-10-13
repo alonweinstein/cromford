@@ -1,0 +1,1 @@
+{"name":"size-gate-enforce-off","readers":["bin/lib/rb/plan.sh"],"box_scoped":true,"what":"turns the size gate off fleet-wide: an oversized plan is logged and built whole instead of split"}

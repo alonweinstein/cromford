@@ -1,0 +1,13 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 1440, "h": 900, "title": "Fleet Overview" },
+    { "file": "ProjectDrill.dc.html", "x": 1560, "y": 0, "w": 1440, "h": 900, "title": "Project Drill-Down" },
+    { "file": "Kanban.dc.html", "x": 0, "y": 1040, "w": 1440, "h": 900, "title": "Kanban — Pipeline" },
+    { "file": "FleetMobile.dc.html", "x": 1560, "y": 1040, "w": 390, "h": 844, "title": "Fleet — Mobile" },
+    { "file": "PRDetail.dc.html", "x": 0, "y": 2080, "w": 1440, "h": 900, "title": "PR Drill-Down" }
+  ],
+  "annotations": [
+    { "id": "brief", "x": 0, "y": -160, "w": 460, "text": "MISSION CONTROL — cromford fleet UI\nModern retro terminal: phosphor green on near-black, JetBrains Mono, 1px borders, whisper-level glow.\nAmber = warn, red = dead, cyan = fly builders.\nReact to layout/palette/density — the real SPA gets built to this." }
+  ],
+  "launch": { "view": "canvas" }
+}

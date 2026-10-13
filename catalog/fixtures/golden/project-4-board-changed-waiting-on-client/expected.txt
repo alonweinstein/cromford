@@ -1,0 +1,9 @@
+# triageVerdict=needs_clarification + waitingOn=requester, and the newest
+# comment is
+# OUR question, not their answer. The reporter is a real requester, not the
+# system
+# actor, so there is nothing for us to answer ourselves. SOP: project-4.md:31
+# (`needs_clarification` + `waitingOn='requester'` -> NOT actionable).
+# Only a skip is correct: not a launch, not a queue entry, not a comment
+# restating the question we just asked.
+TK-7330 :: skip

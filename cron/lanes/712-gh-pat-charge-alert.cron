@@ -1,0 +1,10 @@
+# @hub-lanes
+
+# ── GITHUB PAT CHARGE ALERT ─────────────────────────────────────────────────
+# Hourly at :17 (after gh-ledger-push's :03/:13 ticks have landed the previous
+# hour from every box): read the fleet gh_ledger for the last complete UTC hour
+# and write ONE logs/ALERTS.log line per (box, pat-*/graphql-pat-* bucket, UTC
+# day) with counted calls >= GH_PAT_CHARGE_ALERT_MIN — the counter for the
+# "App tokens everywhere, keyring logged out" migration. Zero GitHub calls.
+# Off via GH_PAT_CHARGE_ALERT=0 or flags/lane-off-gh-pat-charge-alert.
+17 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/gh-pat-charge-alert.sh hub >/dev/null 2>&1

@@ -1,0 +1,92 @@
+{
+  "id": "cost-rollup",
+  "name": "Cost rollup",
+  "scope": "hub",
+  "script": "bin/cost-rollup.sh",
+  "cadence": "45 4 * * *; 50 0-3,5-23 * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-cost-rollup",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "COST_ROLLUP_DB_DAYS",
+      "type": "int",
+      "default": 31,
+      "zero_means": null,
+      "note": "Read by bin/cost-rollup.sh as ${COST_ROLLUP_DB_DAYS:-31}. How far back the rollup reads cost_rows when it builds fleet-cost.csv from the table, and the window the 'cost_rows carries NO row at all for' ALERT reports on. Registered by BH-1032, the change that introduced the read; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "COST_ROLLUP_INTERVAL_S",
+      "type": "int",
+      "default": 3600,
+      "zero_means": null,
+      "note": "Read by bin/cost-rollup.sh as ${COST_ROLLUP_INTERVAL_S:-3600}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "COST_ROLLUP_TIMEOUT_S",
+      "type": "int",
+      "default": 2400,
+      "zero_means": null,
+      "note": "Read by bin/cost-rollup.sh as ${COST_ROLLUP_TIMEOUT_S:-2400}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "COST_STAMP_IMPORT_CHUNK",
+      "type": "int",
+      "default": 200,
+      "zero_means": null,
+      "note": "Read by bin/cost-rollup.sh as ${COST_STAMP_IMPORT_CHUNK:-200}. How many entries of the legacy state/cost/stamped.json one run imports into cost-final-bill ledger rows (a transport bound); a blank, non-numeric or 0 value falls back to 200. Registered by BH-4158, the change that introduced the read; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "WINDOWS_ONLY",
+      "type": "int",
+      "default": 0,
+      "zero_means": null,
+      "note": "Read by bin/cost-rollup.sh as ${WINDOWS_ONLY:-0}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "LLM_LANE_ENABLED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "0 makes this lane call no model at all. bin/lib/llm-gate.sh refuses BEFORE the vendor call and writes a zero-cost row_source=refused row, so the stop is visible in the ledger rather than being a lane that went quiet."
+    },
+    {
+      "env": "LLM_RUNNER_ALLOWED",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Comma/space list of the ONLY ladder rungs this lane may reach. Empty is every rung, i.e. today's ladder unchanged. A rung outside the list is refused before the call, so a cliff or a failure on the standing lane cannot descend into one that costs ~100x (#1141, the $793 descent)."
+    },
+    {
+      "env": "LLM_USD_CAP_DAY",
+      "type": "float",
+      "default": 0,
+      "min": 0,
+      "max": 10000,
+      "unit": "usd",
+      "zero_means": "unlimited",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Dollars this lane may spend in the current UTC day, summed from D1 cost_rows through GET /api/metrics/llm-spend — never from the box's own logs/cost.csv. A second, project-scoped ceiling is the lane.<id>.<project>.llm_usd_cap_day row, which is read only when somebody wrote it."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/cost-rollup.log"
+  }
+}

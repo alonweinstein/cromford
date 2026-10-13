@@ -1,0 +1,9 @@
+# @hub-lanes
+# Main-red bisect (BH-3685): for each red episode on main, prove the red at the
+# red sha, clear it at the last green one, bisect main's first-parent merges to
+# the one that turned it red, and hand the verdict to the act functions
+# (bin/lib/mrb-act.sh). One terminal row per episode in the ledger
+# (kind main_red_bisect). WRITES: logs/main-red-bisect.log,
+# state/main-red-bisect/ (the .last cell and pending/ act retries). Off:
+# flags/lane-off-main-red-bisect.
+*/10 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/main-red-bisect.sh >/dev/null 2>&1

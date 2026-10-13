@@ -1,0 +1,8 @@
+{
+  "_doc": "Routes bin/e2e-smoke.sh loads against a build's own Vercel PREVIEW deployment, per project.",
+  "_purpose": "A SMOKE list, not a test plan: the handful of routes that prove the app still stands. Declared here rather than in code so adding one is an edit, not a deploy — the same rule the fleet applies to every other business parameter. The smoke is READ-ONLY (previews share the prod database), so a route listed here must be safe to merely load.",
+  "_default": "A project with no entry below smokes \"/\" only. That is deliberately thin rather than invented: a route nobody verified exists would 404 on every build and teach the reviewer nothing. Add routes as they are confirmed.",
+  "_also": "The stage additionally derives STATIC routes the diff itself adds or changes from app-router page files. Those need no entry here — they come from the diff.",
+  "_default_routes": ["/"],
+  "projects": {}
+}

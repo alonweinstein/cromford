@@ -1,0 +1,9 @@
+# tests/jobs-client-modules.d/20-BH-3719.tsv — the dequeue-watch ledger verbs (BH-3726, BH-3719.0); stubs until the ledger sibling.
+dequeue-watch	dqw_event_record
+dequeue-watch	dqw_event_state
+dequeue-watch	dqw_events_list
+dequeue-watch	dqw_action_claim
+dequeue-watch	dqw_action_set
+dequeue-watch	dqw_actions_list
+dequeue-watch	dqw_rounds_count
+dequeue-watch	dqw_summary

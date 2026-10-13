@@ -1,0 +1,39 @@
+{
+  "id": "rebase-train",
+  "name": "Rebase train",
+  "scope": "project",
+  "factory_stop": "merge",
+  "script": "bin/rebase-train.sh",
+  "cadence": "11,41 * * * *; 13,43 * * * *; 16,46 * * * *; 19,49 * * * *",
+  "boxes": [
+    "hub",
+    "project-1"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-rebase-train",
+    "aliases": [
+      {
+        "name": "rebase-train-off",
+        "off_when": "present"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "BASE_BRANCH",
+      "type": "string",
+      "default": "main",
+      "zero_means": null,
+      "note": "Read by bin/rebase-train.sh as ${BASE_BRANCH:-main}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/rebase-train.log"
+  }
+}

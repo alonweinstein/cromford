@@ -1,0 +1,7 @@
+# tests/jobs-client-modules.d/20-BH-5004.tsv — the pause-flag row cache and mirror helpers (BH-5004).
+flags	_flag_ttl
+flags	_flag_cache_put
+flags	_flag_row
+flags	_flag_mirror
+flags	_flag_cache_var
+flags	_flag_cache_drop

@@ -1,0 +1,1 @@
+{"name":"pr-dep-gate-off","readers":["bin/lib/pr-dep-gate.sh"],"box_scoped":true,"what":"turns off the declared-dependency merge hold in bin/lib/pr-dep-gate.sh, so an open Depends on #N no longer holds the merge"}

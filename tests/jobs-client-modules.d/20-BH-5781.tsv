@@ -1,0 +1,5 @@
+# tests/jobs-client-modules.d/20-BH-5781.tsv — the overload retry's one curl call site and the box settings cache.
+req	_jobs_curl
+settings	_setting_cache_file
+settings	_setting_cached
+settings	_setting_cache_stale

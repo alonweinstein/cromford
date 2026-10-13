@@ -1,0 +1,64 @@
+{
+  "libs": [
+    {
+      "id": "cost-live",
+      "file": "bin/lib/cost-live.sh",
+      "note": "BH-3481.3 live cost meter (2026-09-29). While a claude session runs, bin/lib/cost-live.sh reads its transcript every COST_LIVE_POLL_S seconds and every COST_LIVE_PUSH_S seconds offers ONE live row per (box, session) to POST /api/cost/live; the final cost_rows row settles it. For a build call the meter also asks tw_check_build and stops the session on a trip ($OUT.tripwire). After every cost row a boundary push spawns bin/cost-rows-push.sh detached, deduped on its lock. Applied by cost_live_on (lib_env_apply cost-live) once per bin/agent-call.sh process. Doc: docs/notes/2026-09-29-BH-3481.3-live-meter.md.",
+      "knobs": [
+        {
+          "env": "COST_LIVE",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 1,
+          "zero_means": "off",
+          "required": false,
+          "note": "The switch. 0 (or no/off/false) = cost_live_on answers off (CL_OFF=knob), no meter runs, and the claude CLI runs in the foreground exactly as before. Read by cost_live_on as ${COST_LIVE:-1}."
+        },
+        {
+          "env": "COST_LIVE_PUSH_S",
+          "type": "int",
+          "default": 300,
+          "min": 30,
+          "max": 3600,
+          "unit": "seconds",
+          "zero_means": null,
+          "required": false,
+          "note": "How often the meter offers the running session's live row to the hub. Read by cost_live_meter as ${COST_LIVE_PUSH_S:-300}; a value that is not a positive integer reads as 300."
+        },
+        {
+          "env": "COST_LIVE_POLL_S",
+          "type": "int",
+          "default": 60,
+          "min": 10,
+          "max": 600,
+          "unit": "seconds",
+          "zero_means": null,
+          "required": false,
+          "note": "How often the meter reads the session transcript (bin/transcript-cost.sh) and asks the build tripwire. Read by cost_live_meter as ${COST_LIVE_POLL_S:-60}; a value that is not a positive integer reads as 60."
+        },
+        {
+          "env": "COST_LIVE_STALE_S",
+          "type": "int",
+          "default": 900,
+          "min": 60,
+          "max": 86400,
+          "unit": "seconds",
+          "zero_means": null,
+          "required": false,
+          "note": "The age past which a reader treats a live row as stale: the value it passes as GET /api/cost/live?stale_s=. Read by cost_live_stale_s as ${COST_LIVE_STALE_S:-900}. Nothing calls cost_live_stale_s yet."
+        },
+        {
+          "env": "COST_ROWS_PUSH_AT_BOUNDARY",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 1,
+          "zero_means": "off",
+          "required": false,
+          "note": "1 = after every cost row, bin/agent-call.sh spawns bin/cost-rows-push.sh detached (skipped when the cron lane's lock is held, or with no HARNESS_SECRET/JOBS_URL). 0 (or no/off/false) = rows wait for the 10-minute tick as before. Read by cost_live_boundary_push as ${COST_ROWS_PUSH_AT_BOUNDARY:-1}."
+        }
+      ]
+    }
+  ]
+}

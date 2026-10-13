@@ -1,0 +1,889 @@
+{
+  "id": "merge-conductor",
+  "name": "Merge conductor",
+  "scope": "hub",
+  "factory_stop": "merge",
+  "per_project_hold": true,
+  "script": "bin/merge-conductor.sh",
+  "cadence": "*/30 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-merge-conductor",
+    "aliases": [
+      {
+        "name": "conductor-owns-merges",
+        "off_when": "absent"
+      },
+      {
+        "name": "automerge-disabled",
+        "off_when": "present"
+      },
+      {
+        "name": "automerge-disabled-",
+        "off_when": "partial"
+      },
+      {
+        "name": "merge-conductor-actions",
+        "off_when": "absent"
+      },
+      {
+        "name": "merge-conductor-merge",
+        "off_when": "absent"
+      },
+      {
+        "name": "merge-conductor-observe",
+        "off_when": "partial"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "MC_MERGE_BUDGET",
+      "type": "int",
+      "default": 5,
+      "min": 0,
+      "max": 50,
+      "unit": "merges",
+      "zero_means": "off",
+      "note": "Merges one tick may land. 0 stops merging."
+    },
+    {
+      "env": "MC_REBASE_BUDGET",
+      "type": "int",
+      "default": 2,
+      "min": 0,
+      "max": 50,
+      "unit": "rebases",
+      "zero_means": "off",
+      "note": "Rebases one tick may start. 0 stops rebasing."
+    },
+    {
+      "env": "MC_TMP_MIN_FREE_MB",
+      "type": "int",
+      "default": 256,
+      "min": 0,
+      "max": 65536,
+      "unit": "MB",
+      "zero_means": "off",
+      "read_in": "bin/lib/mc/rebase.sh",
+      "note": "Free space TMPDIR must have before a conductor rebase/restack starts; below it the rebase answers rc 8 (tmp full)."
+    },
+    {
+      "env": "MC_REREVIEW_BUDGET",
+      "type": "int",
+      "default": 2,
+      "min": 0,
+      "max": 50,
+      "unit": "re-reviews",
+      "zero_means": "off",
+      "note": "Re-reviews one tick may start. 0 stops re-reviewing."
+    },
+    {
+      "env": "MC_REREVIEW_DAILY_CAP",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 500,
+      "unit": "re-reviews",
+      "zero_means": "unlimited",
+      "note": "Fleet-wide re-reviews per day. 0 is no daily ceiling."
+    },
+    {
+      "env": "MC_PR_PARALLEL",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 64,
+      "unit": "subshells",
+      "zero_means": "unlimited",
+      "note": "PRs of one project processed at once. 0 is no ceiling."
+    },
+    {
+      "env": "MC_WORKER_DEADLINE_S",
+      "type": "int",
+      "default": 180,
+      "min": 0,
+      "max": 1500,
+      "unit": "seconds",
+      "zero_means": "off",
+      "note": "Wall time one PR worker of a tick may take before it is killed alone, with its gh/curl children (BH-4918); its siblings and the tick's enqueue pass carry on, and the PR is accounted killed:deadline with one WORKER_DEADLINE alert per head. Keep it above MC_MERGE_LOCK_WAIT. The keyed backstop run caps it below its own timeout. Settings row: lane.merge-conductor.mc_worker_deadline_s."
+    },
+    {
+      "env": "MC_FULL_TICK_BUDGET_S",
+      "type": "int",
+      "default": 1500,
+      "min": 0,
+      "max": 3300,
+      "unit": "seconds",
+      "zero_means": "off",
+      "note": "BH-5521. The full (unkeyed) tick's worker window: a PR worker starts only while this many seconds from the tick's start leave it 15 s or more (the BH-4842 window, mc_window_cap); a PR that does not fit is logged WINDOW_DEFERRED and accounted deferred:window, and the next wake for it or the next hourly sweep takes it. Never set on a keyed tick, and a caller's own MC_WORKERS_DONE_BY wins. Not a number = 1500. 0 = no bound. Settings row: lane.merge-conductor.mc_full_tick_budget_s."
+    },
+    {
+      "env": "MC_REBASE_PARALLEL",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 64,
+      "unit": "rebases",
+      "zero_means": "unlimited",
+      "note": "Rebases running fleet-wide at once. 0 is no ceiling."
+    },
+    {
+      "env": "MC_REREVIEW_PARALLEL",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 64,
+      "unit": "re-reviews",
+      "zero_means": "unlimited",
+      "note": "Re-reviews running fleet-wide at once. 0 is no ceiling."
+    },
+    {
+      "env": "MC_RR_GUARD_SETTLE_S",
+      "read_in": "bin/lib/mc/rebase.sh",
+      "type": "int",
+      "default": 3000,
+      "min": 0,
+      "max": 86400,
+      "unit": "seconds",
+      "note": "BH-4134: how long a call-guard refusal on a head's shared review key must stand before the conductor reads it as another lane's finished no-verdict read and buys one ~noverdict read. Longer than review-prs's 2400 s review timeout, so a read still in flight is never bought twice."
+    },
+    {
+      "env": "MC_LAND_REBASE",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "The land lane's own rebase. 0 lands only already-clean heads."
+    },
+    {
+      "env": "MC_LAND_REBASE_PARALLEL",
+      "type": "int",
+      "default": 4,
+      "min": 1,
+      "max": 32,
+      "unit": "rebases",
+      "zero_means": null,
+      "note": "Land-lane rebases at once."
+    },
+    {
+      "env": "MC_EJECT_REBASE",
+      "read_in": "bin/lib/mc/log.sh",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "A Mergify base-conflict ejection is not a strike and buys one out-of-budget rebase per head. 0 restores the strike."
+    },
+    {
+      "env": "MC_MERGIFY_STUCK_SECS",
+      "read_in": "bin/lib/mc/queue.sh",
+      "type": "int",
+      "default": 300,
+      "min": 0,
+      "max": 86400,
+      "unit": "seconds",
+      "zero_means": "off",
+      "note": "A Mergify batch draft green this long and unmerged gets @mergifyio refresh (BH-1790). 0 never refreshes."
+    },
+    {
+      "env": "MC_MERGIFY_REFRESH_WINDOW_SECS",
+      "read_in": "bin/lib/mc/queue.sh",
+      "type": "int",
+      "default": 3600,
+      "min": 0,
+      "max": 86400,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "At most one refresh per batch draft per window while it stays stuck. 0 is one refresh per draft head, never repeated. 1-299 (anything under the conductor tick) is read as the tick: 300, or MC_TICK_SECS when that is longer (BH-1887)."
+    },
+    {
+      "env": "MC_MERGIFY_STUCK_ALERT_SECS",
+      "read_in": "bin/lib/mc/queue.sh",
+      "type": "int",
+      "default": 600,
+      "min": 60,
+      "max": 86400,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "Still stuck this long after a refresh was due: one alert per draft per day."
+    },
+    {
+      "env": "MC_RETRY_MAX",
+      "type": "int",
+      "default": 6,
+      "min": 1,
+      "max": 50,
+      "unit": "attempts",
+      "zero_means": null,
+      "note": "Merge attempts for one PR before it is handed off."
+    },
+    {
+      "env": "MC_REQUEUE_CAP",
+      "type": "int",
+      "default": 5,
+      "min": 0,
+      "max": 50,
+      "unit": "requeues",
+      "zero_means": "off",
+      "note": "Mergify requeues per PR."
+    },
+    {
+      "env": "MC_MERGE_TREE",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "Merge-tree conflict probing."
+    },
+    {
+      "env": "MC_MERGE_TREE_MAX",
+      "type": "int",
+      "default": 3,
+      "min": 1,
+      "max": 50,
+      "unit": "probes",
+      "zero_means": null,
+      "read_in": "bin/lib/mc/rebase.sh",
+      "note": "Merge-tree probes per tick."
+    },
+    {
+      "env": "MC_RR_LANEFAIL_MAX",
+      "type": "int",
+      "default": 5,
+      "min": 1,
+      "max": 50,
+      "unit": "failures",
+      "zero_means": null,
+      "read_in": "bin/lib/mc/classify.sh",
+      "note": "Re-review lane failures before it backs off."
+    },
+    {
+      "env": "MC_REBASE_TIMEOUT_SECS",
+      "type": "int",
+      "default": 1800,
+      "min": 120,
+      "max": 21600,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "Wall clock for one rebase."
+    },
+    {
+      "env": "MC_REREVIEW_TIMEOUT_SECS",
+      "type": "int",
+      "default": 2700,
+      "min": 120,
+      "max": 21600,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "Wall clock for one re-review."
+    },
+    {
+      "env": "MC_REBASE_POOL_TIMEOUT_SECS",
+      "type": "int",
+      "default": 5400,
+      "min": 120,
+      "max": 21600,
+      "unit": "seconds",
+      "zero_means": null,
+      "read_in": "bin/lib/mc/rebase.sh",
+      "note": "Wall clock for a pool-routed rebase."
+    },
+    {
+      "env": "MC_MERGE_LOCK_WAIT",
+      "type": "int",
+      "default": 120,
+      "min": 0,
+      "max": 3600,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "flock wait before a merge gives up this tick."
+    },
+    {
+      "env": "MC_CI_KICK_MIN_AGE",
+      "type": "int",
+      "default": 600,
+      "min": 60,
+      "max": 86400,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "Age a CI run must reach before it is re-kicked."
+    },
+    {
+      "env": "MC_INQUEUE_PROBE_TTL_SECS",
+      "type": "int",
+      "default": 86400,
+      "min": 60,
+      "max": 604800,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "How long an in-queue probe answer is reused."
+    },
+    {
+      "env": "MC_DETACHED_REBASE",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "Detached-worktree rebases."
+    },
+    {
+      "env": "MC_MAIN_RED_DETECT",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "Main-red detection inside the conductor."
+    },
+    {
+      "env": "MC_ORPHAN_RETARGET",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "Retarget orphaned stacked PRs."
+    },
+    {
+      "env": "MC_OVERLAP_REREVIEW",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "Re-review on planned-file overlap."
+    },
+    {
+      "env": "MC_LEAD_READY",
+      "read_in": "bin/lib/mc-lead-ready.sh",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "BH-3778: on a repo in catalog/lead-protected-paths.tsv, a standing lead/human MERGE or MERGE-WITH-NOTES on the live head that la_decide lets the lane clear counts as an approval bound to that head (bin/lib/mc-lead-ready.sh), so the PR reaches READY and mc_enqueue_mergify. Never over a builder BLOCK. 0 = off, the pre-BH-3778 behavior."
+    },
+    {
+      "env": "MC_EJECTED_REQUEUE",
+      "type": "string",
+      "default": "culprit",
+      "zero_means": null,
+      "required": false,
+      "read_in": "bin/lib/mc/queue.sh",
+      "note": "BH-5819: culprit | never. culprit (default): a head the merge queue ejected AS THE CULPRIT (a dqwculprit mark from dequeue-watch, a human @Mergifyio dequeue after the head, a failed solo check with main not red, or a reejected mark) is never put back in the queue, neither by the BH-636 re-entry arm nor by the stale-dequeue arm on a verdict newer than the dequeue; only a new head clears it. A bystander keeps the BH-636 / BH-4428 requeue. It protects a batch from a head that already failed (#5221/#5281/#5301 came back into #5455). Each firing costs a wait for a new head; the culprit goes to the resolver as queue-ejected-twice. never: every ejected head is held, bystanders too (they then wait for a push). Anything else reads as culprit."
+    },
+    {
+      "env": "MC_QUEUE_REENTRY",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "Re-enter the merge queue after a move."
+    },
+    {
+      "env": "MC_REREVIEW_ON_MOVE",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "Re-review when the base moves under a PR."
+    },
+    {
+      "env": "LLM_LANE_ENABLED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "0 makes this lane call no model at all. bin/lib/llm-gate.sh refuses BEFORE the vendor call and writes a zero-cost row_source=refused row, so the stop is visible in the ledger rather than being a lane that went quiet."
+    },
+    {
+      "env": "LLM_RUNNER_ALLOWED",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Comma/space list of the ONLY ladder rungs this lane may reach. Empty is every rung, i.e. today's ladder unchanged. A rung outside the list is refused before the call, so a cliff or a failure on the standing lane cannot descend into one that costs ~100x (#1141, the $793 descent)."
+    },
+    {
+      "env": "LLM_USD_CAP_DAY",
+      "type": "float",
+      "default": 0,
+      "min": 0,
+      "max": 10000,
+      "unit": "usd",
+      "zero_means": "unlimited",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Dollars this lane may spend in the current UTC day, summed from D1 cost_rows through GET /api/metrics/llm-spend — never from the box's own logs/cost.csv. A second, project-scoped ceiling is the lane.<id>.<project>.llm_usd_cap_day row, which is read only when somebody wrote it."
+    },
+    {
+      "env": "MC_TICK_SECS",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 3600,
+      "unit": "seconds",
+      "zero_means": "off",
+      "note": "Seconds between REAL ticks of one project. The cron still fires every 5 minutes; a project whose last tick started less than this ago is held before any GitHub read and logs one 'TICK <p> held … (decision=held)' line. 0 = tick on every cron fire, which is today. Per project: lane.merge-conductor.<project>.mc_tick_secs."
+    },
+    {
+      "env": "MC_READ_MEMO",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": "boolean",
+      "zero_means": "off",
+      "read_in": "bin/lib/mc/locks.sh",
+      "note": "The cross-tick read memo (BH-1486): skip the check-run read and the iron-law diff read for a PR whose head sha, updated_at and CI-attempt fingerprint are all unchanged. 0 is the operator kill switch — every read is made exactly as it was before the memo existed."
+    },
+    {
+      "env": "MC_TICKET_DEDUPE",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 1,
+      "unit": "boolean",
+      "zero_means": "off",
+      "read_in": "bin/lib/mc/locks.sh",
+      "note": "One open PR per ticket (BH-1526): each tick, a pool PR that duplicates another open PR's ticket is closed with a comment linking the one that stays; a lead PR (the lead_pr_authors row) always wins. PER PROJECT, default OFF: lane.merge-conductor.<project>.mc_ticket_dedupe = 1 opts a project in (seeded ON for cromford only). The merge-time HOLD is fleet-wide and is not governed by this knob."
+    },
+    {
+      "env": "MC_READ_MEMO_TTL_SECS",
+      "type": "int",
+      "default": 900,
+      "min": 0,
+      "max": 86400,
+      "unit": "seconds",
+      "zero_means": "off",
+      "read_in": "bin/lib/mc/locks.sh",
+      "note": "How long a memoised terminal answer (CI green/red, an iron-law scan count) may stand. 900 = three cron fires, which bounds how long a re-run somebody started from the Actions UI on an unchanged head can stay invisible. 0 turns the memo off."
+    },
+    {
+      "env": "MC_HEAD_LAG_MINS",
+      "type": "int",
+      "default": 10,
+      "min": 0,
+      "max": 1440,
+      "unit": "minutes",
+      "zero_means": "off",
+      "note": "BH-1529: how long an open PR's head may differ from its branch tip (GitHub's PR object not synced to the pushed commit, so no CI runs) before the conductor closes and reopens it ONCE per tip; a lag that outlives the reopen by the same window writes one ALERTS line. Fork PRs and unreadable tips are skipped. 0 turns the check off. Per project: lane.merge-conductor.<project>.mc_head_lag_mins."
+    },
+    {
+      "env": "MC_MERGIFY_REASK_TICKS",
+      "type": "int",
+      "default": 6,
+      "min": 1,
+      "max": 288,
+      "unit": "ticks",
+      "zero_means": null,
+      "read_in": "bin/lib/mc/queue.sh",
+      "note": "BH-2199: a READY PR whose Mergify queue acknowledged nothing is HELD (never merged directly on a queue_rules repo). The queue is asked again (label + @mergifyio queue) every this many held ticks, so a repo whose queue product is off is not sent a queue command every tick. 1 asks on every tick. Per project: lane.merge-conductor.<project>.mc_mergify_reask_ticks."
+    },
+    {
+      "env": "MC_HEAD_LAG_HELD_RECHECK_MINS",
+      "type": "int",
+      "default": 60,
+      "min": 0,
+      "max": 1440,
+      "unit": "minutes",
+      "zero_means": "off",
+      "read_in": "bin/lib/mc/rebase.sh",
+      "note": "BH-1564: how long a HELD answer stands for one lagging tip before the head-lag kick asks both holds (to_lane_hold, mc_hold_keeps_pr) again. The answer is cached per (PR, tip) in the head-lag record and its `headlag` pr_attempts row, so a held PR that keeps lagging is not re-read every tick; a lifted hold gets its kick within this window. 0 asks on every tick (the BH-1529 behaviour). Per project: lane.merge-conductor.<project>.mc_head_lag_held_recheck_mins."
+    },
+    {
+      "env": "MC_UNVERIFIABLE_ALERT_TICKS",
+      "type": "int",
+      "default": 6,
+      "min": 0,
+      "max": 288,
+      "unit": "ticks",
+      "zero_means": "off",
+      "read_in": "bin/lib/mc/locks.sh",
+      "note": "BH-1634: how many consecutive conductor ticks an open PR's merge state may read UNVERIFIABLE (the open list's per-PR read failed, so the tick skipped it) before ONE ALERTS line is written for that PR. Only real ticks that reach the PR's row count: a tick held by MC_TICK_SECS or one whose whole list failed neither counts nor resets. One alert per (repo, PR) per streak; a tick that reads the PR's merge state resets the streak. 0 turns the alert off (the streak is still counted). Per project: lane.merge-conductor.<project>.mc_unverifiable_alert_ticks."
+    },
+    {
+      "env": "GH_PR_LIST_REST_PAGES",
+      "type": "int",
+      "default": 3,
+      "min": 1,
+      "max": 30,
+      "unit": "requests",
+      "zero_means": null,
+      "note": "BH-1592: the most PRs the closed-unmerged settle reads by number in one tick (candidates come from the harness's own pr-state rows, build records and closed-watch memos). The same variable is bin/lib/gh-pr-list.sh's REST page cap, which is why the default matches what the old 3-page closed walk cost. A value that is not a positive integer reads as 3."
+    },
+    {
+      "env": "MC_FLUSH_MAX",
+      "type": "int",
+      "default": 10,
+      "min": 1,
+      "max": 100,
+      "unit": "pages",
+      "zero_means": null,
+      "read_in": "bin/lib/mc/log.sh",
+      "note": "Held pages the conductor flushes per tick once the mode returns to merge/actions, oldest first. The rest stay held and go out on the next tick — capped, never dropped."
+    },
+    {
+      "env": "MC_HOLD_REMINDER_S",
+      "type": "int",
+      "default": 21600,
+      "min": 600,
+      "max": 86400,
+      "unit": "seconds",
+      "zero_means": null,
+      "read_in": "bin/lib/mc/log.sh",
+      "note": "Seconds between the non-critical PAUSED reminders the conductor sends while it is holding pages under kill-switch or observe. A pause nobody lifted is silent otherwise."
+    },
+    {
+      "env": "MC_CLAIMED_REPAGE_S",
+      "type": "int",
+      "default": 86400,
+      "min": 3600,
+      "max": 604800,
+      "unit": "seconds",
+      "zero_means": null,
+      "read_in": "bin/lib/mc/log.sh",
+      "note": "A BLOCKED_HUMAN park bin/blocked-resolver.sh has claimed pages once when parked and once more when it is still parked this long after with no resolver rung recorded in the same span (BH-3630)."
+    },
+    {
+      "env": "MC_AUTOENQUEUE",
+      "read_in": "bin/lib/autoenqueue.sh",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "BH-1668. The tier-2 self-enqueue: an approved (APPROVE on the head, or a standing MERGE/MERGE-WITH-NOTES), green, clean PR on a Mergify repo gets one `@mergifyio queue` per head, posted with a PAT. 0 turns the step off and the conductor is as before."
+    },
+    {
+      "env": "MC_AUTOENQUEUE_CAP",
+      "read_in": "bin/lib/autoenqueue.sh",
+      "type": "int",
+      "default": 10,
+      "min": 0,
+      "max": 50,
+      "unit": "posts",
+      "zero_means": "off",
+      "note": "BH-1668. `@mergifyio queue` posts one tick may make per project; the rest are logged DEFERRED and re-offered next tick. 0 stops the step."
+    },
+    {
+      "env": "MC_AUTOENQUEUE_CHECK",
+      "read_in": "bin/lib/autoenqueue.sh",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "note": "BH-1668, Lane D. The check run that must be completed/success on the PR head (latest run by started_at) before the self-enqueue posts. EMPTY (the default) = every `check-success` name under `queue_conditions` in the repo's own .mergify.yml queue_rules — the checks Mergify requires to ADMIT a PR (merge_conditions run on the batch draft and are not read); queue_conditions naming none fall back to `Build + Unit tests`. The old default was that one project-5 name, which no cromford check carries, so the step refused every READY row there."
+    },
+    {
+      "env": "MC_AUTOENQUEUE_HOLD_LABELS",
+      "read_in": "bin/lib/autoenqueue.sh",
+      "type": "string",
+      "default": "hold,do-not-merge",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "note": "BH-1668. Comma-separated PR labels that stop the self-enqueue on that PR."
+    },
+    {
+      "env": "MC_KEYED_WAKE",
+      "read_in": "bin/lib/keyed-wake.sh",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "Lane D. A detached re-review that finishes APPROVE launches the conductor for THAT PR at once (MC_ONLY_PR keyed tick) instead of leaving it to the next */5 tick. 0 = wait for the cron tick, exactly as before."
+    },
+    {
+      "env": "MC_KEYED_WAKE_MIN_S",
+      "read_in": "bin/lib/keyed-wake.sh",
+      "type": "int",
+      "default": 120,
+      "min": 0,
+      "max": 3600,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "Lane D. At most one keyed conductor wake per PR in this many seconds; stamped before the launch so two callers racing on one PR launch once. 0 = no window: every APPROVE launches."
+    },
+    {
+      "env": "MC_FANIN_SOLO_AFTER",
+      "type": "int",
+      "default": 2,
+      "min": 0,
+      "max": 20,
+      "unit": "runs",
+      "zero_means": "off",
+      "note": "BH-4842. Consecutive conductor runs a PR may be missing from fan-in (its worker killed before it was accounted) before it is worked alone in its own keyed run, so one slow PR cannot starve itself or its siblings. A refused launch keeps it in the batch. 0 = never isolate. Row: lane.merge-conductor.mc_fanin_solo_after"
+    },
+    {
+      "env": "MC_STACK_FOLLOW_TRIES",
+      "type": "int",
+      "default": 3,
+      "min": 1,
+      "max": 20,
+      "unit": "tries",
+      "zero_means": null,
+      "required": true,
+      "read_in": "bin/lib/mc/rebase.sh",
+      "note": "Failed follows an owed stacked-child restack gets before it is dropped with one STACK_FOLLOW alert (BH-1670/BH-1715). A value that does not resolve drops the follow on its first failure, with the same alert."
+    },
+    {
+      "env": "MC_STACK_FOLLOW_GIVEUP_S",
+      "type": "int",
+      "default": 21600,
+      "min": 600,
+      "max": 604800,
+      "unit": "seconds",
+      "zero_means": null,
+      "required": true,
+      "read_in": "bin/lib/mc/rebase.sh",
+      "note": "Age after which an owed stacked-child restack is dropped with one STACK_FOLLOW alert, whatever its try count (BH-1670/BH-1715)."
+    },
+    {
+      "env": "MC_STACK_PARENT_MERGE",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "read_in": "bin/merge-conductor.sh",
+      "note": "BH-5519: merge an OPEN parent's branch into a DIRTY stacked child, once per child head, on the MC_REBASE_BUDGET. The approval is never rebound onto that merge. 0 leaves the child STACKED_WAIT until the parent merges."
+    },
+    {
+      "env": "MC_STACK_PARENT_FOLLOW",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "read_in": "bin/merge-conductor.sh",
+      "note": "BH-5796: when an OPEN parent's branch moves past a stacked child (its tip is not in the child's history), merge it into the child whether or not GitHub lists the child DIRTY, once per (child head, parent tip), on the MC_REBASE_BUDGET. It protects the child from keeping the old parent commits after a parent rebuild or fix (14 review BLOCKs). Each firing costs one fetch a tick per stacked child and one merge push. A conflict parks the child conflict-unresolvable for the resolver's fix round, which merges the parent branch. MC_STACK_PARENT_MERGE=0 still turns every parent merge off. 0 = only DIRTY children get the merge."
+    },
+    {
+      "env": "MC_RR_LIVE_CI",
+      "read_in": "bin/lib/mc/rebase.sh",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "BH-1794: the head-bound re-review prompt (mc_rereview) carries the live CI of the head it judges, read from GitHub on the harness's credential ladder, so a reviewer is never blocking a green head on a PR-body Evidence block from an older one. 0 = the prompt is what it was before."
+    },
+    {
+      "env": "MC_FR_UNREADABLE_TTL_MINS",
+      "type": "int",
+      "default": 15,
+      "min": 0,
+      "max": 1440,
+      "unit": "minutes",
+      "zero_means": "off",
+      "read_in": "bin/lib/mc-foreign-red.sh",
+      "note": "BH-3857: how long a foreign-red attribution that could not be read (`unreadable`) is trusted from its per-(PR, head) cache before the dequeue comment, runs and logs are read again. Inside it the re-entry gate spends no GitHub read on that head; a new dequeue comment on the same head is not seen until it expires. 0 = never cached, read every tick. Per project: lane.merge-conductor.<project>.mc_fr_unreadable_ttl_mins."
+    },
+    {
+      "env": "MC_FR_LATER_PROBES",
+      "type": "int",
+      "default": 3,
+      "min": 1,
+      "max": 20,
+      "unit": "runs",
+      "zero_means": null,
+      "read_in": "bin/lib/mc-foreign-red.sh",
+      "note": "BH-3857: for cromford itself, how many later green merge-queue batches on the same main are probed per failing run for proof (their CI-plan job log) that they actually ran the failing suite. Each probe costs at most two GitHub reads, once per run id (the parse is cached). Per project: lane.merge-conductor.<project>.mc_fr_later_probes."
+    },
+    {
+      "env": "MC_BATCH_EJECT_SHARED_MIN",
+      "type": "int",
+      "default": 2,
+      "min": 2,
+      "max": 50,
+      "unit": "PRs",
+      "zero_means": null,
+      "read_in": "bin/lib/mc-batch-eject.sh",
+      "note": "BH-4428: how many distinct PRs Mergify must have tested ALONE on the same main base, each failing a check in common, before none of them is treated as the culprit (main was red). Below it, a PR ejected from a single-PR draft is the culprit: not re-queued, and told once on the PR which checks failed. At or above it, each is re-queued once per head after main moves off that base and the main-red freeze is down. Values below 2 read as 2. Per project: lane.merge-conductor.<project>.mc_batch_eject_shared_min."
+    },
+    {
+      "env": "MC_PREQUEUE_GATE",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": "flag",
+      "zero_means": "off",
+      "read_in": "bin/lib/mc-prequeue.sh",
+      "note": "BH-4545: the pre-queue isolation gate. 1 = before a READY head is marked ready or enqueued, the conductor reads the per-(PR, head, main tip) verdict and parks a cached red that names a suite as prequeue-red; an unreadable main tip holds the row READY. 0 = the gate is never asked. Read through pq_knob. Per project: lane.merge-conductor.<project>.mc_prequeue_gate."
+    },
+    {
+      "env": "MC_PREQUEUE_FRESH_S",
+      "type": "int",
+      "default": 1800,
+      "min": 60,
+      "max": 86400,
+      "unit": "seconds",
+      "zero_means": null,
+      "read_in": "bin/lib/mc-prequeue.sh",
+      "note": "BH-4545: how long a pre-queue verdict stays fresh before the gate asks for a new one. Registered by the tracer (BH-4547) and read by bin/lib/mc-prequeue.d/dispatch.sh through pq_knob. A pending run ages from its dispatch. With MC_PREQUEUE_REUSE=1 a finished verdict ages from when the conductor recorded it (BH-5572); with 0, from its dispatch. Per project: lane.merge-conductor.<project>.mc_prequeue_fresh_s."
+    },
+    {
+      "env": "MC_PREQUEUE_REUSE",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": "flag",
+      "zero_means": "off",
+      "read_in": "bin/lib/mc-prequeue.sh",
+      "note": "BH-5572: 1 = a pre-queue verdict on (PR, head) counts on any main tip while it is younger than MC_PREQUEUE_FRESH_S, aged from when the conductor read the finished run. A red parks. Any other verdict counts only if git merge-tree says the head still merges into current main; a conflict sends the PR to NEEDS_REBASE. No prequeue-gate.yml run is dispatched for a head with a standing BLOCK or a held lead PR. It protects merge throughput: without it every main move restarts a CI-pool run and approved PRs wait outside the queue. Each reuse costs one bounded git fetch and one local merge-tree, and no CI run; each veto costs one thread read and one lead-fence read. 0 = the gate before BH-5572: verdicts aged from dispatch time, no merge test, a dispatch for blocked heads. The merge queue's full run is the same either way. Per project: lane.merge-conductor.<project>.mc_prequeue_reuse."
+    },
+    {
+      "env": "MC_PREQUEUE_DEADLINE_S",
+      "type": "int",
+      "default": 2400,
+      "min": 60,
+      "max": 86400,
+      "unit": "seconds",
+      "zero_means": null,
+      "read_in": "bin/lib/mc-prequeue.sh",
+      "note": "BH-4545: how long a dispatched pre-queue run may stay pending before the gate stops waiting on it. Registered by the tracer (BH-4547) and read by the CI-pool dispatcher hook in bin/lib/mc-prequeue.d/ through pq_knob; nothing reads it until that hook lands. Per project: lane.merge-conductor.<project>.mc_prequeue_deadline_s."
+    },
+    {
+      "env": "MC_BATCH_SOLO",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": "flag",
+      "zero_means": "off",
+      "read_in": "bin/lib/mc-prequeue.sh",
+      "note": "BH-4545: when a Mergify batch fails, re-run each member alone and park only the members that reproduce. Registered by the tracer (BH-4547) and read by the batch-solo hook in bin/lib/mc-prequeue.d/ through pq_knob; nothing reads it until that hook lands. Per project: lane.merge-conductor.<project>.mc_batch_solo."
+    },
+    {
+      "env": "MC_BATCH_SOLO_MAX_MEMBERS",
+      "type": "int",
+      "default": 13,
+      "min": 2,
+      "max": 50,
+      "unit": "PRs",
+      "zero_means": null,
+      "read_in": "bin/lib/mc-prequeue.sh",
+      "note": "BH-4545: the largest failed batch the solo re-run takes apart. Registered by the tracer (BH-4547) and read by the batch-solo hook in bin/lib/mc-prequeue.d/ through pq_knob; nothing reads it until that hook lands. Per project: lane.merge-conductor.<project>.mc_batch_solo_max_members."
+    },
+    {
+      "env": "MC_BATCH_IMPACT",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 2,
+      "unit": "mode",
+      "zero_means": "off",
+      "read_in": "bin/lib/mc-batch-impact.sh",
+      "note": "BH-4980: when a Mergify batch fails and Mergify named nobody, map the failing test back through bin/test-impact.sh's map to the members that reach it. 0 off; 1 shadow (the default): log one BATCH_IMPACT_* line per PR head and decide nothing; 2 enforce: exactly one member reaches it -> that PR is ejected with a comment naming the test and the others are re-queued without the solo re-run; none or several -> the solo re-run (MC_BATCH_SOLO) decides as before. Any other value reads as 0 with one log line. The flip to 2 ships with batch_failure_attempts=0 in config/mergify/repos/cromford.conf, in one PR carrying real shadow lines (docs/notes/2026-10-07-BH-4980-eject-culprit.md). Per project: lane.merge-conductor.<project>.mc_batch_impact."
+    },
+    {
+      "env": "MC_BATCH_IMPACT_CHECK_PATHS",
+      "type": "string",
+      "default": "Jobs worker — routes + schema=worker/jobs/;Mission Control SPA — unit tests + build=console-ui/",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/mc-batch-impact.sh",
+      "note": "BH-4980: when a failed batch's logs name jobs, not suites (batch-solo's `skip job-only`), the failing check names are mapped to repo path prefixes here: `<check>=<prefix>[,<prefix>]`, entries separated by `;`. A member reaches a mapped check when one of its files is under a prefix. A failing check not in this list makes the batch unknown (the solo re-run decides). Empty reads as the default. Per project: lane.merge-conductor.<project>.mc_batch_impact_check_paths."
+    },
+    {
+      "env": "MC_UNION_FILES",
+      "read_in": "bin/lib/mc/rebase.sh",
+      "type": "string",
+      "default": "worker/jobs/schema.sql worker/jobs/src/index.js catalog/llm-sites.json catalog/context-budgets.json worker/jobs/test/route-table.d/*",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "note": "BH-4641. Files the rebase lane may union-resolve when both sides only APPENDED a block at the same place: both blocks kept, main first, then validated (python sqlite3 for .sql, jq + duplicate-key parse for .json, node --check for .js). Anything else stays conflict-unresolvable. Comma/space list of globs; a `<dir>/*` glob also renumbers that dir's NNN-*.txt fragments. `off` disables the step. Fleet-wide, not per project. A union-resolved merge is pushed WITHOUT rebinding the approval, so the new head is re-reviewed."
+    },
+    {
+      "env": "MC_STATE_NOTE_STATES",
+      "read_in": "bin/lib/mc/log.sh",
+      "type": "string",
+      "default": "HEAD_MOVED STACKED_WAIT NEEDS_REBASE REBASING READY QUEUED",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "note": "BH-4717. Space-separated conductor states whose BUDGET age is a log note, not a page. Their alert is the STUCK TTL page. MC_STATE_NOTES_ALERT=1 pages them all again."
+    },
+    {
+      "env": "MC_FULL_TICK_SINGLE",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "BH-5463. 1: a full (unkeyed) tick of a project takes locks/merge-conductor-<project>-fulltick.lock with flock -n, and a second full tick of that project logs one `TICK <p> skipped` line and stops. Keyed ticks never take it. Settings key lane.merge-conductor.mc_full_tick_single. 0: overlapping full ticks run, as before."
+    },
+    {
+      "env": "MC_AE_LEDGER_RETRY",
+      "read_in": "bin/lib/autoenqueue.sh",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "BH-5463. 1: an autoenqueue ledger read that answers rc 1 (unusable) is read once more after a fixed 2 s before the row is skipped. Settings key lane.merge-conductor.mc_ae_ledger_retry. 0: one read, as before."
+    },
+    {
+      "env": "MC_AE_LEDGER_BURST",
+      "read_in": "bin/lib/autoenqueue.sh",
+      "type": "int",
+      "default": 5,
+      "min": 1,
+      "max": 100,
+      "unit": "rows",
+      "zero_means": null,
+      "note": "BH-5463. More than this many READY rows in a row skipped on an unreadable autoenqueue ledger in one project tick is one AUTOENQUEUE alert, and the rest of that tick reads the ledger once per row. Settings key lane.merge-conductor.mc_ae_ledger_burst."
+    }
+  ],
+  "stats": {
+    "cost_stage": "review",
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/merge-conductor.log"
+  }
+}

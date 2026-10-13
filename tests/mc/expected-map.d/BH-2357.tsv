@@ -1,0 +1,4 @@
+# tests/mc/expected-map.d/BH-2357.tsv — BH-2357 (BH-2311.1): the two private
+# helpers behind the rows-first attempt verbs; origin=lib because they are new module functions.
+locks	_mc_attempt_row_lines	lib
+locks	_mc_attempt_read	lib

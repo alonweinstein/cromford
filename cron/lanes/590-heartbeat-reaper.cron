@@ -1,0 +1,8 @@
+# @ungated reads this box's state/heartbeat/ files. A holder cannot see another box's dead lane, so each box reaps its own.
+
+# lane-liveness reaper (operator line, outside managed blocks; BH-638). A dead lane
+# and a lane with nothing to do look identical, so every long-lived lane writes
+# state/heartbeat/<lane>.<pid>.json and this pass pages ONCE for one that went silent
+# or died. No lock and no signal, so sharing the minute with the conductor costs
+# nothing. Knobs: HB_* in env/global.env. docs/verification-map/lane-heartbeat.md
+*/5 * * * * /root/harness/bin/heartbeat-reaper.sh >/dev/null 2>&1

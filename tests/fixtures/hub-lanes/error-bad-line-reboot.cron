@@ -1,0 +1,4 @@
+SHELL=/bin/bash
+# BEGIN hub-lanes
+@reboot /usr/sbin/sshd
+# END hub-lanes

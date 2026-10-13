@@ -1,0 +1,12 @@
+{
+  "name": "harness-jobs",
+  "private": true,
+  "type": "module",
+  "description": "Coordination worker for the box fleet. One runtime dependency, @sentry/cloudflare (BH-5618), imported lazily and only when HARNESS_SENTRY_DSN is bound, so node --test still drives the worker directly without an install.",
+  "scripts": {
+    "test": "node --test test/*.test.js test/routes/*.test.js"
+  },
+  "dependencies": {
+    "@sentry/cloudflare": "11.6.0"
+  }
+}

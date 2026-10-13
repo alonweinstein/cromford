@@ -1,0 +1,1 @@
+{"name":"lane-reaper-off","readers":["bin/lane-reaper.sh"],"box_scoped":true,"what":"stops lane-reaper.sh killing a run-build.sh lane that is still alive long past its deadline or whose checkout was deleted, answered before its lock and before any write"}

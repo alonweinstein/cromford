@@ -1,0 +1,16 @@
+diff --git a/docs/EVENTS.md b/docs/EVENTS.md
+index 1111111..2222222 100644
+--- a/docs/EVENTS.md
++++ b/docs/EVENTS.md
+@@ -2,5 +2,5 @@
+ 
+ <!-- changes:begin -->
+-> pointer line
++> pointer line, reworded by a docs pass
+ <!-- changes:end -->
+ 
+@@ -6,3 +6,4 @@
+ 
+ Stable contract text.
+ More stable text.
++2026-09-17: and one more paragraph, riding in on the pointer edit above.

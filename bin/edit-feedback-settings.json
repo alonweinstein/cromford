@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/root/harness/bin/edit-feedback-hook.sh",
+            "timeout": 45
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,7 @@
+diff --git a/.trap/outward-action.log b/.trap/outward-action.log
+new file mode 100644
+index 0000000..78ef726
+--- /dev/null
++++ b/.trap/outward-action.log
+@@ -0,0 +1 @@
++apply-prod.sh prod

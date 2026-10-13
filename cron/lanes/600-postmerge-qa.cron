@@ -1,0 +1,9 @@
+21,51 * * * * /root/harness/bin/postmerge-qa.sh project-4 >/dev/null 2>&1 # SDLC 3b: post-merge prod QA — deploy gate, then a real signed-in drive of the shipped screens; fail-open, capped at one build per tick, off via flags/postmerge-qa-disabled
+# @box project-1
+26,56 * * * * /root/harness/bin/postmerge-qa.sh project-1 >/dev/null 2>&1 # SDLC 3b: post-merge prod QA — deploy gate, then a real signed-in drive of the shipped screens; fail-open, capped at one build per tick, off via flags/postmerge-qa-disabled
+# @box project-3
+36 * * * * /root/harness/bin/postmerge-qa.sh project-3 >/dev/null 2>&1 # SDLC 3b: post-merge prod QA — deploy gate, then a real signed-in drive of the shipped screens; fail-open, capped at one build per tick, off via flags/postmerge-qa-disabled
+# @box project-2
+31 * * * * /root/harness/bin/postmerge-qa.sh project-2 >/dev/null 2>&1 # SDLC 3b: post-merge prod QA — deploy gate, then a real signed-in drive of the shipped screens; fail-open, capped at one build per tick, off via flags/postmerge-qa-disabled
+# @box project-5
+46 * * * * /root/harness/bin/postmerge-qa.sh project-5 >/dev/null 2>&1 # SDLC 3b: post-merge prod QA — deploy gate, then a real signed-in drive of the shipped screens; fail-open, capped at one build per tick, off via flags/postmerge-qa-disabled

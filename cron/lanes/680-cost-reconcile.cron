@@ -1,0 +1,26 @@
+# @hub-lanes
+
+# ── meters lane (cost fix 4, 2026-09-14) ─────────────────────────────────────
+# COST RECONCILIATION: the account METER against our own cost rows. Two
+# independent measurements of the same money — Anthropic's extra-usage meter
+# (polled into extra_usage_snapshots by the 15-min meter line above)
+# and the per-call cost_rows ledger every dashboard and budget here is built on.
+# Nothing compared them until now, which is how the project-6 account reached
+# $23.8K of a $35K cap with its meter unread for fifteen days. One row per
+# (account, window) into D1 cost_reconciliation, one line into
+# logs/cost-reconcile.log, and ONE alert per account per day when a METERED
+# account's gap exceeds RECONCILE_GAP_PCT (default 10%).
+# Hourly at :50 for the 1h window, daily at 04:50Z for the 24h one (the daily
+# run lands after 04:47's disk-clean and before 05:17's update-runners).
+# Kill: RECONCILE=0 in env/global.env, or flags/cost-reconcile-off. docs: COST.md.
+#
+# The project-6 usage meter's operator line (7,22,37,52 ->
+# /root/orchestrator/bin/project-6-usage-poll.sh) was REMOVED here: it was the
+# 2026-09-14 stopgap that read operator@example.com's meter because the tracker
+# above could only poll one login. It polls two now
+# (EXTRA_USAGE_LOGINS / catalog/cost-accounts.json), posts the same
+# extra_usage_snapshots rows under box=project-6-account, and carries the same
+# >=98%-of-cap alert. Two pollers on one account would split a per-account rate
+# limit and write the same series twice.
+50 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/cost-reconcile.sh --window 1h >/dev/null 2>&1
+50 4 * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/cost-reconcile.sh --window 24h >/dev/null 2>&1

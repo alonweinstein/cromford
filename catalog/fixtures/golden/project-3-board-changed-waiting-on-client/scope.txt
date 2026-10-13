@@ -1,0 +1,1 @@
+board fb_o19c: CHANGED 7231 "Remove the signup survey step" (comments: 1 -> 2; verdict: null -> needs_clarification; waitingOn: team -> requester; activity)

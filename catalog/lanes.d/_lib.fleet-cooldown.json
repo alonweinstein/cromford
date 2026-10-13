@@ -1,0 +1,59 @@
+{
+  "libs": [
+    {
+      "id": "fleet-cooldown",
+      "file": "bin/lib/fleet-cooldown.sh",
+      "note": "BH-2352/BH-2353 (BH-2319), knob reads BH-2498. The fleet cooldown seam: account, model and lane cooldowns as fleet_cooldowns rows on the jobs worker, read through fcd_put/fcd_clear/fcd_live/fcd_list. Sourced by the account pickers, the pool, orc and quota-status (and, with #2460/#2472, agent-call, orchestrate and the lane-down writers and reprobe). Sourcing stays side-effect free: the settable knobs are resolved on the first fcd_* call, through lib_env_apply fleet-cooldown in a subshell (_fcd_knobs), as operator row (settings key lib.fleet-cooldown.<env lowercased>) > the same row from the box settings cache when the worker does not answer > env > the code default. Any failure in that read leaves the env value, so a settings outage never changes behaviour and never reaches the pick path under set -e. FLEET_COOLDOWN_STORE is a path and stays settable:false (env only). read_in lists every file under bin/ that reads the knob.",
+      "knobs": [
+        {
+          "env": "FLEET_COOLDOWN_DB",
+          "read_in": "bin/lib/fleet-cooldown.sh",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 1,
+          "zero_means": "off",
+          "required": false,
+          "settable": true,
+          "note": "The kill switch for the fleet half. 0 = every fcd_* function is a no-op (put rc 0, live/clear rc 2 unknown, list empty) and every caller runs on its local cooldown files alone, exactly as before BH-2319. Unset or anything else = on. Settings key lib.fleet-cooldown.fleet_cooldown_db (BH-2498): row > cached row > env > on."
+        },
+        {
+          "env": "FLEET_COOLDOWN_STORE",
+          "read_in": "bin/lib/fleet-cooldown.sh",
+          "type": "string",
+          "default": "",
+          "zero_means": null,
+          "required": false,
+          "settable": false,
+          "note": "A path. When set, the seam's backend is a local TSV file at this path instead of the worker (tests and single-box setups). Empty = the worker backend. settable:false: a path is never set from a page (section 17). Read as ${FLEET_COOLDOWN_STORE:-}."
+        },
+        {
+          "env": "FLEET_COOLDOWN_CACHE_S",
+          "read_in": "bin/lib/fleet-cooldown.sh",
+          "type": "int",
+          "default": 20,
+          "min": 0,
+          "max": 300,
+          "unit": "seconds",
+          "zero_means": "off",
+          "required": false,
+          "settable": true,
+          "note": "#2464. How long one complete fleet list (one GET per kind: account, model, lane) is shared by every process on the box, through state/fleet-cooldown/cache.<kind>.tsv under a per-kind flock. Only a cache: an unknown answer is never written and a stale file is never served, so an outage reads as unknown and the caller falls back to its local file. 0 = no box cache (one GET per kind per process). Settings key lib.fleet-cooldown.fleet_cooldown_cache_s (BH-2498): row > cached row > env > 20 in code."
+        },
+        {
+          "env": "FLEET_COOLDOWN_CLEAR_GUARD_S",
+          "read_in": "bin/lib/fleet-cooldown.sh",
+          "type": "int",
+          "default": 600,
+          "min": 0,
+          "max": 86400,
+          "unit": "seconds",
+          "zero_means": "off",
+          "required": false,
+          "settable": true,
+          "note": "The reprobe reseed guard (lead condition 2 on #2353). After fcd_clear lane on this box, a row for that lane whose until is not past max(the latest until the fleet showed at the clear, now + the guard) is hidden from fcd_list/fcd_live, so a clear the worker did not record is not reseeded by the next good list read and posted as a second recovery. A later until (a real re-down) shows; a put of the lane from this box lifts the guard. The guard is min(this, LANE_DOWN_TTL_S; unset, 0 or not a number = 7200), so a re-down after the lane TTL always shows (BH-2498). Each lane clear first removes the tombs older than 2x the guard whose hide mark is past. 0 = no guard. Settings key lib.fleet-cooldown.fleet_cooldown_clear_guard_s (BH-2498): row > cached row > env > 600 in code."
+        }
+      ]
+    }
+  ]
+}

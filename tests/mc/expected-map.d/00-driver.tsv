@@ -1,0 +1,79 @@
+# tests/mc/expected-map.d/00-driver.tsv — the origin=driver rows (the helpers
+# bin/merge-conductor.sh shed in BH-685). This set is closed:
+# tests/mc/driver-complete-test.sh pins it at 60 rows, and a function that is
+# new to a module is origin=lib, in its own <TICKET-KEY>.tsv fragment.
+#
+# The single file's history comment for this block, verbatim:
+# BH-685: the helpers bin/merge-conductor.sh shed in the last slice of the
+# split (origin=driver). ticket_dedupe_for arrived in the driver from BH-1526
+# after the ticket was written; the rule places it in locks.sh beside
+# tick_secs_for, the other knob reader. Rebuilt 2026-09-23 on main after
+# BH-1585, BH-1592 and BH-1529 landed: inq_mark goes to queue.sh beside
+# inq_list_ok (its only caller), the BH-1592 closed-unmerged settle
+# (closed_watch_*, closed_unmerged_rows) to settle.sh, and the BH-1529
+# head-lag family (head_lag_*) to rebase.sh beside rereview_lane_retry and the
+# kick helpers. Rebuilt again on e7413721 after BH-1625 added hb_model_label,
+# which goes to classify.sh with the rereview helpers it opens. Extended
+# 2026-09-23 for BH-1634's UNVERIFIABLE streak (unverif_*), which goes to
+# locks.sh beside tick_secs_for and ticket_dedupe_for, the other per-project
+# knob readers.
+queue	inq_mark	driver
+queue	inq_list_ok	driver
+queue	inq_matters	driver
+classify	pr_body_read	driver
+classify	ticket_open	driver
+classify	hb_model_label	driver
+classify	hb_post	driver
+classify	hb_approve_bind	driver
+classify	hb_block_park	driver
+classify	headbound_review	driver
+classify	ci_absent_kick	driver
+classify	ci_absent_escalate	driver
+classify	stuck_rekick	driver
+settle	closed_watch_dir	driver
+settle	closed_watch_put	driver
+settle	closed_watch_seen	driver
+settle	closed_watch_reoffer	driver
+settle	closed_unmerged_rows	driver
+settle	conductor_settle	driver
+settle	rebind_patch_id	driver
+rebase	rebind_no_overlap	driver
+rebase	rebase_noop_say	driver
+rebase	merge_tree_clean	driver
+rebase	land_rebase_arm	driver
+rebase	rebase_result	driver
+rebase	rebase_consume	driver
+rebase	rereview_lane_retry	driver
+rebase	head_lag_mins_for	driver
+rebase	head_lag_file	driver
+rebase	head_lag_gc	driver
+rebase	head_lag_tip	driver
+rebase	head_lag_put	driver
+rebase	head_lag_check	driver
+rebase	head_lag_kick	driver
+rebase	head_lag_after_kick	driver
+locks	pr_slot_wait	driver
+locks	hotfix_pending_file	driver
+locks	identity_verdict_file	driver
+locks	hotfix_pending_write	driver
+locks	hotfix_pending_drop	driver
+locks	hotfix_pending_is	driver
+locks	hotfix_pending_others	driver
+locks	tick_memo_file	driver
+locks	read_memo_dir	driver
+locks	read_memo_file	driver
+locks	read_memo_fp	driver
+locks	read_memo_get	driver
+locks	read_memo_put	driver
+locks	scanner_fp	driver
+locks	scan_memo_fp	driver
+locks	read_memo_gc	driver
+locks	stack_parent_memo	driver
+locks	tick_secs_for	driver
+locks	ticket_dedupe_for	driver
+locks	budget_spent	driver
+locks	unverif_ticks_for	driver
+locks	unverif_file	driver
+locks	unverif_gc	driver
+locks	unverif_note	driver
+locks	unverif_clear	driver

@@ -1,0 +1,6 @@
+# @hub-lanes
+# Flaky suite auto-quarantine (BH-3686, docs/FLAKY-TESTS.md): after flaky-detect
+# (05:40Z) has written the day's ledger, quarantine this repo's suites that flaked
+# on 3+ heads in 7 days, each with its own ai-build fix ticket filed first, and
+# project the active set into the CI_QUARANTINE Actions variable. Protected suites page instead.
+20 9 * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/flaky-tier.sh cromford >/dev/null 2>&1

@@ -1,0 +1,9 @@
+.harness/specs/BH-3857/plan.md
+bin/lib/flaky.sh
+bin/lib/mc-foreign-red.sh
+catalog/lanes.d/merge-conductor.json
+docs/notes/2026-10-02-BH-3857-foreign-red-hub-checkout.md
+docs/verification-map/entries/BH-3857.md
+tests/gh-app-ratchet-by-design/lib/mc-foreign-red.sh.txt
+tests/mc/foreign-red-followups.bh-3857-test.sh
+tests/mc/requeue-after-foreign-red.bh-3776-test.sh

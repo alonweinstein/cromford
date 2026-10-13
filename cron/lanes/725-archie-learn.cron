@@ -1,0 +1,11 @@
+# @hub-lanes
+
+# ── ARCHIE LEARNING LANE (BH-4066) ──────────────────────────────────────────
+# Daily at 06:35Z: refresh the skill-usage ledger from the orchestrator's
+# transcripts, then once per closed ISO week send ONE triaged fleet_alert beat
+# with the learning outcomes (rework rate, overrule rate, cost per check, skill
+# promotions/rejections, prune candidates). A week already sent exits quietly;
+# a failed beat is retried the next day. No model call. flock -n dedupes. Off:
+# ARCHIE_LEARN_ENABLED=0, flags/lane-off-archie-learn, or
+# bin/harness-ctl.sh off archie-learn.
+35 6 * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/archie-learn.sh report >/dev/null 2>&1

@@ -1,0 +1,32 @@
+{
+  "id": "fly-image-refresh",
+  "name": "Fly image refresh",
+  "scope": "hub",
+  "script": "bin/fly-image-refresh.sh",
+  "cadence": "40 5 * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-fly-image-refresh",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "CLI_DRIFT_MAX_PATCH",
+      "type": "int",
+      "default": 3,
+      "zero_means": null,
+      "note": "Read by bin/fly-image-refresh.sh as ${CLI_DRIFT_MAX_PATCH:-3}: after a project's builder image is rebuilt, its baked claude/codex CLI (state/fly/<project>.cli, written by bin/fly-image-build.sh) is compared against the hub's cli.claude_code.version / cli.codex.version settings rows (written by bin/cli-update.sh after the hub's own daily update, BH-1517). A builder more than this many patch versions behind either floor writes one ALERTS.log line per project per UTC day. Registered by BH-1517, the change that introduced the read.",
+      "settable": true
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/fly-image-refresh.log"
+  }
+}

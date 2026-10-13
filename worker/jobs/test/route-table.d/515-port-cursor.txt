@@ -1,0 +1,5 @@
+# BH-5227: the port watermark (src/routes/port-cursor.js), a new family added
+# after the BH-1195 split. Spread right after wakes, which is where the table
+# puts it.
+GET /api/port/cursor
+PUT /api/port/cursor

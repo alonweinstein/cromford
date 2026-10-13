@@ -1,0 +1,10 @@
+diff --git a/docs/EVENTS.md b/docs/EVENTS.md
+index 1111111..2222222 100644
+--- a/docs/EVENTS.md
++++ b/docs/EVENTS.md
+@@ -6,4 +6,4 @@
+ 
+ Stable contract text.
+--- worker/jobs/schema.sql
+ More stable text.
++++ a trailing line whose text starts with two pluses

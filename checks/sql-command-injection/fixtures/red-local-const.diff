@@ -1,0 +1,8 @@
+diff --git a/worker/jobs/src/routes/r.js b/worker/jobs/src/routes/r.js
+--- a/worker/jobs/src/routes/r.js
++++ b/worker/jobs/src/routes/r.js
+@@ -1,0 +1,4 @@
++export async function h(env) {
++  const COLS = "a, b";
++  return env.DB.prepare(`SELECT ${COLS} FROM t`).all();
++}

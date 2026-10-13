@@ -1,0 +1,7 @@
+{"source":"db","updated_at":"2026-09-29T00:00:00Z","per_token":{
+  "claude-lyra-5-5":{"prompt":0.000003,"completion":0.000015,"cache_read":3e-7,"cache_write":0.00000375},
+  "claude-lyra-4":{"prompt":0.000003,"completion":0.000015},
+  "claude-vega-3":{"prompt":0.000001,"completion":0.000005},
+  "claude-orion-2":{"prompt":0.000001,"completion":0.000005},
+  "gpt-zeta-9":{"prompt":0.000001,"completion":0.000004}
+}}

@@ -1,0 +1,11 @@
+diff --git a/src/app/api/reports/route.ts b/src/app/api/reports/route.ts
+--- a/src/app/api/reports/route.ts
++++ b/src/app/api/reports/route.ts
+@@ -10,4 +10,8 @@ import { prisma } from "@/lib/db"
+ export async function POST(req: Request) {
+   const { table, ref } = await req.json()
++  const rows = await prisma.$queryRawUnsafe(`SELECT * FROM ${table}`)
++  const dupe = await prisma.$queryRawUnsafe("SELECT 1")
++  execSync(`git show ${ref}`)
++  return Response.json(rows)
+ }

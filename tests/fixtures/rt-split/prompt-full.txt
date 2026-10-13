@@ -1,0 +1,3 @@
+SOP for project-5. Fetch the thread. Do the work.
+
+FILE-OVERLAP GUARD (deterministic — run it, do not reason about it). Immediately before you launch a build for a ticket, run `/root/harness/bin/overlap-guard.sh project-5 <KEY>`. It answers LAUNCH (go — every error answers LAUNCH too, except an unreadable open-PR list with no cached copy, which DEFERs as `DEFER <KEY> gh unknown …`) or DEFER, and a DEFER names the sibling build or open PR whose files collide. On DEFER do NOT launch that ticket this tick: leave its queue line in place, and say in your output which key deferred and on which files. The next tick re-offers it — this is BUILD_DEFERRED semantics, not a queue and not a wait.

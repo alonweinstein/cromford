@@ -1,0 +1,1 @@
+{"name":"triage-shards-off","readers":["bin/lib/triage-shards-lib.sh"],"box_scoped":true,"what":"stops sharding a triage tick, so one session triages the whole tick as before"}

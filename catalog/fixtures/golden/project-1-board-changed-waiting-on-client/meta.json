@@ -1,0 +1,6 @@
+{
+  "gate": "board-changed",
+  "project": "project-1",
+  "board_shape": "board-api",
+  "note": "The waiting-on-client guard for project-1: the ask reads obvious but triage asked HOW and the client has not answered. The ticket is client-filed and our triage question is the newest comment, so neither the system-actor rule nor stale-turn recovery applies."
+}

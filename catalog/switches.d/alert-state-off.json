@@ -1,0 +1,1 @@
+{"name":"alert-state-off","readers":["bin/lib/alert-state.sh"],"box_scoped":true,"what":"turns off the alert state machine in bin/lib/alert-state.sh, so alerts go out as they did before it"}

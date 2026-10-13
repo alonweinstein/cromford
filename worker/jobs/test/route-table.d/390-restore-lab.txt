@@ -1,0 +1,4 @@
+POST /api/hub/restore-lab
+GET /api/hub/restore-lab
+POST /api/hub/restore-lab/claim
+POST re:/^\/api\/hub\/restore-lab\/(\d+)\/result$/

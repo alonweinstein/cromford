@@ -1,0 +1,40 @@
+{
+  "id": "fly-pool-tick",
+  "name": "Fly pool tick (all projects)",
+  "scope": "hub",
+  "script": "bin/fly-pool-tick.sh",
+  "cadence": "*/10 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-fly-pool-tick",
+    "aliases": [
+      {
+        "name": "fly-disabled",
+        "off_when": "present"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "POOL_AUTOSCALE",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "0 restores the sequential per-project sweep."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/fly-pool.log"
+  },
+  "factory_stop": "launch"
+}

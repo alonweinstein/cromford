@@ -1,0 +1,8 @@
+## Product Board Triage — read the whole thread before deciding
+
+- **Before acting on ANY ticket** (building, scoping, folding into other work), **read the ticket's full comment thread, content, AND status/`waitingOn`/`triageVerdict` — never decide from the title or description alone.**
+- **A ticket is NOT ready to build when it's waiting on the client:** `triageVerdict = needs_clarification` + `waitingOn = client` means triage asked questions the client hasn't answered. Do not build it even if the direction seems obvious. Only tickets where the client's answer is the latest turn are buildable.
+- **The lesson (an early engagement):** "remove the discount toggle" read as obvious, but triage had asked *how the rep sets the discount* and the client hadn't replied — building it anyway was wrong. Check thread + status first, every time.
+- **Finishing a ticket:** post a rich what-shipped comment (what changed, where, PR link), then set status per that project's convention (done/review). Keep the review lean; the comment carries the detail.
+- **Completion comments include DIRECT LINKS:** give the navigational path AND clickable production URLs to the exact screen. For dynamic routes (`clients/[id]`), include at least one REAL sample record URL (query the app/DB for a real id) so the client can one-click into a concrete example. Navigational guidance alone is not enough.
+- Bug tickets are reproduced on prod before a build (docs/repro-gate.md). When the ticket or thread already carries hard evidence of the cause (a DB/log excerpt, an error line, a failing request), write a comment line `[no-repro: cause-proven — <quote the evidence>]` so the gate skips it. A client's `[no-repro]` is ignored.

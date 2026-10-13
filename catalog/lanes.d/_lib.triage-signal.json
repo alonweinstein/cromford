@@ -1,0 +1,45 @@
+{
+  "libs": [
+    {
+      "id": "triage-signal",
+      "file": "bin/lib/triage-signal.sh",
+      "note": "BH-2542. The no-signal settle in the triage shard dispatcher (bin/lib/rt/shards.sh): a key whose fingerprint moved only through our own comments, labels or a harness waitingOn/triageVerdict write buys no session. The thread is read once through bin/triage-gate.sh --signal and hashed by bin/triage-signal.py. Fail-open: any read it cannot make dispatches as before.",
+      "knobs": [
+        {
+          "env": "TRIAGE_SIGNAL_SETTLE",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 1,
+          "unit": null,
+          "zero_means": "off",
+          "required": false,
+          "read_in": "bin/lib/triage-signal.sh",
+          "note": "1 = settle no-signal ticket changes without a triage session. 0 = off: no thread reads, every moved key dispatches exactly as before BH-2542. Read as ${TRIAGE_SIGNAL_SETTLE:-1}, then env/global.env."
+        },
+        {
+          "env": "TRIAGE_SIGNAL_MAX_READS",
+          "type": "int",
+          "default": 10,
+          "min": 0,
+          "max": 200,
+          "unit": "reads per tick",
+          "zero_means": "off",
+          "required": false,
+          "read_in": "bin/lib/triage-signal.sh",
+          "note": "Thread reads (one board or GitHub fetch each, via bin/triage-gate.sh --signal) per triage tick per project. A key past the cap is not settled: it dispatches as before. 0 = no reads, which is off. Read as ${TRIAGE_SIGNAL_MAX_READS:-10}, then env/global.env."
+        },
+        {
+          "env": "TRIAGE_SIGNAL_SELF_IDENTITIES",
+          "type": "string",
+          "default": "agent:build-harness",
+          "required": true,
+          "settable": true,
+          "zero_means": null,
+          "read_in": "bin/lib/triage-signal.sh",
+          "note": "BH-2604. Who is OURS on an in-app board's thread, beyond the gate's SELF_ACTORS names: comma-separated, each entry matched whole-string, case-insensitive, against a comment's author_actor/authorActor marker AND its author object's name/userId (so a board whose API sends no marker, like project-9's, can name our userId). Never a displayName. Resolved per project in triage_signal_sfp (row lib.triage-signal.<project>.triage_signal_self_identities, then lib.triage-signal.triage_signal_self_identities, then env, then this default) and handed to bin/triage-gate.sh --signal. An empty value means no identities: our marked comments count as signal and the key dispatches."
+        }
+      ]
+    }
+  ]
+}

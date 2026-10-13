@@ -1,0 +1,12 @@
+{"type":"doc","version":1,"content":[
+ {"type":"paragraph","content":[{"type":"text","text":"Hi "},{"type":"mention","attrs":{"id":"557058:44444444-4444-4444-4444-444444444444","text":"@Harness Bot","accessLevel":""}},{"type":"text","text":", see "},{"type":"text","text":"the spec","marks":[{"type":"link","attrs":{"href":"https://example.com/spec"}}]},{"type":"text","text":" and "},{"type":"inlineCard","attrs":{"url":"https://example.com/card"}},{"type":"text","text":"."}]},
+ {"type":"paragraph","content":[{"type":"text","text":"Line one"},{"type":"hardBreak"},{"type":"text","text":"Line two","marks":[{"type":"strong"}]}]},
+ {"type":"bulletList","content":[
+   {"type":"listItem","content":[{"type":"paragraph","content":[{"type":"text","text":"Outer A"}]},
+     {"type":"bulletList","content":[{"type":"listItem","content":[{"type":"paragraph","content":[{"type":"text","text":"Inner A1"}]}]}]}]},
+   {"type":"listItem","content":[{"type":"paragraph","content":[{"type":"text","text":"Outer B"}]}]}]},
+ {"type":"orderedList","attrs":{"order":1},"content":[
+   {"type":"listItem","content":[{"type":"paragraph","content":[{"type":"text","text":"First step"}]}]},
+   {"type":"listItem","content":[{"type":"paragraph","content":[{"type":"text","text":"Second step"}]}]}]},
+ {"type":"codeBlock","attrs":{"language":"bash"},"content":[{"type":"text","text":"npm run build\nnpm test"}]}
+]}

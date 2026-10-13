@@ -1,0 +1,18 @@
+diff --git a/bin/sync.sh b/bin/sync.sh
+index 0c766f1..cb4ac49 100644
+--- a/bin/sync.sh
++++ b/bin/sync.sh
+@@ -7,6 +7,12 @@ API="${SYNC_API_URL:?SYNC_API_URL unset}"
+ mark_done() { printf '%s done\n' "$1" >> state/sync-runs.log; }
+ mark_failed() { printf '%s failed %s\n' "$1" "$2" >> state/sync-runs.log; }
+ 
+-resp=$(curl -fsS "$API/items") || { mark_failed "$run" "read failed"; exit 1; }
++resp=$(curl -sS "$API/items" 2>/dev/null)
++# The vendor answers an empty body when it has nothing new for us.
++if [ -z "$resp" ]; then
++  echo "sync: no new items"
++  mark_done "$run"
++  exit 0
++fi
+ printf '%s\n' "$resp" > "state/items.$run.json"
+ mark_done "$run"

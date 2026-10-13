@@ -1,0 +1,22 @@
+{
+  "libs": [
+    {
+      "id": "model-watch-suggest",
+      "file": "bin/lib/model-watch-suggest.sh",
+      "note": "BH-3427 (BH-3422.2). mw_probe_run in bin/lib/model-watch-suggest.sh makes the one liveness probe of a newly seen vendor model through bin/agent-call.sh. The model-watch lane that sources the lib (a sibling BH-3422 slice) applies this row with lib_env_apply model-watch-suggest before it probes. Not required: the lib keeps 0.25 as its documented fallback, and a value that is not a number is refused with no call (D11).",
+      "knobs": [
+        {
+          "env": "MODEL_WATCH_PROBE_USD_CAP",
+          "type": "float",
+          "default": 0.25,
+          "min": 0,
+          "max": 5,
+          "unit": "usd",
+          "zero_means": "no probe: mw_probe_run answers not-run (probe disabled) with no PUT and no call",
+          "required": false,
+          "note": "The per-call ceiling handed to agent-call as AGENT_CALL_BUDGET_USD_PROBE for the one probe call (a single reply of one word). It bounds that one call, not a daily or per-ticket spend; the dedup is the model_watch row's probe_attempted_at, read before any spend. Read as ${MODEL_WATCH_PROBE_USD_CAP:-0.25}."
+        }
+      ]
+    }
+  ]
+}

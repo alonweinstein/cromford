@@ -1,0 +1,11 @@
+diff --git a/lib/retry.sh b/lib/retry.sh
+index c18aef7..58e53b7 100644
+--- a/lib/retry.sh
++++ b/lib/retry.sh
+@@ -1,5 +1,5 @@
+ # lib/retry.sh — sourced.
+-MAX_ATTEMPTS=3
++MAX_ATTEMPTS=5
+ # with_retry <cmd...>: run cmd until it succeeds, at most MAX_ATTEMPTS times in total.
+ with_retry() {
+   local attempt=1

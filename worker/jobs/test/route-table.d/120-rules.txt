@@ -1,0 +1,3 @@
+GET /api/rules
+PUT /api/rules
+DELETE /api/rules

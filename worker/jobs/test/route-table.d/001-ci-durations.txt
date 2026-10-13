@@ -1,0 +1,5 @@
+# BH-5653 (BH-5637.2): per-suite CI durations, in OPEN_ROUTES directly after the
+# webhooks. Open to the main bearer check because the route carries its own
+# scoped bearer (CI_DURATIONS_TOKEN or HARNESS_SECRET).
+POST /api/ci/suite-durations
+GET /api/ci/suite-durations

@@ -1,0 +1,23 @@
+# tests/gh-app-ratchet-by-design/ — the registry of scripts in bin/ that call
+# `gh` raw ON PURPOSE and always will. ONE FILE PER SCRIPT, named for the
+# script's path under bin/ with .txt appended, holding who decided it and a
+# one-line summary; the operational reason lives on that script's own
+# `# gh-identity: raw-by-design — <why>` line, so there is one copy of it.
+#
+# WHY THIS DIRECTORY EXISTS AT ALL (BH-1177 review). A permanent exception is a
+# REVIEWED DECISION, not a sentence a script writes about itself. The shape this
+# replaced — tests/gh-app-ratchet-allowlist.txt with `ALLOW_COUNT -eq 6` pinned
+# next to it — said so out loud: "the count stays pinned so the list still grows
+# only by a reviewed decision". Markers alone would have dropped that: a new
+# script could ship one comment line, raise no finding, and quietly move the
+# summary from 6 raw-by-design to 7. It was demonstrated on this very PR before
+# this directory existed. So the pin comes back as an artifact instead of a
+# number — one file, in the diff, where a reviewer reads it.
+#
+# It is the twin of tests/gh-app-ratchet-baseline/, and the two are mutually
+# exclusive: a script is either QUEUED for conversion (baseline) or exempt from
+# it (here), never both. tests/gh-app-ratchet-test.sh fails either way round.
+#
+# AN ENTRY IS A .txt FILE, and nothing else in here is — that is why this file
+# has no extension. An entry that does not name a real script in bin/ carrying a
+# `raw-by-design` marker is reported.

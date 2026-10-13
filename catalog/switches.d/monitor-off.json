@@ -1,0 +1,1 @@
+{"name":"monitor-off","readers":["bin/lane-alert.sh"],"box_scoped":true,"what":"says the monitor is off, so lane-alert.sh --critical DMs the operator directly instead of leaving the relay to the monitor"}

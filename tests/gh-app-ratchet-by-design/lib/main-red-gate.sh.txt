@@ -1,0 +1,1 @@
+Exempt by BH-945; moved here from tests/gh-app-ratchet-allowlist.txt by BH-1177. The strictest case of that shape: it fails CLOSED, so a token minted here that cannot see the repo would freeze the repo outright. Full reason: the gh-identity line at the top of bin/lib/main-red-gate.sh.

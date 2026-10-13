@@ -1,0 +1,9 @@
+# @hub-lanes
+
+# ── CONSOLE PREVIEW DEPLOY AND QA (BH-5909) ──────────────────────────────────
+# Every 5 minutes: one Cloudflare Pages preview deploy per open console-ui PR
+# head (same-repo heads only), a browser QA run of it as a read-only session,
+# then one PR comment with the preview URL, QA COVERAGE and QA: PASS|FAIL for
+# the head. Off by default: CONSOLE_PREVIEW_DEPLOY (settings row) is 0 until the
+# first green proof. Off switch: bin/harness-ctl.sh off console-preview-deploy.
+*/5 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/console-preview-deploy.sh >> /root/harness/logs/console-preview-deploy.log 2>&1

@@ -1,0 +1,5 @@
+# Labeled ai-build, open, no Blocked-by, no HOLD, no existing PR or branch, a
+# free slot, and the newest comment is a go-ahead. Launch.
+# The key is TK-57: a decision keyed "#57" shows up as MISSING plus a WARN extra,
+# which is the honest way for a key-format drift to surface.
+TK-57 :: launch

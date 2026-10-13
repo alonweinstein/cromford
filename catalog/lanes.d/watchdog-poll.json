@@ -1,0 +1,23 @@
+{
+  "id": "watchdog-poll",
+  "name": "Watchdog poll",
+  "scope": "hub",
+  "script": "bin/watchdog-poll.sh",
+  "cadence": "*/2 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-watchdog-poll",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/watchdog-poll.log"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "readiness-fixture-ready",
+  "private": true,
+  "scripts": {
+    "test": "node test.js"
+  }
+}

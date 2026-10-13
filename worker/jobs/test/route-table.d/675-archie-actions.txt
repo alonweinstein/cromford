@@ -1,0 +1,5 @@
+# ARCHIE ACTIONS (BH-4583, BH-4574.1): the factory-manager action ledger,
+# appended after outcome-gap at the END of the table.
+POST /api/archie/actions
+POST /api/archie/actions/outcome
+GET /api/archie/actions

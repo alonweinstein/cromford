@@ -1,0 +1,124 @@
+# shellcheck shell=bash
+# bin/lib/lane-placement.sh — BH-6124 (BH-6047 part 1 of 5): where a lane runs.
+#
+# A lane runs on the hub (pl_dispatch starts one local process per project) or
+# on Fly (pl_dispatch enqueues one lane_runs row per project, and a machine
+# running bin/lane-run-worker.sh claims and runs it). The answer is a settings
+# row, so an operator moves a lane without a deploy:
+#
+#   lane_placement.<lane>           fly | hub   (the exact lane name)
+#   lane_placement.default          fly | hub   (seeded hub)
+#   lane_placement.<lane>.hub_only  free text: the lane reads something that is
+#                                   only on the hub, so it stays there
+#
+# The value is trimmed and lowercased. Only `fly` is fly; every other value,
+# no row, a settings outage, no jobs client, or a lane name that is not a legal
+# settings key is hub, and LP_WHY names which. Hub is today's behaviour, so
+# every failure here falls back to it.
+#
+#   lp_decide <lane>             sets LP_PLACE (fly|hub) and LP_WHY; at most 3
+#                                settings reads
+#   lp_placement <lane>          prints fly|hub, sets LP_PLACE and LP_WHY
+#   lp_hub_only_reason <lane>    prints the hub_only text (rc 0), or rc 1
+#   lp_rel_cmd <cmd>             prints bin/<rest> for a <cmd> under
+#                                $root/bin/, else rc 1
+#   lp_enqueue <lane> <project> <cmd> [args...]
+#                                POST /api/lane-runs with args = [bin/<rest>,
+#                                args...]. rc 0 = 201 enqueued, rc 3 = 409
+#                                already_live, any other rc = not enqueued
+#
+# The root is ${HARNESS:-${H:-}}. Defines functions only. Nothing runs on
+# source; the jobs client is loaded on the first call that needs it.
+
+_lp_root() { printf '%s' "${HARNESS:-${H:-}}"; }
+
+# _lp_client — rc 0 when setting_get and _jobs_req are defined. Sources
+# bin/jobs-client.sh when they are not, and restores pipefail, which the client
+# switches on (the lib/lane-gate.sh _lg_ensure_client pattern).
+_lp_client() {
+  local root pf
+  command -v setting_get >/dev/null 2>&1 && command -v _jobs_req >/dev/null 2>&1 && return 0
+  if command -v _lg_ensure_client >/dev/null 2>&1; then
+    _lg_ensure_client >/dev/null 2>&1 || true
+  else
+    root=$(_lp_root)
+    [ -n "$root" ] && [ -r "$root/bin/jobs-client.sh" ] || return 1
+    pf=$(set -o 2>/dev/null | awk '$1=="pipefail"{print $2}')
+    # shellcheck source=bin/jobs-client.sh
+    . "$root/bin/jobs-client.sh" >/dev/null 2>&1 || true
+    [ "$pf" = off ] && set +o pipefail
+  fi
+  command -v setting_get >/dev/null 2>&1 && command -v _jobs_req >/dev/null 2>&1
+}
+
+lp_placement() {
+  local lane="${1:-}" key raw v rc
+  LP_PLACE=hub
+  if ! _lp_client; then LP_WHY="no jobs client"; printf 'hub'; return 0; fi
+  key="lane_placement.$lane"
+  if [ -z "$lane" ] || ! _setting_key_ok "$key.hub_only"; then
+    LP_WHY="lane name not a settings key"; printf 'hub'; return 0
+  fi
+  raw=$(setting_get "$key"); rc=$?
+  if [ "$rc" = 2 ]; then
+    key="lane_placement.default"
+    raw=$(setting_get "$key"); rc=$?
+  fi
+  case "$rc" in
+    0) ;;
+    2) LP_WHY="no lane_placement row"; printf 'hub'; return 0 ;;
+    *) LP_WHY="settings unreadable"; printf 'hub'; return 0 ;;
+  esac
+  v=$(printf '%s' "$raw" | tr -d '[:space:]' | tr 'A-Z' 'a-z')
+  if [ "$v" = fly ]; then
+    LP_PLACE=fly; LP_WHY="$key=fly"
+  else
+    LP_WHY="$key='$raw' is not fly"
+  fi
+  printf '%s' "$LP_PLACE"
+}
+
+lp_hub_only_reason() {
+  local lane="${1:-}" v
+  _lp_client || return 1
+  _setting_key_ok "lane_placement.$lane.hub_only" || return 1
+  v=$(setting_get "lane_placement.$lane.hub_only") || return 1
+  [ -n "$v" ] || return 1
+  printf '%s' "$v"
+}
+
+lp_decide() {
+  local lane="${1:-}" reason
+  lp_placement "$lane" >/dev/null
+  if [ "$LP_PLACE" = fly ] && reason=$(lp_hub_only_reason "$lane"); then
+    LP_PLACE=hub; LP_WHY="hub_only: $reason"
+  fi
+  return 0
+}
+
+lp_rel_cmd() {
+  local root rest
+  root=$(_lp_root)
+  [ -n "$root" ] || return 1
+  case "${1:-}" in "$root/bin/"?*) rest="${1#"$root/bin/"}" ;; *) return 1 ;; esac
+  case "/$rest/" in */../*|*[!A-Za-z0-9._/-]*) return 1 ;; esac
+  printf 'bin/%s' "$rest"
+}
+
+lp_enqueue() {
+  local lane="${1:-}" p="${2:-}" rel args body rc
+  [ "$#" -ge 3 ] || return 1
+  rel=$(lp_rel_cmd "$3") || return 1
+  shift 3
+  _lp_client || return 1
+  # NUL-joined, so a space or a newline inside an arg stays inside it.
+  args=$(printf '%s\0' "$rel" "$@" | jq -Rsc 'split("\u0000") | .[:-1]') || return 1
+  body=$(jq -nc --arg l "$lane" --arg p "$p" --argjson a "$args" --arg b "$(_jobs_box_name 2>/dev/null)" \
+    '{lane:$l, project:$p, args:$a} + (if $b == "" then {} else {box:$b} end)') || return 1
+  _jobs_req POST /api/lane-runs "$body" >/dev/null; rc=$?
+  [ "$rc" = 0 ] && return 0
+  if [ "$rc" = 9 ] && [ "$(printf '%s' "$JOBS_BODY" | jq -r '.error // empty' 2>/dev/null)" = already_live ]; then
+    return 3
+  fi
+  return 1
+}

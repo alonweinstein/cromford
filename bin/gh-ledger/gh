@@ -1,0 +1,395 @@
+#!/bin/bash
+# bin/gh-ledger/gh — BH-1574: the `gh` every lane reaches first on PATH. It runs
+# the real binary, and writes one quota-ledger row per HTTP request that binary
+# made, into the same state/gh-rest-ledger/<hour>.tsv bin/lib/gh-rest-ledger.sh
+# writes for gh_rest.
+#
+# WHY. The hub App installation's bucket (6,600/h) ran dry again on 2026-09-23
+# while the #1484 ledger accounted for ~1,400 counted calls an hour: gh_rest
+# ledgers its own calls, and nothing ledgered a raw `gh pr view`, `gh api`,
+# `gh run list` or anything a build agent typed. The gh-reads audit put that gap
+# at ~2,000/h. This shim closes it without touching any caller: it is a
+# directory holding ONLY this file, prepended to PATH on the hub and the boxes
+# (the `PATH=` line in cron/boxes/<box>.d/000-path.cron) and on the Fly builders
+# (fly/Dockerfile ENV + fly/builder-runner.sh).
+#
+# HOW IT SEES THE REQUESTS. gh has no header hook, but GH_DEBUG=api makes it
+# print every request and response on stderr, bracketed by `* Request at …` and
+# `* Request took …`. The shim runs gh with GH_DEBUG=api, pipes ONLY stderr
+# through one awk, which drops the bracketed trace (and gh's `[git …]` debug
+# lines) and passes every other line straight through, and reads out of the
+# trace the method, the path, the status and the X-RateLimit-* headers —
+# including X-RateLimit-Resource, which is how a row knows it spent the
+# `graphql` bucket rather than `core`. /rate_limit's graphql numbers read used=0
+# on the hub while a live GraphQL response said 80; the header is the truth.
+#
+# WHAT IT MUST NEVER DO — the whole reason this file is careful:
+#   1. change what gh prints or returns. stdout is gh's own fd (never piped), the
+#      rc is gh's rc, stdin is gh's stdin, and stderr loses only the trace this
+#      shim itself asked for. If the awk dies, `cat` drains the rest to stderr
+#      so gh can never take a SIGPIPE from us.
+#   2. fail a caller because ledgering failed. Everything after gh exits runs
+#      with its output discarded and its status ignored; the exit is gh's rc.
+#   3. ledger what is already ledgered, or what it cannot see honestly:
+#        GH_LEDGER_DEPTH set    a gh that gh itself ran (credential helper,
+#                               extension) — straight through;
+#        GH_DEBUG already set   the caller wants the trace; it is theirs;
+#        auth/config/…          local commands, and `gh auth token` is the
+#                               last rung of bin/gh-token.sh's PAT ladder;
+#        `api -i -X` under GH_LEDGER_BY_CALLER
+#                               gh_rest's own request; gh-rest-ledger.sh already
+#                               wrote its row (the marker covers ONLY that argv
+#                               shape, so a raw call in the same shell is
+#                               still ledgered);
+#        flags/gh-ledger-off (or the `switch.gh-ledger-off` settings row),
+#        GH_LEDGER_OFF=1   the kill switch.
+#   4. loop. The real binary is the first `gh` on PATH that is not this file and
+#      not in a directory holding _fence.sh — bin/lane-shims/gh execs the next gh
+#      on PATH, which is us, and we must not exec it back.
+#
+# THE CALLER on the row is HARNESS_LANE when the lane exported one, else the
+# PARENT's program name — the script that ran `gh` (bash's argv[1] when the
+# parent is a shell running a script, the interpreter's argv[1] for node or
+# python). Never the parent's full command line: a lane that runs
+# `gh … --token ghp_…` through `bash -c` would put that token in a file.
+#
+# Knobs are switches and seams, not tunables: GH_LEDGER_OFF=1 and
+# $HARNESS/flags/gh-ledger-off (or the `switch.gh-ledger-off` settings row) (off),
+# GH_LEDGER_REAL (the real binary, when PATH
+# cannot find it), GH_LEDGER_FALLBACK (the last-resort path, /usr/bin/gh).
+#
+# rc: whatever gh returned; 127 when no real gh exists anywhere.
+#
+# Never `set -e`: every exit here is written out on purpose.
+set -u
+
+_ghl_self=$(readlink -f "$0" 2>/dev/null) || _ghl_self=""
+[ -n "$_ghl_self" ] || _ghl_self="$0"
+_ghl_dir="${_ghl_self%/*}"
+
+# _ghl_is_shim <file> — rc 0 when <file> is a copy of THIS shim, whatever its
+# path: a script whose second line is this file's own marker line below. Review
+# round 1 (item 1): two DIFFERENT checkouts' bin/gh-ledger/ on one PATH made each
+# copy's "first gh that is not me" the OTHER copy, and the two exec'd each other
+# for ever. Comparing paths cannot see a copy; the marker can. Builtins only —
+# two bytes, then two lines, of a file that is almost always the real ELF gh.
+_GHL_MARKER='# bin/gh-ledger/gh — BH-1574: the `gh` every lane reaches first on PATH. It runs'
+_ghl_is_shim() {
+  local head="" l1="" l2=""
+  IFS= read -r -n 2 head < "$1" 2>/dev/null || true
+  [ "$head" = '#!' ] || return 1
+  { IFS= read -r l1; IFS= read -r l2; } < "$1" 2>/dev/null || return 1
+  [ "$l2" = "$_GHL_MARKER" ]
+}
+
+# _ghl_find_real — the first executable `gh` on PATH that is neither this file,
+# nor ANY copy of this shim, nor a lane fence, else GH_LEDGER_FALLBACK. Builtins
+# plus one readlink per candidate: this runs on every gh call on every box.
+_ghl_find_real() {
+  local d c r dirs=()
+  if [ -n "${GH_LEDGER_REAL:-}" ] && [ -x "$GH_LEDGER_REAL" ]; then
+    printf '%s' "$GH_LEDGER_REAL"; return 0
+  fi
+  IFS=: read -r -a dirs <<<"${PATH:-}"
+  for d in "${dirs[@]}"; do
+    [ -n "$d" ] || continue
+    c="$d/gh"
+    [ -x "$c" ] && [ ! -d "$c" ] || continue
+    [ -e "$d/_fence.sh" ] && continue
+    r=$(readlink -f "$c" 2>/dev/null) || r="$c"
+    [ "$r" = "$_ghl_self" ] && continue
+    _ghl_is_shim "$r" && continue
+    printf '%s' "$c"; return 0
+  done
+  c="${GH_LEDGER_FALLBACK:-/usr/bin/gh}"
+  if [ -x "$c" ]; then
+    r=$(readlink -f "$c" 2>/dev/null) || r="$c"
+    [ "$r" = "$_ghl_self" ] || _ghl_is_shim "$r" || { printf '%s' "$c"; return 0; }
+  fi
+  return 1
+}
+
+# THE DEPTH COUNTER — the net under the marker, the same shape as
+# bin/gh-rest-shim's GH_REST_SHIM_DEPTH: every gh this shim runs carries
+# GH_LEDGER_DEPTH one higher, a nested call goes straight through, and a chain
+# 3 deep is a loop, refused with 127 rather than left to hang a lane with no rc.
+_ghl_depth="${GH_LEDGER_DEPTH:-}"
+case "$_ghl_depth" in ''|*[!0-9]*) _ghl_depth=0 ;; esac
+if [ "$_ghl_depth" -ge 3 ]; then
+  echo "gh-ledger: shim loop resolving the real gh binary (GH_LEDGER_DEPTH=$_ghl_depth)" >&2
+  exit 127
+fi
+
+_ghl_real=$(_ghl_find_real) || {
+  echo "gh-ledger: no real gh binary found on PATH or at ${GH_LEDGER_FALLBACK:-/usr/bin/gh}" >&2
+  exit 127
+}
+
+_ghl_through() { GH_LEDGER_DEPTH=$((_ghl_depth + 1)) exec "$_ghl_real" "$@"; }
+
+# _ghl_caller — the parent's program name, one field, never its arguments.
+_ghl_caller() {
+  local w0="" w1="" tok n=0
+  [ -r "/proc/$PPID/cmdline" ] || { printf '%s' '-'; return 0; }
+  while IFS= read -r -d '' tok; do
+    case "$n" in 0) w0="$tok" ;; 1) w1="$tok" ;; esac
+    n=$((n + 1)); [ "$n" -ge 2 ] && break
+  done < "/proc/$PPID/cmdline"
+  case "${w0##*/}" in
+    bash|sh|dash|zsh|ksh|node|python|python3|perl)
+      case "$w1" in ''|-*) ;; *) w0="$w1" ;; esac ;;
+  esac
+  w0="${w0##*/}"; w0="${w0//[[:space:]]/_}"
+  [ -n "$w0" ] || w0='-'
+  printf '%s' "${w0:0:80}"
+}
+
+# ── C2: THE APP IS THE DEFAULT IDENTITY (2026-09-24) ────────────────────────
+# A call with no GH_TOKEN (and no GITHUB_TOKEN) used to spend gh's keyring
+# login — the operator's PAT on every box. Before anything else, a call whose target is
+# a repo the App is installed on (bin/lib/gh-app-default.sh names it: -R, a
+# repos/ path, a github.com URL, GraphQL owner/name, the cwd's origin) runs on a
+# cached installation token instead, and the ledger row below names the App
+# bucket because GH_TOKEN is what gh_quota_bucket reads. Left alone: a nested
+# call (it inherits the parent's token), local commands (`gh auth token` must
+# keep answering with the keyring, it is the PAT ladder's last rung), and
+# gh_rest's own `api -i -X`, which chose its identity in the caller's shell so
+# the caller's ledger row can say which one it was. GH_USE_PAT=1 is the escape:
+# no App, and env/gh-pat when the keyring is logged out. Never fatal: a lib
+# that is missing or a mint that fails leaves the call exactly as it was.
+# THE LEDGER SWITCHES DO NOT BYPASS THIS, ON PURPOSE (review of #2231):
+# GH_LEDGER_OFF, flags/gh-ledger-off and a caller's own GH_DEBUG turn off the
+# LEDGER below; the identity has its own switches (flags/gh-app-default-off, the
+# lib.gh-app-default.gh_app_default row, GH_USE_PAT=1). Pinned by section 7 of
+# tests/gh-app-default.c2-test.sh.
+if [ "$_ghl_depth" = 0 ] && [ -z "${GH_TOKEN:-}" ] && [ -z "${GITHUB_TOKEN:-}" ]; then
+  case "${1:-}" in
+    auth|config|completion|help|version|alias|extension|--version|-h|--help|'') ;;
+    *)
+      if [ -z "${GH_LEDGER_BY_CALLER:-}" ] || [ "${1:-} ${2:-} ${3:-}" != "api -i -X" ]; then
+        for _ghl_lib in "$_ghl_dir/../lib/gh-app-default.sh" "${HARNESS:-/root/harness}/bin/lib/gh-app-default.sh"; do
+          # shellcheck source=bin/lib/gh-app-default.sh
+          [ -r "$_ghl_lib" ] && { . "$_ghl_lib" 2>/dev/null; break; }
+        done
+        command -v gh_app_default_export >/dev/null 2>&1 && { gh_app_default_export "$@" 2>/dev/null || true; }
+      fi ;;
+  esac
+fi
+
+# ── the calls that go straight through, before anything else is spent ───────
+[ "$_ghl_depth" = 0 ] || _ghl_through "$@"
+[ "${GH_LEDGER_OFF:-}" != 1 ] || _ghl_through "$@"
+_ghl_h="${HARNESS:-}"
+[ -n "$_ghl_h" ] || _ghl_h="${_ghl_dir%/bin/gh-ledger}"
+# shellcheck source=bin/lib/lane-switch.sh
+command -v lane_switch >/dev/null 2>&1 || . "${_ghl_dir%/gh-ledger}/lib/lane-switch.sh" 2>/dev/null || lane_switch() { [ -e "${HARNESS:-${H:-/root/harness}}/flags/$1" ]; }
+! HARNESS="$_ghl_h" LANE_GATE_CACHE_S=2147483647 lane_switch gh-ledger-off file 2>/dev/null || _ghl_through "$@"
+[ -z "${GH_DEBUG:-}" ] || _ghl_through "$@"
+case "${1:-}" in
+  auth|config|completion|help|version|alias|extension|--version|-h|--help|'') _ghl_through "$@" ;;
+esac
+if [ -n "${GH_LEDGER_BY_CALLER:-}" ] && [ "${1:-} ${2:-} ${3:-}" = "api -i -X" ]; then
+  _ghl_through "$@"
+fi
+# `{fd}>&1` below is bash 4; every box and builder runs bash 5, and an older
+# shell simply loses the ledger rather than the command.
+[ "${BASH_VERSINFO[0]:-0}" -ge 4 ] || _ghl_through "$@"
+command -v awk >/dev/null 2>&1 || _ghl_through "$@"
+_ghl_rec=$(mktemp "${TMPDIR:-/tmp}/gh-ledger.XXXXXX" 2>/dev/null) || _ghl_through "$@"
+
+# _ghl_load_lib — source bin/lib/gh-rest-ledger.sh (this checkout's, then the
+# harness's) and point it at this harness; rc 1 when neither is there.
+_ghl_load_lib() {
+  local lib
+  command -v gh_ledger_append >/dev/null 2>&1 && return 0
+  for lib in "$_ghl_dir/../lib/gh-rest-ledger.sh" "$_ghl_h/bin/lib/gh-rest-ledger.sh"; do
+    # shellcheck source=bin/lib/gh-rest-ledger.sh
+    [ -r "$lib" ] && { . "$lib"; break; }
+  done
+  command -v gh_ledger_append >/dev/null 2>&1 || return 1
+  HARNESS="$_ghl_h"
+  # Read by gh_ledger_append (as are the GH_REST_QUOTA_* set per record).
+  # shellcheck disable=SC2034
+  GH_LEDGER_CALLER=$(_ghl_caller)
+  return 0
+}
+
+# ── IS THIS gh's TRACE A SHAPE THE FILTER KNOWS? (review rounds 1-2) ────────
+# The filter below strips `* Request at <date> … * Request took` brackets. If a
+# gh release changed that shape, running the call under GH_DEBUG=api would
+# either dump the whole trace — request bodies included — onto the caller's
+# stderr, or swallow real error lines after an opener that never closes. So the
+# shape is PROVEN before any call is trusted to it: a probe (`api rate_limit`
+# under GH_DEBUG=api — GitHub does not charge /rate_limit), its verdict cached in
+# state/gh-ledger.trace-format keyed on the binary's path, size and mtime, so a
+# gh upgrade re-probes on its own.
+#   ok        the probe's stderr had a dated opener and a closer
+#   unknown   gh answered and its stderr had no opener: a format we cannot read
+#   (empty)   the probe said nothing at all
+# Anything but ok: the call runs WITHOUT GH_DEBUG, so its stderr is exactly
+# gh's own, and ONE row says status=unparsed — the gap is counted, never hidden.
+#
+# ONLY A PROBE THAT GOT AN HTTP RESPONSE IS CACHED (round 2). An unauthenticated
+# gh (`env -u GH_TOKEN gh api …` on a box with no keyring login — merge-sweep
+# runs exactly that) answers rc 4 "please run gh auth login" and prints no trace
+# at all, which read as `unknown`: round 1 cached that for the binary's whole
+# life and the box's ledger went `unparsed` for good. Now a probe that exited
+# non-zero, or printed an auth error, decides its own call and nothing else.
+#
+# AND `unknown` EXPIRES. It carries its epoch and is re-probed once it is older
+# than GH_LEDGER_UNKNOWN_TTL_S — the lib knob lib.gh-ledger.gh_ledger_unknown_ttl_s
+# (catalog/lanes.d/_lib.json), code default 3600, resolved through
+# bin/lib/lane-gate.sh's lib_env_apply only on this rare path. `ok` needs no TTL:
+# a binary that changes gets a new key.
+_ghl_fmt_file="$_ghl_h/state/gh-ledger.trace-format"
+_ghl_bin_id() { stat -Lc '%s:%Y' "$1" 2>/dev/null || stat -Lf '%z:%m' "$1" 2>/dev/null; }
+# _ghl_probe — prints "<verdict> <cacheable 0|1>".
+_ghl_probe() {
+  local t rc
+  t=$(mktemp "${TMPDIR:-/tmp}/gh-ledger-probe.XXXXXX" 2>/dev/null) || return 0
+  GH_DEBUG=api GH_LEDGER_DEPTH=$((_ghl_depth + 1)) "$_ghl_real" api rate_limit \
+    < /dev/null > /dev/null 2> "$t"
+  rc=$?
+  # ROUND 3: a trace with the dated opener AND the closer proves the format and
+  # is cached whatever else it says — every fine-grained PAT's response carries
+  # `Github-Authentication-Token-Expiration`, and round 2's auth grep over the
+  # whole stderr matched it, so `ok` was never cached and every call re-probed.
+  # The rc / auth-text gate only decides whether an `unknown` is cached, and it
+  # reads gh's OWN lines only — never a trace line (`* `, `> `, `< `).
+  awk -v rc="$rc" '
+    /^\* Request at [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] / { o = 1 }
+    /^\* Request took / { c = 1 }
+    /^(\* |> |< )/ { any = 1; next }
+    /gh auth login|GH_TOKEN|HTTP 401|Bad credentials|[Aa]uthentication|not logged in/ { auth = 1 }
+    NF { any = 1 }
+    END {
+      if (o && c) { printf "ok 1"; exit }
+      if (any) printf "unknown %d", (rc == 0 && !auth) ? 1 : 0
+    }' "$t" 2>/dev/null
+  rm -f "$t"
+}
+# _ghl_unknown_ttl — the knob, DB row first (lib_env_apply), then env, then 3600.
+# The resolve runs in its OWN subshell (round 3): lane-gate.sh on a half-synced
+# bin/ (no jobs-client), or a required knob that exits, ends that subshell and
+# costs the knob — never this process, which has not run gh yet.
+_ghl_unknown_ttl() {
+  local v=""
+  if [ -r "$_ghl_h/bin/lib/lane-gate.sh" ]; then
+    v=$(
+      # shellcheck source=bin/lib/lane-gate.sh
+      { . "$_ghl_h/bin/lib/lane-gate.sh" && command -v lib_env_apply && lib_env_apply gh-ledger; } >/dev/null 2>&1
+      printf '%s' "${GH_LEDGER_UNKNOWN_TTL_S:-}"
+    ) 2>/dev/null || v=""
+  fi
+  [ -n "$v" ] || v="${GH_LEDGER_UNKNOWN_TTL_S:-3600}"
+  case "$v" in ''|*[!0-9]*) v=3600 ;; esac
+  printf '%s' "$v"
+}
+_ghl_fmt=""
+_ghl_now=$(date -u +%s 2>/dev/null) || _ghl_now=0
+_ghl_id=$(_ghl_bin_id "$_ghl_real")
+if [ -n "$_ghl_id" ] && [ -r "$_ghl_fmt_file" ]; then
+  read -r _ghl_c_bin _ghl_c_id _ghl_c_v _ghl_c_at _ < "$_ghl_fmt_file" 2>/dev/null || true
+  if [ "${_ghl_c_bin:-}" = "$_ghl_real" ] && [ "${_ghl_c_id:-}" = "$_ghl_id" ]; then
+    _ghl_fmt="${_ghl_c_v:-}"
+    if [ "$_ghl_fmt" != ok ]; then
+      # An unknown with no epoch (a round-1 line) or one past its TTL is stale.
+      case "${_ghl_c_at:-}" in ''|*[!0-9]*) _ghl_fmt="" ;; esac
+      [ -n "$_ghl_fmt" ] && [ $((_ghl_now - _ghl_c_at)) -ge "$(_ghl_unknown_ttl)" ] && _ghl_fmt=""
+    fi
+  fi
+fi
+if [ -z "$_ghl_fmt" ]; then
+  read -r _ghl_fmt _ghl_cacheable <<<"$(_ghl_probe)"
+  _ghl_fmt="${_ghl_fmt:-}"
+  if [ -n "$_ghl_fmt" ] && [ "${_ghl_cacheable:-0}" = 1 ] && [ -n "$_ghl_id" ]; then
+    { mkdir -p "${_ghl_fmt_file%/*}" \
+        && printf '%s %s %s %s\n' "$_ghl_real" "$_ghl_id" "$_ghl_fmt" "$_ghl_now" > "$_ghl_fmt_file.$$" \
+        && mv -f "$_ghl_fmt_file.$$" "$_ghl_fmt_file"; } >/dev/null 2>&1
+    rm -f "$_ghl_fmt_file.$$" 2>/dev/null
+  fi
+fi
+if [ "$_ghl_fmt" != ok ]; then
+  rm -f "$_ghl_rec" 2>/dev/null
+  GH_LEDGER_DEPTH=$((_ghl_depth + 1)) "$_ghl_real" "$@"
+  _ghl_rc=$?
+  { _ghl_load_lib && GH_REST_QUOTA_REMAINING= GH_REST_QUOTA_RESET= GH_REST_QUOTA_USED= \
+      GH_REST_QUOTA_LIMIT= GH_REST_QUOTA_RESOURCE= gh_ledger_append gh - - unparsed 0; } >/dev/null 2>&1 || true
+  exit "$_ghl_rc"
+fi
+
+# ── the trace filter ────────────────────────────────────────────────────────
+# One record per bracketed request, fields split by \037 (unit separator) — not
+# a tab, which `read` collapses when a header is absent and an empty field would
+# shift every field after it:
+#   method  path  status  remaining  reset  resource  used  limit
+# Everything outside a bracket that is not a `[git …]` debug line is printed
+# as-is and flushed per line, so a long-running gh (run watch) still streams.
+# A bracket that never closes (gh killed mid-request) is flushed at END.
+# shellcheck disable=SC2016
+_GHL_AWK='
+function flush() {
+  if (inb && m != "")
+    printf "%s\037%s\037%s\037%s\037%s\037%s\037%s\037%s\n", m, p, (st == "" ? "000" : st), rem, rst, res, usd, lim >> REC
+  inb = 0
+}
+{
+  line = $0; sub(/\r$/, "", line)
+  if (line ~ /^\* Request at [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] /) { flush(); inb = 1; m = p = st = rem = rst = res = usd = lim = ""; next }
+  if (inb) {
+    if (line ~ /^\* Request took /) { flush(); next }
+    if (m == "" && line ~ /^> [A-Z]+ [^ ]+ HTTP\//) { split(line, a, " "); m = a[2]; p = a[3]; next }
+    if (line ~ /^< HTTP\/[0-9.]+ [0-9][0-9][0-9]/) { split(line, a, " "); st = a[3]; next }
+    if (line ~ /^< [A-Za-z-]+:/) {
+      k = substr(line, 3); v = k; sub(/:.*/, "", k); k = tolower(k); sub(/^[^:]*:[ \t]*/, "", v)
+      if (k == "x-ratelimit-remaining") rem = v
+      else if (k == "x-ratelimit-reset") rst = v
+      else if (k == "x-ratelimit-resource") res = tolower(v)
+      else if (k == "x-ratelimit-used") usd = v
+      else if (k == "x-ratelimit-limit") lim = v
+    }
+    next
+  }
+  if (line ~ /^\[git[ \]]/ && line ~ /\]$/) next
+  print; fflush()
+}
+END { flush() }'
+
+# ── run gh ──────────────────────────────────────────────────────────────────
+# stdout goes to the caller's own fd, never through the pipe: only stderr is
+# filtered. The dup is closed in gh's copy so gh holds nothing it did not have.
+exec {_ghl_out}>&1
+GH_DEBUG=api GH_LEDGER_DEPTH=$((_ghl_depth + 1)) "$_ghl_real" "$@" 2>&1 1>&"$_ghl_out" {_ghl_out}>&- \
+  | { awk -v REC="$_ghl_rec" "$_GHL_AWK"; cat; } >&2
+_ghl_rc=${PIPESTATUS[0]}
+exec {_ghl_out}>&-
+
+# _ghl_ledger — one gh_ledger_append per record. Its output and its status are
+# discarded by the caller below: a ledger that cannot be written costs a row.
+_ghl_ledger() {
+  local m p st rem rst res usd lim counted
+  [ -s "$_ghl_rec" ] || return 0
+  _ghl_load_lib || return 0
+  while IFS=$'\037' read -r m p st rem rst res usd lim; do
+    [ -n "$m" ] || continue
+    case "$rem" in *[!0-9]*) rem= ;; esac
+    case "$rst" in *[!0-9]*) rst= ;; esac
+    case "$usd" in *[!0-9]*) usd= ;; esac
+    case "$lim" in *[!0-9]*) lim= ;; esac
+    # shellcheck disable=SC2034
+    GH_REST_QUOTA_REMAINING=$rem; GH_REST_QUOTA_RESET=$rst; GH_REST_QUOTA_USED=$usd
+    # shellcheck disable=SC2034
+    GH_REST_QUOTA_LIMIT=$lim; GH_REST_QUOTA_RESOURCE=$res
+    gh_ledger_clean_resource
+    counted=1
+    case "$st" in ''|000|*[!0-9]*) st=000; counted=0 ;; 304) counted=0 ;; esac
+    # GitHub does not charge /rate_limit ("does not count against your primary
+    # rate limit"): a call, not a charge, the same as a 304.
+    case "${p#/}" in rate_limit|rate_limit\?*) counted=0 ;; esac
+    gh_ledger_append gh "$m" "${p#/}" "$st" "$counted"
+  done < "$_ghl_rec"
+  return 0
+}
+_ghl_ledger >/dev/null 2>&1 || true
+rm -f "$_ghl_rec" 2>/dev/null
+exit "$_ghl_rc"

@@ -1,0 +1,91 @@
+{
+  "id": "trap-eval",
+  "name": "Trap evals (LLM, operator-run)",
+  "scope": "box",
+  "script": "bin/trap-eval.sh",
+  "cadence": "on demand (via an operator at the shell; no cron line)",
+  "boxes": [
+    "project-4",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-trap-eval",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "TRAP_EVAL_AGENT_CALL",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it ($SELF/agent-call.sh). Read by bin/trap-eval.sh as ${TRAP_EVAL_AGENT_CALL:-$SELF/agent-call.sh}. NOT settable from the control plane — it is the command every cell runs, a test seam, so only env/global.env on the box moves it.",
+      "settable": false
+    },
+    {
+      "env": "TRAP_EVAL_FIXTURES",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/trap-eval.sh as ${TRAP_EVAL_FIXTURES:-}; empty falls through to the deployed harness, the checkout, then the script's own tree. NOT settable from the control plane — it is a path a root lane reads scenarios and judges from, so only env/global.env on the box moves it.",
+      "settable": false
+    },
+    {
+      "env": "TRAP_EVAL_JUDGE_TIMEOUT",
+      "type": "int",
+      "default": 300,
+      "min": 1,
+      "max": 3600,
+      "unit": "s",
+      "zero_means": null,
+      "note": "Seconds one scenario's judge.sh may run (timeout(1)) before its verdict is null. Read by bin/trap-eval.sh as ${TRAP_EVAL_JUDGE_TIMEOUT:-300}."
+    },
+    {
+      "env": "LLM_LANE_ENABLED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "0 makes this lane call no model at all. bin/lib/llm-gate.sh refuses BEFORE the vendor call and writes a zero-cost row_source=refused row, so the stop is visible in the ledger rather than being a lane that went quiet."
+    },
+    {
+      "env": "LLM_RUNNER_ALLOWED",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Comma/space list of the ONLY ladder rungs this lane may reach. Empty is every rung, i.e. today's ladder unchanged. A rung outside the list is refused before the call, so a cliff or a failure on the standing lane cannot descend into one that costs ~100x (#1141, the $793 descent)."
+    },
+    {
+      "env": "LLM_USD_CAP_DAY",
+      "type": "float",
+      "default": 0,
+      "min": 0,
+      "max": 10000,
+      "unit": "usd",
+      "zero_means": "unlimited",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Dollars this lane may spend in the current UTC day, summed from D1 cost_rows through GET /api/metrics/llm-spend — never from the box's own logs/cost.csv. A second, project-scoped ceiling is the lane.<id>.<project>.llm_usd_cap_day row, which is read only when somebody wrote it."
+    }
+  ],
+  "stats": {
+    "cost_stage": "trapeval",
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/trap-eval.log"
+  }
+}

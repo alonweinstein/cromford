@@ -1,0 +1,2 @@
+# @ungated checks THIS box's own claude credential. Gating it would leave every non-holder's auth unchecked.
+51 * * * * /root/harness/bin/claude-auth-check.sh

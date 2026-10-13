@@ -1,0 +1,55 @@
+# CI for this public copy. It runs on a fresh fork with no setup: a hosted
+# runner, no repository variables and no secrets.
+#
+# The internal CI needs a runner fleet, a merge queue and credentials a fork
+# doesn't have, so it isn't shipped. This one runs the checks that mean
+# something here:
+#   - every shell script parses (bash -n)
+#   - shellcheck at error severity, over the same files upstream lints
+#   - the shipped leak guard, tests/no-client-identifiers-test.sh
+#   - gitleaks over the tree, against the .gitleaksignore the publisher wrote
+# CONTRIBUTING.md says how to run the full suite yourself.
+name: CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Syntax (bash -n on every script)
+        run: |
+          FAIL=0
+          while IFS= read -r -d '' f; do
+            bash -n "$f" || { echo "SYNTAX: $f"; FAIL=1; }
+          done < <(find bin tests -name '*.sh' -type f -print0)
+          exit $FAIL
+
+      - name: shellcheck (errors only)
+        run: |
+          # bin/ci-shellcheck.sh uses the pinned ShellCheck when it is on PATH
+          # and otherwise downloads that release with its sha256 checked.
+          bin/ci-shellcheck.sh bin/*.sh bin/gh-rest-shim bin/lib/*.sh bin/lib/gh-shim/*.sh bin/lib/rb/*.sh bin/lib/rt/*.sh bin/lib/mc/*.sh bin/remediations/*.sh \
+            guardrails/*/check.sh guardrails/lib/*.sh checks/*/*.sh tests/lib/*.sh
+
+      - name: Leak guard (no client identifiers)
+        run: bash tests/no-client-identifiers-test.sh
+
+      - name: Install gitleaks (pinned)
+        run: |
+          set -euo pipefail
+          V=8.30.1
+          SHA=551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${V}/gitleaks_${V}_linux_x64.tar.gz" -o /tmp/gl.tgz
+          echo "$SHA  /tmp/gl.tgz" | sha256sum -c -
+          tar -xzf /tmp/gl.tgz -C /tmp gitleaks
+          sudo install -m 0755 /tmp/gitleaks /usr/local/bin/gitleaks
+          gitleaks version
+
+      - name: gitleaks scan
+        run: gitleaks detect --source . --no-git --redact

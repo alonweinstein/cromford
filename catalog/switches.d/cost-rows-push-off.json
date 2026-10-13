@@ -1,0 +1,1 @@
+{"name":"cost-rows-push-off","readers":["bin/cost-rows-push.sh","fly/builder-runner.sh"],"box_scoped":true,"what":"stops cost rows being pushed to the database, from the box and from a fly builder"}

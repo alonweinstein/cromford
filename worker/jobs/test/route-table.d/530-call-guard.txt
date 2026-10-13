@@ -1,0 +1,6 @@
+# K3: the pre-call guard's counter, at the END of the table, under the alerts
+# slice, where src/index.js puts it.
+POST /api/call-guard/claim
+POST /api/call-guard/settle
+DELETE /api/call-guard
+GET /api/call-guard

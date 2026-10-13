@@ -1,0 +1,1 @@
+{"name":"lane-checkpoints-off","readers":["bin/lane-checkpoint.sh","bin/lib/rb/plan.sh"],"box_scoped":true,"what":"makes every lane checkpoint a silent no-op, the pipeline as it was before 2026-09-15"}

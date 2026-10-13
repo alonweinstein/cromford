@@ -1,0 +1,4 @@
+POST /api/hub/standby/verify
+GET /api/hub/standby/verify
+POST /api/hub/standby/verify/claim
+POST re:/^\/api\/hub\/standby\/verify\/(\d+)\/result$/

@@ -1,0 +1,77 @@
+{
+  "id": "greenfield",
+  "name": "Greenfield proposal pack (LLM, operator-run)",
+  "scope": "hub",
+  "script": "bin/greenfield.sh",
+  "cadence": "on demand (via an operator running bin/greenfield.sh from a checkout; no cron line)",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-greenfield",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "LLM_LANE_ENABLED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "0 makes every greenfield stage call no model at all: bin/claude-cost.sh refuses each run_llm BEFORE claude starts with a zero-cost row_source=refused row, and the stage's FATAL line stops the pack. Takes effect wherever the settings rows are reachable (HARNESS_SECRET exported on the Mac)."
+    },
+    {
+      "env": "LLM_RUNNER_ALLOWED",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Comma/space list of the ONLY runners greenfield may reach. Every stage is runner claude, so a list without claude refuses every stage. Empty is every runner, i.e. today's behaviour."
+    },
+    {
+      "env": "LLM_USD_CAP_DAY",
+      "type": "float",
+      "default": 0,
+      "min": 0,
+      "max": 10000,
+      "unit": "usd",
+      "zero_means": "unlimited",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Dollars greenfield may spend in the current UTC day. With no registered stage the day's spend is summed per calling gf-* stage (the stage bin/claude-cost.sh asks about), for rows stamped lane_id=greenfield, through GET /api/metrics/llm-spend, so the cap bounds each stage's own day rather than the whole pack's."
+    },
+    {
+      "env": "GF_TOP",
+      "type": "int",
+      "default": 3,
+      "min": 1,
+      "max": 20,
+      "unit": "ideas",
+      "zero_means": null,
+      "note": "How many of the synthesized ideas get a mockup (the MOCKUPS stage). Read as ${GF_TOP:-3}."
+    },
+    {
+      "env": "GF_CONC",
+      "type": "int",
+      "default": 3,
+      "min": 1,
+      "max": 10,
+      "unit": "sessions",
+      "zero_means": null,
+      "note": "How many per-department IDEATE sessions run at once. Read as ${GF_CONC:-3}."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/greenfield.log"
+  }
+}

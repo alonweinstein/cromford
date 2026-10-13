@@ -1,0 +1,11 @@
+# @hub-lanes
+
+# ── MODEL-WATCH LANE (BH-3422) ──────────────────────────────────────────────
+# Daily 05:47Z: fetch the OpenRouter (and, with a key, Anthropic) model lists,
+# record every watched-vendor model the fleet has never priced, and announce up
+# to MODEL_WATCH_MAX_NEW of them once on Telegram with a route suggestion. It
+# never switches a route. One summary line per run in logs/model-watch.log.
+# flock -n dedupes; a held lock skips the run. Off: the model-watch-off switch,
+# MODEL_WATCH_ENABLED=0, flags/lane-off-model-watch, or
+# bin/harness-ctl.sh off model-watch.
+47 5 * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/model-watch.sh >/dev/null 2>&1

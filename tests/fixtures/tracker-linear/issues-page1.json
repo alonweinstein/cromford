@@ -1,0 +1,30 @@
+{
+  "data": {
+    "issues": {
+      "nodes": [
+        {
+          "identifier": "CRO-1",
+          "title": "Ledger export",
+          "url": "https://linear.app/crosstest/issue/CRO-1/ledger-export",
+          "state": {
+            "name": "Todo"
+          },
+          "labels": {
+            "nodes": [
+              {
+                "name": "ai-build"
+              },
+              {
+                "name": "feature"
+              }
+            ]
+          }
+        }
+      ],
+      "pageInfo": {
+        "hasNextPage": true,
+        "endCursor": "cursor-p1"
+      }
+    }
+  }
+}

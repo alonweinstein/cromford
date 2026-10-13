@@ -1,0 +1,7 @@
+Case D1 is a one-copy pin (re-pinned by BH-572). Until the cut the `reopen trust
+signal` block lived twice, inline in bin/run-build.sh and in bin/lib/rb/gates.sh,
+and D1 pinned the two byte-identical. After the cut there is one copy, in
+gates.sh, so D1 asserts it is absent from the RAW driver and present once in the
+module. The flatten puts the module's copy back in the driver's place, so only a
+raw read of the driver can see a second copy pasted into it. The C-series reads
+the block through $RB_ALL like every other reader.

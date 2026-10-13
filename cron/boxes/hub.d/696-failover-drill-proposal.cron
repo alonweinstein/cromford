@@ -1,0 +1,3 @@
+# failover-drill (BH-402, #402): monthly failover drill, PROPOSED. Stays commented until the first manual run passes (docs/HUB-THINNING-PLAN.md § Failover drill).
+# Enabling it is a lane: add catalog/lanes.d/failover-drill.json and move this line to cron/lanes/ with # @hub-lanes.
+# 0 7 1-7 * 0 /root/harness/bin/failover-drill.sh >/dev/null 2>&1

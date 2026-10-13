@@ -1,0 +1,5 @@
+# BH-5024: the Jev second-opinion spend ledger, directly under the risk tiers
+# (src/index.js ROUTES: ...riskTiers, ...jevRisk, ...catalog).
+POST /api/jev-risk/claim
+POST /api/jev-risk/settle
+GET /api/jev-risk

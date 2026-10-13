@@ -1,0 +1,45 @@
+{
+  "id": "fleet-status-push",
+  "name": "Fleet status push",
+  "scope": "hub",
+  "script": "bin/fleet-status-push.sh",
+  "cadence": "*/10 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-fleet-status-push",
+    "aliases": [
+      {
+        "name": "fleet-slo-off",
+        "off_when": "present"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "HUB_BOX_NAME",
+      "type": "string",
+      "default": "box-hub",
+      "zero_means": null,
+      "note": "Read by bin/fleet-status-push.sh as ${HUB_BOX_NAME:-box-hub}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "HARNESS_CHECKOUT",
+      "type": "string",
+      "default": "/root/harness-checkout",
+      "zero_means": null,
+      "note": "Read by bin/fleet-status-push.sh as ${HARNESS_CHECKOUT:-/root/harness-checkout} for the hub_harness_head field (BH-2529). The checkout path a test seam overrides; NOT settable from the control plane — only env/global.env on the box moves it.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/fleet-status-push.log"
+  }
+}

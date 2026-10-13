@@ -1,0 +1,21 @@
+{
+  "libs": [
+    {
+      "id": "builds-of-record",
+      "file": "bin/lib/builds-of-record.sh",
+      "note": "BH-2312.0 (BH-2347). The read side of the builds of record: bor_list joins the jobs ledger's result and pr_url artifact feeds per project, bor_union adds local builds/*/RESULT the ledger does not name. Read-only; two worker GETs per bor_list call.",
+      "knobs": [
+        {
+          "env": "BOR_LIMIT",
+          "type": "int",
+          "default": 500,
+          "min": 1,
+          "max": 1000,
+          "unit": "rows",
+          "required": false,
+          "note": "Rows per job_artifact_feed call in bor_list; a feed that returns this many sets BOR_TRUNCATED=1. 1000 is the jobs worker's list cap. Read as ${BOR_LIMIT:-500}."
+        }
+      ]
+    }
+  ]
+}

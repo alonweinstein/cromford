@@ -1,0 +1,125 @@
+{
+  "id": "jobs-watchdog",
+  "name": "Jobs watchdog",
+  "scope": "box",
+  "script": "bin/jobs-watchdog.sh",
+  "cadence": "*/5 * * * *",
+  "boxes": [
+    "project-4",
+    "hub",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-10",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-jobs-watchdog",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "JOBS_BOX",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it ($(hostname)). Read by bin/jobs-watchdog.sh as ${JOBS_BOX:-$(hostname)}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "JOBS_ORPHAN_MIN",
+      "type": "int",
+      "default": 10,
+      "zero_means": null,
+      "note": "Read by bin/jobs-watchdog.sh as ${JOBS_ORPHAN_MIN:-10}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "JOBS_PR_ROW_TTL_MIN",
+      "type": "string",
+      "default": "360",
+      "zero_means": null,
+      "note": "Read by bin/jobs-watchdog.sh as ${JOBS_PR_ROW_TTL_MIN:-${LEDGER_TTL[pr-*]:-360}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "JOBS_QUEUE_CLAIM_MIN",
+      "type": "int",
+      "default": 360,
+      "zero_means": null,
+      "note": "Read by bin/jobs-watchdog.sh as ${JOBS_QUEUE_CLAIM_MIN:-360}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "JOBS_QUEUE_DEFER_MAX",
+      "type": "int",
+      "default": 6,
+      "zero_means": null,
+      "note": "Read by bin/jobs-watchdog.sh as ${JOBS_QUEUE_DEFER_MAX:-6}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "JOBS_RECONCILE_EVERY",
+      "type": "string",
+      "default": "6",
+      "zero_means": null,
+      "note": "Read by bin/jobs-watchdog.sh as ${JOBS_RECONCILE_EVERY:-$(knob reconcile_every 6)}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "JOBS_RECONCILE_MAX",
+      "type": "string",
+      "default": "40",
+      "zero_means": null,
+      "note": "Read by bin/jobs-watchdog.sh as ${JOBS_RECONCILE_MAX:-$(knob reconcile_max 40)}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "JOBS_REQUEUE_CLASSES",
+      "type": "string",
+      "default": "triage preplan pr-*",
+      "zero_means": null,
+      "note": "Read by bin/jobs-watchdog.sh as ${JOBS_REQUEUE_CLASSES:-${LEDGER_KNOB[requeue_classes]:-triage preplan pr-*}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "JOBS_REQUEUE_MAX",
+      "type": "string",
+      "default": "3",
+      "zero_means": null,
+      "note": "Read by bin/jobs-watchdog.sh as ${JOBS_REQUEUE_MAX:-$(knob requeue_max 3)}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "JOBS_SILENT_MIN",
+      "type": "int",
+      "default": 90,
+      "zero_means": null,
+      "note": "Read by bin/jobs-watchdog.sh as ${JOBS_SILENT_MIN:-90}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "LEDGER_TTL_CONF",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/jobs-watchdog.sh as ${LEDGER_TTL_CONF:-}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "RECONCILE_PRS_OWNER_STALE_TICKS",
+      "read_in": "bin/lib/reconcile-owner-watch.sh",
+      "type": "int",
+      "default": 3,
+      "min": 2,
+      "max": 144,
+      "unit": "ticks",
+      "zero_means": null,
+      "required": true,
+      "note": "BH-1608: how many reconcile-prs ticks (the lane's registry cadence, */10 = 10m) the owner's heartbeat may be missing before the hub's jobs-watchdog pages RECONCILE OWNER SILENT once, naming the configured owner. Read by bin/lib/reconcile-owner-watch.sh with no literal; a non-integer value runs no check and logs one line."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/jobs-watchdog.log"
+  }
+}

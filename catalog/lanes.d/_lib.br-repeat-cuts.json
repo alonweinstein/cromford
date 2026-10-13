@@ -1,0 +1,75 @@
+{
+  "libs": [
+    {
+      "id": "br-repeat-cuts",
+      "file": "bin/lib/br/opt/unchanged.sh",
+      "note": "BH-5946. Three optional modules of bin/blocked-resolver.sh read these: bin/lib/br/opt/profile.sh (the run's `prof:` line and its per-row TSV), bin/lib/br/opt/readmemo.sh (the per-run read memo) and bin/lib/br/opt/unchanged.sh (the unchanged-row skip). Each module calls lib_env_apply br-repeat-cuts when it is sourced, so a settings row wins over the env and the default here is the fallback. BR_OPT_OFF=profile,readmemo,unchanged turns any of them off as well.",
+      "knobs": [
+        {
+          "env": "BR_PROFILE",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 1,
+          "zero_means": "off",
+          "required": false,
+          "note": "1: every run with candidates writes one `prof:` line after its `tick:` line (stage seconds, GitHub calls by endpoint shape, D1 calls, model calls, memo hits, unchanged skips, the 5 slowest rows) and one TSV row per dispatched candidate in state/blocked-resolver/profile/. 0: neither. flags/br-profile-off is the same as 0.",
+          "read_in": "bin/lib/br/opt/profile.sh"
+        },
+        {
+          "env": "BR_PROFILE_KEEP",
+          "type": "int",
+          "default": 24,
+          "min": 1,
+          "max": 500,
+          "zero_means": null,
+          "required": false,
+          "note": "How many per-run TSV files state/blocked-resolver/profile/ keeps; the oldest go in the same run. 24 is 4 h of */10 runs.",
+          "read_in": "bin/lib/br/opt/profile.sh"
+        },
+        {
+          "env": "BR_READMEMO",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 1,
+          "zero_means": "off",
+          "required": false,
+          "note": "1: a repeat GET of a PR, an issue, its comment pages or the merged-PR search in one run is answered from a file memo of that run. A rung always reads live. 0: every read goes to GitHub. flags/br-readmemo-off is the same as 0.",
+          "read_in": "bin/lib/br/opt/readmemo.sh"
+        },
+        {
+          "env": "BR_READMEMO_MAX_AGE_S",
+          "type": "int",
+          "default": 300,
+          "min": 0,
+          "max": 3600,
+          "unit": "seconds",
+          "zero_means": "off",
+          "required": false,
+          "note": "The oldest memo entry a read may use, the same bound as BR_PRS_CACHE_SECS. An older entry is read again. 0 turns the memo off.",
+          "read_in": "bin/lib/br/opt/readmemo.sh"
+        },
+        {
+          "env": "BR_UNCHANGED_RECHECK_S",
+          "type": "int",
+          "default": 1800,
+          "min": 0,
+          "max": 86400,
+          "unit": "seconds",
+          "zero_means": "off",
+          "required": false,
+          "note": "The longest time a row that ended on a quiet exit is skipped while its local inputs (the conductor row, the state record, the build record, the queue files) do not change. This is also the latest a hold lift (a RESUME comment), a person's answer on a needs-human hold or a newer job row for an abandoned ticket is seen. 0 (or flags/br-unchanged-off) skips nothing."
+        },
+        {
+          "env": "BR_UNCHANGED_CLASSES",
+          "type": "string",
+          "default": "held escalated stalled job-abandoned hv-stands rung-hold needs-human ci-parked",
+          "zero_means": null,
+          "required": false,
+          "note": "The quiet exits a row may be skipped after, a space list. Remove a class to look at its rows on every run."
+        }
+      ]
+    }
+  ]
+}

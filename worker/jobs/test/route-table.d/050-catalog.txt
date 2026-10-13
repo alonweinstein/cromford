@@ -1,0 +1,2 @@
+PUT /api/catalog
+GET prefix:/api/catalog/

@@ -1,0 +1,11 @@
+api GET repos/example-org/scoutish/issues/552
+issue create TK-552.0: contract — metrics table + read API
+issue create TK-552.1: dashboard tile
+api POST repos/example-org/scoutish/issues/552/comments
+api DELETE repos/example-org/scoutish/issues/552/labels/ai-build
+-- rerun
+api GET repos/example-org/scoutish/issues/552
+api GET repos/example-org/scoutish/issues/701
+api GET repos/example-org/scoutish/issues/702
+api GET repos/example-org/scoutish/issues/552
+api DELETE repos/example-org/scoutish/issues/552/labels/ai-build

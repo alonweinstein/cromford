@@ -1,0 +1,5 @@
+# tests/mc/expected-map.d/C2.tsv — C2 (#2231, review round 3): the one poster of a
+# `@mergifyio` command (queue, requeue, refresh) under a PAT, never the App
+# (queue, beside mc_enqueue_mergify, its caller); origin=lib because it is a new
+# module function.
+queue	mc_mergify_command	lib

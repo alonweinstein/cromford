@@ -1,0 +1,14 @@
+# tests/mc/expected-map.d/BH-3630.tsv — 2026-09-30: the conductor writes the
+# verdict/CI words of a provenance park for bin/blocked-resolver.sh
+# (mc_prov_detail_*) and keeps the claimed-park page ledger (mc_resolver_claim*);
+# origin=lib because all of them are new module functions.
+classify	mc_prov_detail_file	lib
+classify	mc_prov_detail_put	lib
+classify	mc_prov_detail_get	lib
+classify	mc_resolver_claim_file	lib
+classify	_mc_claim_write	lib
+classify	mc_resolver_claim	lib
+classify	mc_resolver_claim_touch	lib
+classify	mc_resolver_claim_get	lib
+classify	mc_resolver_claim_mark	lib
+classify	mc_resolver_claim_gc	lib

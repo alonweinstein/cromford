@@ -1,0 +1,31 @@
+{
+  "libs": [
+    {
+      "id": "review-bought",
+      "file": "bin/lib/review-bought.sh",
+      "note": "BH-3930: never pay to re-review an unchanged PR head. Before a review lane buys a review it asks review_bought whether a verdict was already paid for on exactly this head, and every review call carries the shared per-head guard fp review:<slug>#<n>@<sha> / lead:<slug>#<n>@<sha> (guard stages review-head / lead-head, K=1; a named ~reason suffix is the paid exception). BH-3937 ships the contract only: review_bought is a stub that answers miss, and no lane sources the lib yet. Resolved at call time by review_dedupe_on through lib_env_apply review-bought. Doc: docs/CALL-GUARD.md.",
+      "knobs": [
+        {
+          "env": "REVIEW_DEDUPE",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 1,
+          "zero_means": "off",
+          "required": false,
+          "note": "1 = a lane that has moved onto bin/lib/review-bought.sh asks review_bought before it buys a review (none has yet: BH-3937 ships the contract). 0 skips those reads, but the shared per-head fp and K=1 on review-head / lead-head still apply: the kill switch restores today's checks, not today's spend ceiling. Read as ${REVIEW_DEDUPE:-1}."
+        },
+        {
+          "env": "REVIEW_DEDUPE_REBUY_AFTER",
+          "type": "int",
+          "default": 0,
+          "min": 0,
+          "unit": "unix epoch",
+          "zero_means": "off",
+          "required": false,
+          "note": "The operator's prompt/model-changed lever. The contract: a verdict bought before this epoch no longer covers its head, and the re-buy carries the ~rebuy<epoch> fp suffix; review_bought is still a stub, so nothing acts on it until its sibling lands. Never set automatically. Read by review_rebuy_after as ${REVIEW_DEDUPE_REBUY_AFTER:-0}; anything not a whole number is 0 (off) with one line in logs/review-bought.log."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+# @hub-lanes
+20 6 * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/cap-loss-detector.sh >/dev/null 2>&1

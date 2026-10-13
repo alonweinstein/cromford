@@ -1,0 +1,3 @@
+CLASS: ticket-file
+I could not read csv:logs/outcome-rework-rollup.csv#rework_pct@slice=decomposed this time, so I recommend a ticket to fix that source before the next check, or this goal goes blind.
+VERDICT: speak

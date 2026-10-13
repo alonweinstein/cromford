@@ -1,0 +1,1 @@
+{"name":"gate-release-off","readers":["bin/gate-release.sh"],"box_scoped":true,"what":"stops bin/gate-release.sh from running the merge-gate release work defined by the bin/lib/gate-release/ part files"}

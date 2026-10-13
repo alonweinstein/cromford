@@ -1,0 +1,6 @@
+{
+  "gate": "queue-pending",
+  "project": "project-2",
+  "board_shape": "board-api",
+  "note": "Every build slot is taken. The ticket is genuinely ready, which is what makes this the tempting case — the SOP must hold it in the queue rather than launch a build with no slot for it."
+}

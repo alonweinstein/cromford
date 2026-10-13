@@ -1,0 +1,54 @@
+{
+  "id": "box-ops",
+  "name": "Box ops (console box commands)",
+  "scope": "box",
+  "script": "bin/box-ops.sh",
+  "cadence": "* * * * *",
+  "boxes": [
+    "project-4",
+    "hub",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-10",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-box-ops",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "BOX_OPS_TIMEOUT_S",
+      "type": "int",
+      "default": 900,
+      "min": 60,
+      "max": null,
+      "unit": "s",
+      "zero_means": null,
+      "note": "timeout on each op a box_commands row asks for (backup_now, harness_sync, cli_update, fly_machine_*); rc 124 records the command as ok:false \"timed out after <n>s\". Keep it below the worker's box_commands_claim_ttl_s settings row (fallback 1800), or a running op is re-offered to another claimer. Read by bin/box-ops.sh."
+    },
+    {
+      "env": "BOX_OPS_MAX_PER_TICK",
+      "type": "int",
+      "default": 3,
+      "min": 1,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "note": "the most box_commands rows one bin/box-ops.sh tick claims; the rest wait for the next minute. A value that is not a positive integer is refused with one ALERTS line and nothing is claimed. Read by bin/box-ops.sh."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/box-ops.log"
+  }
+}

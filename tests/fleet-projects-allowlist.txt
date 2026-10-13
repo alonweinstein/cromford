@@ -1,0 +1,67 @@
+# tests/fleet-projects-allowlist.txt — scripts allowed to name three or more
+# fleet projects without reading bin/fleet-conf.sh.
+#
+# Format: <file in bin/><whitespace><one-line reason>
+#
+# Every line here is a promise that a human looked at the enumeration and
+# decided it is either genuinely not derivable from the registry, or is owned by
+# work in flight. An entry with no reason fails the guard, and so does an entry
+# for a file that no longer enumerates — an exception must not outlive the thing
+# it excuses. Adding a line is cheap; the point is that it is a DECISION rather
+# than a default.
+#
+# The registry cannot answer three things today, and they are why most of this
+# list exists:
+#   * per-project ENV-VAR NAMES (PROJECT_1_API_BASE vs PROJECT_2_APP_BASE vs
+#     PROJECT_4_API_BASE) — fleet.conf has the prod URL, not the variable that holds it
+#   * ~~per-box TAILSCALE IPs~~ — CLOSED 2026-09-11: fleet.conf grew a
+#     `tailnet_ip` column and bin/fleet-conf.sh --tailnet-ip{,-of-box} reads it.
+#     Five files left this list outright; the ones still below are here for a
+#     DIFFERENT reason now (a label→project map whose labels are on-disk keys),
+#     and their reasons say so.
+#   * per-board TICKET-KEY PREFIXES (PB/FR/AR/SO)
+# Closing any of those in the registry would let a whole block of these lines go.
+# Two columns are worth more than any amount of hand-migration:
+#   * ~~tailnet_ip~~ — DONE 2026-09-11; it retired five of the nine outright
+#   * token_var   — the name of each project's *_INTERNAL_API_TOKEN. Not
+#     derivable from the project name (project-2 uses PROJECT_2_, project-8
+#     uses IA_), which is why bin/internal-token-for.sh matches on the
+#     suffix and refuses when a file defines zero or several. A per-project name
+#     MAP would work too and is deliberately not used: it is a hardcoded fleet
+#     project list in bin/, i.e. the thing this very guard forbids, and the map
+#     that used to live in stale-owed-tickets.sh had already drifted (it said
+#     PROJECT_2_INTERNAL_API_TOKEN; that env file calls it PROJECT_2_). Note when that lands: fly-dispatch.sh may be
+# REMOVABLE rather than migratable — once the DB-queue wave's producers write
+# rows, its ssh pull is the fallback path and it needs no IP at all, so check
+# whether the entry can just go (harness-dbqueue, 2026-09-10).
+
+# ── in flight: the DB-queue wave owns these files (do not edit concurrently) ──
+fly-pool-rollout.sh      owned by the DB-queue wave (bin/fly-*.sh); box_ip table + a three-project rollout loop
+orchestrate.sh           owned by the DB-queue wave; telegram topic routing scans a message for a project name
+
+# ── per-project env-var names, which the registry does not record ─────────────
+apply-migrations.sh      maps project to the env var holding its app base (PROJECT_1_API_BASE / PROJECT_2_APP_BASE / PROJECT_3_APP_BASE / PROJECT_4_API_BASE)
+hotfix-migrate.sh        same four: the projects whose app exposes /api/internal/migrations, which is the env-var map above and not something fleet.conf records — apply-migrations.sh is the source of truth and this default follows it
+check-migration-prs.sh   same env-var-name map; the project list is those four, and each one's repo slug is read from fleet-conf.sh (BH-4080)
+migration-autopilot.sh   same env-var-name map for base URL and verification token
+post-proposal.sh         maps project to env-var names AND to board-specific key prefix, UI path and requester wording
+triage-gate.sh           maps project to env-var names, board prefix and the SELF_ACTORS string each board writes comments as
+untriaged-sweep.sh       sources each project env file and passes its named vars positionally to sweep()
+prod-url.sh              prod URL fallback table for a checkout whose fleet.conf predates the column
+board-invariants.sh      project list comes from fleet-conf.sh; the residual KEYPFX map is a per-board ticket-key prefix (project-4 serves no .key), which the registry does not record
+
+# ── label→project maps whose LABEL is an on-disk key (the address is now
+# ── fleet.conf's tailnet_ip; what remains here is the label, not the IP) ─────
+cost-rollup.sh           label→project map; the labels are state/cost/ dir names and cron basenames a parity test asserts on
+pipeline-health.sh       label→project maps; the labels are cron basenames a parity test asserts on
+
+# ── prose written for a model to read, not a list the code loops over ────────
+alerts-medic.sh          the SRE medic PROMPT spells out each board's per-app triage endpoint path
+
+# ── migration in flight: this wave's follow-up PR moves these to fleet-conf.sh ─
+# Each one gates work or alerts for every project, so a four-name list here is
+# the same silence the 2026-09-10 incident produced. Remove the line with the fix.
+
+# ── a DELIBERATE, LOUD fail-open list ────────────────────────────────────────
+reopen-metrics.sh        project list is fleet-conf.sh; the four names are the documented fail-open for an unreadable registry (snapshot() must carry their board prefixes, which nothing else can supply) and are pinned by tests/reopen-fleetconf-test.sh
+lander.sh                the lander's fix-agent set is the four original in-app-board projects by design (BH-4080 review): fleet.conf's board column also holds project-8 and project-9, and widening a paid fix lane is its own ticket

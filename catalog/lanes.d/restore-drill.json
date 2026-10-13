@@ -1,0 +1,129 @@
+{
+  "id": "restore-drill",
+  "name": "Restore drill",
+  "scope": "hub",
+  "script": "bin/restore-drill.sh",
+  "cadence": "0 6 * * 0",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-restore-drill",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "RESTORE_DRILL_MIN_INTERVAL_H",
+      "type": "int",
+      "default": 24,
+      "min": 0,
+      "max": null,
+      "unit": "h",
+      "zero_means": "off",
+      "note": "Spend guard: a run whose marker ts (state/restore-drill-last.json) is newer than this many hours exits 0 without buying a box, unless run with --force. 0 turns the guard off. Read by bin/restore-drill.sh."
+    },
+    {
+      "env": "RESTORE_DRILL_DEADLINE_S",
+      "type": "int",
+      "default": 2700,
+      "min": 60,
+      "max": null,
+      "unit": "s",
+      "zero_means": null,
+      "note": "How long the drill waits for the borrowed Orgo computer to report running before it FAILs (and deletes it). Wall time, not a poll count. Read by bin/restore-drill.sh."
+    },
+    {
+      "env": "RESTORE_DRILL_POLL_S",
+      "type": "int",
+      "default": 15,
+      "min": 1,
+      "max": null,
+      "unit": "s",
+      "zero_means": null,
+      "note": "Seconds between GET /computers/<id> polls while waiting for running. Read by bin/restore-drill.sh."
+    },
+    {
+      "env": "RESTORE_DRILL_RAM_GB",
+      "type": "int",
+      "default": 8,
+      "min": 1,
+      "max": null,
+      "unit": "GB",
+      "zero_means": null,
+      "note": "RAM of the borrowed Orgo computer. A 403 RAM_ADDON answer to this size is a SKIP, not a FAIL. A non-integer FAILs the run before any call. Read by bin/restore-drill.sh."
+    },
+    {
+      "env": "RESTORE_DRILL_CPU",
+      "type": "int",
+      "default": 2,
+      "min": 1,
+      "max": null,
+      "unit": "cpu",
+      "zero_means": null,
+      "note": "CPUs of the borrowed Orgo computer. A non-integer FAILs the run before any call. Read by bin/restore-drill.sh."
+    },
+    {
+      "env": "RESTORE_DRILL_CALL_TIMEOUT_S",
+      "read_in": "bin/lib/restore-drill-orgo.sh",
+      "type": "int",
+      "default": 300,
+      "min": 1,
+      "max": null,
+      "unit": "s",
+      "zero_means": null,
+      "note": "curl -m on every Orgo API call the drill makes, so no single call can hang the lane. Read by bin/lib/restore-drill-orgo.sh."
+    },
+    {
+      "env": "RESTORE_DRILL_HEALTH_PROJECT",
+      "type": "string",
+      "default": "cromford",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "note": "The project the post-restore smoke checks; exported to drill_on_box, whose steps (#1732) use it. Read by bin/restore-drill.sh."
+    },
+    {
+      "env": "RESTORE_DRILL_TEMPLATE_REF",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "note": "The Orgo template the borrowed computer is created from. No default: an Orgo template ref you own. Unset = the drill SKIPs as not configured and spends nothing. An identity of what gets booted, so not settable from a page. Read by bin/restore-drill.sh.",
+      "settable": false
+    },
+    {
+      "env": "RESTORE_DRILL_IDENTITY_FILE",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "note": "Path on the hub to the identity that decrypts the restored env; exported to drill_on_box, whose steps (#1732) use it. No default. A path, so not settable. Read by bin/restore-drill.sh.",
+      "settable": false
+    },
+    {
+      "env": "ORGO_API_BASE",
+      "read_in": "bin/lib/restore-drill-orgo.sh",
+      "type": "string",
+      "default": "https://www.orgo.ai/api",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "note": "The Orgo API host the drill calls with ORGO_API_KEY. A host, so not settable. Read by bin/lib/restore-drill-orgo.sh.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/restore-drill.log"
+  }
+}

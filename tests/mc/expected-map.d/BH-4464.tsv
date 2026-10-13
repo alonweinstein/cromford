@@ -1,0 +1,5 @@
+# tests/mc/expected-map.d/BH-4464.tsv — BH-4464: the tmp-full precheck and the
+# git fail-line extractor (rebase, beside mc_git_err_line); origin=lib because
+# they are new module functions.
+rebase	mc_git_fail_line	lib
+rebase	mc_tmp_room	lib

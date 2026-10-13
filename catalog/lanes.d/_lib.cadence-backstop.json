@@ -1,0 +1,33 @@
+{
+  "libs": [
+    {
+      "id": "cadence-backstop",
+      "file": "bin/lib/cadence-backstop.sh",
+      "note": "C2 (2026-09-24). With GitHub webhooks live on every fleet repo, the merge conductor is woken by bin/wake-loop.sh and its */5 cron tick, like the blocked resolver's */10, is a backstop. The gate sits in each lane's cron fragment and lets a tick through once the row's minutes have passed since its last backstop run, or at once when a --wake-dir holds a newer file. 0 = every tick runs (pre-C2). Fail-open: anything it cannot read runs the lane.",
+      "knobs": [
+        {
+          "env": "CADENCE_BACKSTOP_MIN_MERGE_CONDUCTOR",
+          "type": "int",
+          "default": 60,
+          "min": 0,
+          "max": 120,
+          "unit": "minutes",
+          "zero_means": "off",
+          "required": false,
+          "note": "Minutes between merge-conductor full-tick cron runs. BH-5521: 60 = the hourly safety sweep; webhook wakes drive keyed runs and the 5-minute keyed backstop covers READY/WAIT_CI rows. The cron line stays */30, so with the 30 s jitter slack every second fire passes. Rollback: set the row to 15. 0 = every cron tick. Stretches MC_UNVERIFIABLE_ALERT_TICKS (6 ticks: up to 6 h with no wake; keyed runs count too). Read as ${CADENCE_BACKSTOP_MIN_MERGE_CONDUCTOR:-60}."
+        },
+        {
+          "env": "CADENCE_BACKSTOP_MIN_BLOCKED_RESOLVER",
+          "type": "int",
+          "default": 30,
+          "min": 0,
+          "max": 240,
+          "unit": "minutes",
+          "zero_means": "off",
+          "required": false,
+          "note": "Minutes between blocked-resolver cron runs (the cron line stays */10); a new conductor hand-off in state/merge-conductor/handoff lets the next tick through regardless. 0 = every */10 tick, as before. Stretches the resolver's tick-counted knobs: BR_SATURATED_TICKS=12 goes from 2h to up to 6h, and BR_PER_TICK=4 from 24 to ~8 rungs/h plus wake runs (set lane.blocked-resolver.br_per_tick=12 to keep the old hourly throughput). *.logged markers in the wake dir are ignored. Read as ${CADENCE_BACKSTOP_MIN_BLOCKED_RESOLVER:-30}."
+        }
+      ]
+    }
+  ]
+}

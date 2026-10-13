@@ -1,0 +1,16 @@
+diff --git a/test/slug.test.js b/test/slug.test.js
+index eee1e75..115b122 100644
+--- a/test/slug.test.js
++++ b/test/slug.test.js
+@@ -4,9 +4,9 @@ const assert = require('node:assert');
+ const { slugify } = require('../src/slug.js');
+ 
+ test('joins words with hyphens', () => {
+-  assert.strictEqual(slugify('Hello World'), 'HELLO-WORLD');
++  assert.strictEqual(slugify('Hello World'), 'hello-world');
+ });
+ 
+ test('trims punctuation at the ends', () => {
+-  assert.strictEqual(slugify('  Pricing!  '), 'PRICING');
++  assert.strictEqual(slugify('  Pricing!  '), 'pricing');
+ });

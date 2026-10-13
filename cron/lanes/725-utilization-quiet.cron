@@ -1,0 +1,11 @@
+# @hub-lanes
+
+# ── UTILIZATION-QUIET LANE (BH-4012, BH-3988.4) ─────────────────────────────
+# Daily at 07:20Z. For every fleet.conf project, reads the last 72h of hourly
+# utilization snapshots (GET /api/utilization?project=&since=) and the prior
+# week's merges (GET /api/metrics/dora), and raises one warn
+# util-went-quiet-<project> when the project had free slots and no ready work
+# the whole window after shipping the week before. One line per run in
+# logs/utilization-quiet.log. Off: flags/lane-off-utilization-quiet
+# (bin/harness-ctl.sh off utilization-quiet) or UTIL_QUIET_ENABLED=0.
+20 7 * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/utilization-quiet.sh >/dev/null 2>&1

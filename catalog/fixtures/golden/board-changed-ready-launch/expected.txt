@@ -1,0 +1,4 @@
+# The client answered both triage questions, the turn is back on the team, the
+# mechanism is confirmed, no PR or branch exists and a build slot is free.
+# Anything other than a launch means the SOP has stopped shipping ready work.
+TK-4812 :: launch

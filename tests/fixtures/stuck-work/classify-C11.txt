@@ -1,0 +1,4 @@
+# C11 MERGE plus lead success ten minutes ago, ready SLA 15
+# want: ready	conductor
+# decide: - quiet
+pr	o/r#12	https://github.com/o/r/pull/12	0	ai-build	success	1799999400	MERGE	abc	1799999300	abc	-	-	-	-	-	-	-	-	-	-	1799990001

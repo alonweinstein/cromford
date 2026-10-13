@@ -1,0 +1,72 @@
+{
+  "id": "stranded-watch",
+  "name": "Stranded-ticket watch",
+  "scope": "hub",
+  "script": "bin/stranded-watch.sh",
+  "cadence": "8,38 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-stranded-watch",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "STRANDED_WATCH_SPREAD_SECS",
+      "type": "int",
+      "default": 1500,
+      "min": 0,
+      "max": 3600,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "BH-5967: the dispatcher starts one `orphan-reconcile.sh --stranded <project>` per project on the per-project lane runner (BH-5913), each at a stable offset inside this window, never within 5 s of a whole minute. 1500 keeps every start inside the 30-minute cadence. 0 starts every project at once. A non-number falls back to 1500 with one log line."
+    },
+    {
+      "env": "STRANDED_IDLE_MIN",
+      "read_in": "bin/orphan-reconcile.sh",
+      "type": "int",
+      "default": 60,
+      "min": 0,
+      "max": 1440,
+      "unit": "minutes",
+      "zero_means": null,
+      "note": "BH-5967: a ticket is stranded only when it has had no owner (live queue row or job, open PR, open blocker, hold) and no build attempt in this many minutes. It is the stranded watch's grace window; the triage-tick reconcile keeps ORPHAN_GRACE_MIN (12). 0 re-offers an ownerless ticket at once."
+    },
+    {
+      "env": "STRANDED_MAX_PER_RUN",
+      "read_in": "bin/orphan-reconcile.sh",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 200,
+      "unit": "tickets",
+      "zero_means": "unlimited",
+      "note": "BH-5967: a brake on how many stranded tickets one project run re-offers; the rest are named `cap` in the run's summary line. Default 0, no cap (the operator, unlimited concurrency, 2026-10-11): a re-offer is a queue row, and the pool admits rows by its own caps. Set a row only to slow a storm on purpose."
+    },
+    {
+      "env": "STRANDED_REOFFER_MAX",
+      "read_in": "bin/orphan-reconcile.sh",
+      "type": "int",
+      "default": 3,
+      "min": 1,
+      "max": 20,
+      "unit": "re-offers",
+      "zero_means": null,
+      "note": "BH-5967: re-offers of one ticket in STRANDED_REOFFER_WINDOW_H hours with no PR before the watch stops and places a NEEDS-HUMAN: marker on the ticket with its last result (bin/needs-human-hold.sh). A PR resets the count."
+    },
+    {
+      "env": "STRANDED_REOFFER_WINDOW_H",
+      "read_in": "bin/orphan-reconcile.sh",
+      "type": "int",
+      "default": 24,
+      "min": 1,
+      "max": 168,
+      "unit": "hours",
+      "zero_means": null,
+      "note": "BH-5967: the window STRANDED_REOFFER_MAX counts re-offers in (state/stranded-watch/<project>/<KEY>.reoffers)."
+    }
+  ]
+}

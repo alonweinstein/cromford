@@ -1,0 +1,21 @@
+diff --git a/worker/jobs/schema.sql b/worker/jobs/schema.sql
+--- a/worker/jobs/schema.sql
++++ b/worker/jobs/schema.sql
+@@ -40,6 +40,8 @@ CREATE TABLE IF NOT EXISTS cost_rows (
+   run_id TEXT,
+   note TEXT,
+-  raw TEXT
++  raw TEXT,
++  lane_id TEXT
+ );
++CREATE INDEX IF NOT EXISTS idx_cost_rows_lane_ts ON cost_rows(lane_id, ts);
+diff --git a/worker/jobs/src/lib/core.js b/worker/jobs/src/lib/core.js
+--- a/worker/jobs/src/lib/core.js
++++ b/worker/jobs/src/lib/core.js
+@@ -986,7 +986,8 @@ export const ADDED_COLUMNS = {
+   cost_rows: [["session_id", "TEXT"], ["row_source", "TEXT"], ["result_usd", "REAL"],
+               ["ticket", "TEXT"], ["job_id", "TEXT"], ["pr", "TEXT"], ["run_id", "TEXT"],
+-              ["note", "TEXT"], ["raw", "TEXT"]],
++              ["note", "TEXT"], ["raw", "TEXT"],
++              ["lane_id", "TEXT"]],
+   extra_usage_snapshots: [["extra_limit_usd", "REAL"], ["extra_pct", "REAL"], ["status", "TEXT"]],

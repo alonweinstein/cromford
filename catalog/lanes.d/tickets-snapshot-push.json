@@ -1,0 +1,35 @@
+{
+  "id": "tickets-snapshot-push",
+  "name": "Tickets snapshot push",
+  "scope": "hub",
+  "script": "bin/tickets-snapshot-push.sh",
+  "cadence": "8,18,28,38,48,58 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-tickets-snapshot-push",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "TICKETS_SNAPSHOT_MERGED_KEEP_DAYS",
+      "type": "int",
+      "default": 30,
+      "min": 1,
+      "max": 365,
+      "unit": "days",
+      "zero_means": null,
+      "required": true,
+      "note": "How long a remembered 'this branch's PR merged' answer (state/tickets-snapshot/merged-branches.tsv) is kept before it is pruned (BH-1586). A pruned branch that still exists is asked about once more over REST. No literal in code."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/tickets-snapshot-push.log"
+  }
+}

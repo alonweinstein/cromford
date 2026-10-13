@@ -1,0 +1,9 @@
+{
+  "agent": "archie",
+  "class": "rebase",
+  "action": "rebase a stale PR",
+  "level": "augmentation",
+  "cap": "autonomy",
+  "result": "ask",
+  "at": "2026-10-08T02:00:00Z"
+}

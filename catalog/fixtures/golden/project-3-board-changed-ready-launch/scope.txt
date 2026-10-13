@@ -1,0 +1,1 @@
+board fb_o19c: CHANGED 7214 "Let coordinators reschedule a booking from the calendar" (waitingOn: requester -> team; comments: 2 -> 3; activity)

@@ -1,0 +1,30 @@
+{
+  "id": "cost-local-brake",
+  "name": "Cost local brake",
+  "scope": "box",
+  "script": "bin/cost-local-brake.sh",
+  "cadence": "3,13,23,33,43,53 * * * *",
+  "boxes": [
+    "project-4",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-cost-local-brake"
+  },
+  "wired": true,
+  "knobs": [],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/cost-local-brake.log"
+  }
+}

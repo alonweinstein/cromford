@@ -1,0 +1,5 @@
+-- BH-5799: preplans.thread_at (when the planner started reading the ticket
+-- thread) is an ADDED column. The live preplans table exists, so its CREATE
+-- (in 0002-base-rest.sql) can never widen it; src/lib/core.js
+-- ADDED_COLUMNS.preplans is the ALTER that reaches it, and a fresh database
+-- gets it the same way on the first request. No statement here on purpose.

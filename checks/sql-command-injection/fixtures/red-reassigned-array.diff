@@ -1,0 +1,9 @@
+diff --git a/worker/jobs/src/routes/r.js b/worker/jobs/src/routes/r.js
+--- a/worker/jobs/src/routes/r.js
++++ b/worker/jobs/src/routes/r.js
+@@ -1,0 +1,5 @@
++export async function h(env, body) {
++  let where = [];
++  where = body.parts;
++  return env.DB.prepare(`SELECT * FROM t WHERE ${where.join(" AND ")}`).all();
++}

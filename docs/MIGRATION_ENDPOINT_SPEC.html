@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Self-Serve Migration Endpoint — Fleet Spec</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --font-body: 'Space Grotesk', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+    --bg: #f6f8fa;
+    --surface: #ffffff;
+    --surface2: #eef2f6;
+    --border: rgba(15, 40, 70, 0.09);
+    --border-bright: rgba(15, 40, 70, 0.2);
+    --text: #14283c;
+    --text-dim: #5d7285;
+    --blue: #1d5fbf;
+    --blue-dim: rgba(29, 95, 191, 0.08);
+    --green: #177245;
+    --green-dim: rgba(23, 114, 69, 0.08);
+    --red: #b3261e;
+    --red-dim: rgba(179, 38, 30, 0.07);
+    --amber: #955d00;
+    --amber-dim: rgba(149, 93, 0, 0.09);
+    --violet: #6741b8;
+    --violet-dim: rgba(103, 65, 184, 0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0e1621;
+      --surface: #16212e;
+      --surface2: #1d2a3a;
+      --border: rgba(160, 200, 255, 0.08);
+      --border-bright: rgba(160, 200, 255, 0.18);
+      --text: #dbe7f3;
+      --text-dim: #8aa0b5;
+      --blue: #6aa5f0;
+      --blue-dim: rgba(106, 165, 240, 0.1);
+      --green: #56c489;
+      --green-dim: rgba(86, 196, 137, 0.1);
+      --red: #f28b82;
+      --red-dim: rgba(242, 139, 130, 0.09);
+      --amber: #e8b84f;
+      --amber-dim: rgba(232, 184, 79, 0.1);
+      --violet: #b39ae8;
+      --violet-dim: rgba(179, 154, 232, 0.1);
+    }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px),
+      radial-gradient(ellipse at 15% 0%, var(--blue-dim) 0%, transparent 45%);
+    background-size: 44px 44px, 44px 44px, 100% 100%;
+    color: var(--text);
+    font-family: var(--font-body);
+    padding: 44px 20px 80px;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  .card, .hero, nav { animation: fadeUp .4s ease-out both; animation-delay: calc(var(--i, 0) * .05s); }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+  .hero {
+    background: var(--surface);
+    border: 1px solid var(--border-bright);
+    border-top: 4px solid var(--blue);
+    border-radius: 14px;
+    padding: 34px 38px 28px;
+    margin-bottom: 18px;
+    box-shadow: 0 8px 30px rgba(15, 40, 70, 0.07);
+  }
+  h1 { font-size: 34px; font-weight: 700; letter-spacing: -0.8px; line-height: 1.15; text-wrap: balance; }
+  .kicker { font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--blue); margin-bottom: 10px; }
+  .lede { color: var(--text-dim); font-size: 15px; margin-top: 12px; max-width: 70ch; }
+  .lede strong { color: var(--text); }
+  .pills { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
+  .pill { font-family: var(--font-mono); font-size: 11px; padding: 4px 11px; border-radius: 99px; border: 1px solid var(--border-bright); color: var(--text-dim); background: var(--surface2); }
+  .pill--key { border-color: var(--green); color: var(--green); background: var(--green-dim); font-weight: 600; }
+
+  nav { position: sticky; top: 0; z-index: 9; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(8px); border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; margin-bottom: 26px; display: flex; gap: 4px; overflow-x: auto; }
+  nav a { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); text-decoration: none; padding: 5px 10px; border-radius: 6px; white-space: nowrap; }
+  nav a:hover { color: var(--blue); background: var(--blue-dim); }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px 28px; margin-bottom: 18px; }
+  .card h2 { font-size: 19px; font-weight: 700; letter-spacing: -0.3px; display: flex; align-items: center; gap: 10px; margin-bottom: 14px; scroll-margin-top: 70px; }
+  .num { font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--blue); background: var(--blue-dim); border: 1px solid var(--border); border-radius: 6px; padding: 3px 8px; }
+  .card h3 { font-size: 14px; font-weight: 600; margin: 18px 0 8px; }
+  .card p { font-size: 13.5px; color: var(--text-dim); margin-bottom: 10px; max-width: 76ch; }
+  .card p strong, .card li strong { color: var(--text); }
+  code { font-family: var(--font-mono); font-size: 11.5px; background: var(--blue-dim); color: var(--blue); padding: 1px 6px; border-radius: 4px; }
+  pre { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; overflow-x: auto; font-family: var(--font-mono); font-size: 11.5px; line-height: 1.65; color: var(--text); margin: 10px 0 14px; }
+  pre code { background: none; color: inherit; padding: 0; }
+  .cm { color: var(--text-dim); }
+  ul.tight { list-style: none; margin: 6px 0 12px; }
+  ul.tight li { font-size: 13px; color: var(--text-dim); padding: 3px 0 3px 18px; position: relative; }
+  ul.tight li::before { content: '▸'; position: absolute; left: 2px; color: var(--blue); font-size: 11px; top: 6px; }
+
+  .prop { display: grid; grid-template-columns: 200px 1fr; gap: 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin: 12px 0; }
+  .prop > div { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid var(--border); }
+  .prop > div:nth-child(odd) { background: var(--surface2); font-weight: 600; font-family: var(--font-mono); font-size: 12px; }
+  .prop > div:nth-last-child(-n+2) { border-bottom: none; }
+  .prop > div:nth-child(even) { color: var(--text-dim); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin: 10px 0 6px; }
+  .tblwrap { overflow-x: auto; }
+  th { font-family: var(--font-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: 1px; text-align: left; color: var(--text-dim); padding: 8px 12px; border-bottom: 2px solid var(--border-bright); white-space: nowrap; }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; color: var(--text-dim); }
+  td:first-child { color: var(--text); font-weight: 500; }
+  tr:hover td { background: var(--blue-dim); }
+  .ok { display: inline-block; font-family: var(--font-mono); font-size: 10.5px; font-weight: 600; color: var(--green); background: var(--green-dim); border-radius: 5px; padding: 2px 8px; }
+  .no { display: inline-block; font-family: var(--font-mono); font-size: 10.5px; font-weight: 600; color: var(--red); background: var(--red-dim); border-radius: 5px; padding: 2px 8px; }
+  .warn { display: inline-block; font-family: var(--font-mono); font-size: 10.5px; font-weight: 600; color: var(--amber); background: var(--amber-dim); border-radius: 5px; padding: 2px 8px; }
+
+  .flow { display: flex; align-items: stretch; gap: 0; overflow-x: auto; padding: 6px 0 10px; }
+  .fstep { min-width: 128px; flex: 1; flex-shrink: 0; background: var(--surface2); border: 1px solid var(--border); border-radius: 9px; padding: 11px 12px; text-align: center; }
+  .fstep .t { font-family: var(--font-mono); font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .fstep .d { font-size: 11px; color: var(--text-dim); line-height: 1.45; }
+  .farr { display: flex; align-items: center; padding: 0 6px; color: var(--border-bright); font-size: 15px; flex-shrink: 0; }
+  .f-human .t { color: var(--violet); } .f-human { border-color: color-mix(in srgb, var(--violet) 35%, var(--border)); }
+  .f-auto .t { color: var(--blue); }
+  .f-db .t { color: var(--green); } .f-db { border-color: color-mix(in srgb, var(--green) 35%, var(--border)); }
+
+  .callout { border: 1px solid var(--border); border-left: 4px solid var(--amber); background: var(--amber-dim); border-radius: 0 10px 10px 0; padding: 14px 18px; font-size: 13px; color: var(--text-dim); margin: 14px 0; }
+  .callout strong { color: var(--text); }
+  .callout--green { border-left-color: var(--green); background: var(--green-dim); }
+  .callout--red { border-left-color: var(--red); background: var(--red-dim); }
+
+  .tg { background: var(--surface2); border: 1px dashed var(--border-bright); border-radius: 10px; padding: 16px 18px; font-size: 13.5px; line-height: 1.7; color: var(--text); font-family: var(--font-mono); white-space: pre-wrap; }
+  @media (max-width: 700px) {
+    body { padding: 18px 10px 60px; }
+    .hero { padding: 24px 20px; }
+    h1 { font-size: 26px; }
+    .card { padding: 18px 16px; }
+    .prop { grid-template-columns: 1fr; }
+    .prop > div:nth-child(odd) { border-bottom: none; padding-bottom: 2px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="hero" style="--i:0">
+  <div class="kicker">cromford · fleet spec · 2026-07-24</div>
+  <h1>Self-Serve Migration Endpoint</h1>
+  <p class="lede">Each OS app applies <strong>its own merged, deployed, code-reviewed SQL</strong> through an internal-token-gated endpoint — the watcher fleet triggers application <strong>without ever holding a database credential</strong>. Replaces the "paste owner DB URLs onto bot boxes" idea, which is rejected permanently.</p>
+  <div class="pills">
+    <span class="pill--key pill">SQL never travels — only a filename</span>
+    <span class="pill">DB creds stay inside each app's Vercel env</span>
+    <span class="pill">Human still merges every migration PR (tier-2)</span>
+    <span class="pill">~2 AI sessions to ship</span>
+  </div>
+</div>
+
+<nav style="--i:1">
+  <a href="#why">Why</a><a href="#principles">Security model</a><a href="#flow">Flow</a><a href="#api">API</a><a href="#ledger">Ledger</a><a href="#guard">Guardrails</a><a href="#adapters">Adapters</a><a href="#harness">Harness wiring</a><a href="#fail">Failure modes</a><a href="#rollout">Rollout</a><a href="#tg">Telegram reply</a>
+</nav>
+
+<div class="card" style="--i:2">
+  <h2 id="why"><span class="num">01</span> The problem</h2>
+  <p>Every merged PR that carries <code>scripts/migrations/*.sql</code> currently waits for a human to apply the SQL to prod (Supabase Management API for project-2/project-1, <code>turso db shell</code> for project-3/project-4). The hub's <code>check-migration-prs.sh</code> pings Telegram until someone does. At fleet build velocity this backlog hit 10 PRs in two days, and the orchestrator's proposed fix — provision owner DB credentials onto the watcher boxes — was refused: a compromised always-on box running <code>--dangerously-skip-permissions</code> sessions would hold <strong>full owner access to client production databases</strong>. The blast radius today is a repo-scoped PAT; that proposal made it a client's entire book.</p>
+  <div class="callout"><strong>The lesson that shaped the current rule:</strong> "a merged PR containing migrations needs its SQL applied to prod BY A HUMAN — 3 outages in one night" (MULTI-MACHINE-PLAN, Known Sharp Edges). This spec automates the <em>application step only</em>, keeping the human at the merge gate and removing raw SQL and raw credentials from every automated surface.</p>
+</div>
+
+<div class="card" style="--i:3">
+  <h2 id="principles"><span class="num">02</span> Security model — the four properties</h2>
+  <div class="prop">
+    <div>No SQL in transit</div><div>The endpoint accepts a <strong>filename</strong>, never SQL text. The SQL executed is the file baked into the app's <em>deployed bundle</em> — meaning it was PR-reviewed, adversarially reviewed (Fable), human-merged (migrations force tier-2), and deployed by Vercel before it is even addressable. A compromised watcher can only ask an app to run SQL that already shipped through the full gate chain.</div>
+    <div>No creds outside the app</div><div>The app executes with the DB connection it already holds in its own Vercel env. Nothing new is provisioned anywhere. Watcher boxes keep exactly what they have today: a repo-scoped PAT + app-level internal tokens.</div>
+    <div>Human merge gate intact</div><div><code>run-build.sh</code> already classifies any diff touching <code>migrations/|\.sql$|schema\.prisma</code> as tier-2 → PR waits for the operator. This spec does not change that. What was manual-after-merge becomes automatic-after-deploy.</div>
+    <div>Additive-only, enforced</div><div>A statement classifier refuses destructive SQL (§05) even though the file passed review — defense in depth for the standing additive-only schema law. Destructive migrations remain human-applied by design.</div>
+  </div>
+</div>
+
+<div class="card" style="--i:4">
+  <h2 id="flow"><span class="num">03</span> End-to-end flow</h2>
+  <div class="flow">
+    <div class="fstep f-auto"><div class="t">build</div><div class="d">PR with migration<br>opens (tier-2 forced)</div></div>
+    <div class="farr">→</div>
+    <div class="fstep f-human"><div class="t">HUMAN</div><div class="d">the operator reviews +<br>merges the PR</div></div>
+    <div class="farr">→</div>
+    <div class="fstep f-auto"><div class="t">vercel</div><div class="d">deploy of merge commit<br>(SQL now in bundle)</div></div>
+    <div class="farr">→</div>
+    <div class="fstep f-auto"><div class="t">watcher</div><div class="d">GET /status →<br>sees pending file</div></div>
+    <div class="farr">→</div>
+    <div class="fstep f-db"><div class="t">app</div><div class="d">POST /apply →<br>runs own SQL, writes ledger</div></div>
+    <div class="farr">→</div>
+    <div class="fstep f-auto"><div class="t">report</div><div class="d">beat → Telegram<br>+ board comment</div></div>
+  </div>
+  <p style="margin-top:8px">The deploy step is load-bearing: a file is only "pending" once it exists in the <em>running deployment's</em> bundle, which by construction means the merge commit is live. The watcher can never apply ahead of the code that expects the schema.</p>
+</div>
+
+<div class="card" style="--i:5">
+  <h2 id="api"><span class="num">04</span> API contract (per app)</h2>
+  <div class="tblwrap"><table>
+    <tr><th>Route</th><th>Auth</th><th>Behavior</th></tr>
+    <tr><td><code>GET /api/internal/migrations/status</code></td><td>Bearer <code>MIGRATION_TOKEN</code></td><td>Lists bundle files vs ledger: <code>{applied:[…], pending:[{filename, checksum, statements}]}</code>. Deterministic — this is how the watcher knows anything is waiting.</td></tr>
+    <tr><td><code>POST /api/internal/migrations/apply</code></td><td>Bearer <code>MIGRATION_TOKEN</code></td><td>Body <code>{"filename":"2026-07-24-x.sql"}</code>. Validates → classifies → executes per-statement → ledger row → <code>{ok, applied, perStatement:[…]}</code>.</td></tr>
+  </table></div>
+  <h3>Request validation, in order</h3>
+  <ul class="tight">
+    <li>Token: timing-safe compare, <code>.trim()</code> both sides (the CRON_SECRET lesson). 404 on failure, never 401 — the route stays invisible.</li>
+    <li>Filename: <code>basename()</code> only, must match <code>^\d{4}-\d{2}-\d{2}-[a-z0-9-]+\.sql$</code>, must exist in the bundled <code>scripts/migrations/</code> dir. No traversal surface.</li>
+    <li>Ledger check: already applied with same checksum → <code>{ok:true, alreadyApplied:true}</code> (idempotent no-op). Applied with <em>different</em> checksum → refuse + alert (a merged file was edited after application — a human must look).</li>
+    <li>Classifier (§05) on every statement. One refused statement refuses the whole file.</li>
+  </ul>
+  <p><code>MIGRATION_TOKEN</code> is a <strong>new, separate secret</strong> (not <code>INTERNAL_API_TOKEN</code>): least privilege, independently rotatable, and revoking migration ability never breaks board reads. Lives in each app's Vercel env + the matching box's <code>&lt;project&gt;.env</code>. Every call also logs to the just-shipped <code>InternalApiCall</code> audit table.</p>
+  <div class="callout"><strong>Vercel gotcha (known, planned for):</strong> serverless functions don't include arbitrary repo files — each app's <code>next.config</code> needs <code>outputFileTracingIncludes</code> for <code>scripts/migrations/**</code> so the SQL is readable at runtime. Miss this and /status honestly reports an empty dir (fail-safe: nothing to apply, nothing breaks).</div>
+</div>
+
+<div class="card" style="--i:6">
+  <h2 id="ledger"><span class="num">05</span> The applied-ledger</h2>
+  <pre><code>CREATE TABLE IF NOT EXISTS "MigrationApplied" (
+  "id"           TEXT NOT NULL,            <span class="cm">-- cuid</span>
+  "filename"     TEXT NOT NULL,            <span class="cm">-- unique: exactly-once per file</span>
+  "checksum"     TEXT NOT NULL,            <span class="cm">-- sha256 of file body at apply time</span>
+  "statements"   INTEGER NOT NULL,         <span class="cm">-- how many were executed</span>
+  "status"       TEXT NOT NULL,            <span class="cm">-- applied | failed | refused</span>
+  "perStatement" JSONB,                    <span class="cm">-- [{i, firstLine, ok, error?}]</span>
+  "actor"        TEXT NOT NULL,            <span class="cm">-- 'watcher' | 'human:&lt;name&gt;'</span>
+  "appliedAt"    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT "MigrationApplied_pkey" PRIMARY KEY ("id")
+);
+CREATE UNIQUE INDEX IF NOT EXISTS "MigrationApplied_filename_key" ON "MigrationApplied"("filename");
+<span class="cm">-- Postgres apps: + ENABLE ROW LEVEL SECURITY + REVOKE anon/authenticated (standing rule)</span></code></pre>
+  <p>Bootstrapping is self-hosting: the ledger table's own migration is the first file each endpoint applies (the route creates it inline with <code>IF NOT EXISTS</code> on first call). Historical migrations already applied by hand get backfilled as <code>actor:'human:backfill'</code> rows so /status starts honest, not with 40 false pendings.</p>
+</div>
+
+<div class="card" style="--i:7">
+  <h2 id="guard"><span class="num">06</span> Statement classifier</h2>
+  <div class="tblwrap"><table>
+    <tr><th>Class</th><th>Verdict</th><th>Statements</th></tr>
+    <tr><td>Additive DDL</td><td><span class="ok">ALLOW</span></td><td><code>CREATE TABLE/INDEX IF NOT EXISTS</code> · <code>ALTER TABLE … ADD COLUMN</code> · <code>ALTER TYPE … ADD VALUE</code> · <code>CREATE POLICY</code></td></tr>
+    <tr><td>Security posture</td><td><span class="ok">ALLOW</span></td><td><code>ENABLE ROW LEVEL SECURITY</code> · <code>REVOKE</code> (RLS is required on every CREATE TABLE in Postgres apps — post-apply check warns if missing)</td></tr>
+    <tr><td>Idempotent seeds</td><td><span class="ok">ALLOW</span></td><td><code>INSERT … ON CONFLICT DO NOTHING</code> · SQLite <code>INSERT OR IGNORE</code></td></tr>
+    <tr><td>Bounded backfills</td><td><span class="warn">ALLOW+FLAG</span></td><td><code>UPDATE</code> with a <code>WHERE</code> clause — executed, but surfaced loudly in the report beat for human eyes</td></tr>
+    <tr><td>Destructive</td><td><span class="no">REFUSE</span></td><td><code>DROP TABLE/COLUMN/TYPE</code> · <code>TRUNCATE</code> · <code>DELETE</code> · <code>UPDATE</code> without <code>WHERE</code> · <code>GRANT</code> to anon/authenticated · anything unparseable</td></tr>
+  </table></div>
+  <p>A refused file isn't a dead end: the ledger records <code>status:'refused'</code>, the beat tells Telegram exactly which statement tripped, and that migration is applied by a human through today's channels. Destructive schema change <em>should</em> hurt a little.</p>
+</div>
+
+<div class="card" style="--i:8">
+  <h2 id="adapters"><span class="num">07</span> Per-app adapters</h2>
+  <div class="tblwrap"><table>
+    <tr><th>App</th><th>DB</th><th>Execution</th><th>Dialect notes</th></tr>
+    <tr><td>project-2</td><td>Supabase Postgres</td><td>App's pooled <code>DATABASE_URL</code> via <code>pg</code>, statement-by-statement, each in its own implicit txn</td><td><code>ALTER TYPE ADD VALUE</code> must run outside explicit transactions — per-statement execution handles it (the <code>apply-sql.mjs</code> semantics, now server-side)</td></tr>
+    <tr><td>project-1</td><td>Supabase Postgres</td><td>same</td><td>same + RLS post-check</td></tr>
+    <tr><td>project-3</td><td>Turso / libsql</td><td>App's libsql client, <code>executeMultiple</code></td><td>SQLite dialect; no RLS concept — the anon-exposure problem doesn't exist on Turso</td></tr>
+    <tr><td>project-4</td><td>Turso / libsql</td><td>same, applied to <strong>prod AND staging</strong> DBs in one call (both URLs already in the app env)</td><td>project-4 convention: every migration lands on both</td></tr>
+  </table></div>
+  <p>The route + classifier + ledger logic is one shared module ported across the four repos (the project-1→project-2→project-3→project-4 board-port pattern); only the ~40-line executor differs per DB driver.</p>
+</div>
+
+<div class="card" style="--i:9">
+  <h2 id="harness"><span class="num">08</span> Harness wiring</h2>
+  <ul class="tight">
+    <li><strong>New</strong> <code>bin/apply-migrations.sh &lt;project&gt;</code>: GET /status → for each pending file, POST /apply → beat per result (<code>kind:"migration"</code>, applied/refused/failed + per-statement detail) → on success, drop a line in the project log. Runs on each box via cron (:*/15) — and the triage prompt's results-sweep mentions applied migrations in its board close-out comments, so clients see "schema shipped" in plain language.</li>
+    <li><strong>Changed</strong> <code>check-migration-prs.sh</code> (hub): stops pinging Telegram for a merged migration PR once the app's /status shows its file applied — the ping now means "needs a HUMAN" (refused/failed/pre-endpoint repos only). The nag becomes signal, not noise.</li>
+    <li><strong>Unchanged</strong>: tier-2 classification, the human merge, dev-branch application during builds (worktrees still use <code>apply-sql.mjs</code> against the dev DB).</li>
+  </ul>
+</div>
+
+<div class="card" style="--i:10">
+  <h2 id="fail"><span class="num">09</span> Failure modes</h2>
+  <div class="tblwrap"><table>
+    <tr><th>Scenario</th><th>Behavior</th></tr>
+    <tr><td>Statement 3 of 7 fails mid-file</td><td>Ledger row <code>status:'failed'</code> with per-statement results; alert beat. Files are idempotent by repo convention, so after a human fixes the cause, re-POST completes the remainder — <code>IF NOT EXISTS</code> skips what landed.</td></tr>
+    <tr><td>Same file POSTed twice (double cron)</td><td>Unique ledger index + checksum check → second call returns <code>alreadyApplied:true</code>. Exactly-once.</td></tr>
+    <tr><td>File edited after being applied</td><td>Checksum mismatch → refuse + alert. Convention: never edit an applied migration; write a new file.</td></tr>
+    <tr><td>Endpoint down / not yet shipped in a repo</td><td>/status unreachable → watcher does nothing, hub keeps pinging Telegram exactly as today. Failure mode = the status quo.</td></tr>
+    <tr><td>MIGRATION_TOKEN leaks from a box</td><td>Attacker can trigger application of already-merged, already-deployed, classifier-filtered, additive-only SQL — the thing the system does anyway. Rotate one Vercel env var. No data read or write surface.</td></tr>
+  </table></div>
+</div>
+
+<div class="card" style="--i:11">
+  <h2 id="rollout"><span class="num">10</span> Rollout</h2>
+  <div class="tblwrap"><table>
+    <tr><th>Wave</th><th>Scope</th><th>Estimate</th></tr>
+    <tr><td>1 — Reference impl</td><td>project-2 (highest migration traffic): shared module + route + ledger + classifier + <code>outputFileTracingIncludes</code> + backfill of applied history + verify script proving refuse/apply/exactly-once/traversal-block + <code>MIGRATION_TOKEN</code> in Vercel + box env</td><td>~1 session</td></tr>
+    <tr><td>2 — Port + wire</td><td>project-1 / project-3 / project-4 ports (Turso executor for the latter two) + <code>apply-migrations.sh</code> + hub guard change + fleet cron + E2E proof with a real merged no-op migration</td><td>~1 session</td></tr>
+  </table></div>
+  <p>Until wave 2 completes, everything works exactly as today — the endpoint is purely additive to the flow.</p>
+</div>
+
+<div class="card" style="--i:12">
+  <h2 id="tg"><span class="num">11</span> Reply to send the orchestrator on Telegram</h2>
+  <div class="tg">No DB creds are going onto the boxes — that request is permanently off the table; migrations stay human-applied until further notice. Today's backlog is already DONE and verified via the audited channels (see the MIGRATIONS APPLIED line in your ALERTS.log): project-2 #194/195/197/203/208, project-3 #130, project-4 #937/948/959/961 incl. staging — stand down those pings and re-run your verify pass now.
+
+What's coming instead: each app gets an internal-token-gated migrations endpoint that applies its OWN merged+deployed SQL server-side (filename in, never SQL; separate MIGRATION_TOKEN; additive-only classifier; applied-ledger). Spec: docs/MIGRATION_ENDPOINT_SPEC.html in cromford — pull and read it. Your future role once it ships: after a tier-2 migration PR deploys, call /status → /apply → report the result; keep pinging Telegram ONLY for refused/failed/destructive cases. Do not attempt any DB access path outside that endpoint.</div>
+</div>
+
+</div>
+</body>
+</html>

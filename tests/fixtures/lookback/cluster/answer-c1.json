@@ -1,0 +1,15 @@
+[
+  {
+    "key_kind": "file",
+    "key_value": "bin/foo.sh",
+    "item_ids": [
+      "r1",
+      "r2"
+    ],
+    "target": "harness",
+    "project": "cromford",
+    "title": "We reopen tickets that touch bin/foo.sh",
+    "cause": "Our merge step leaves bin/foo.sh half applied.",
+    "proposed_fix": "Make the merge step in bin/foo.sh atomic."
+  }
+]

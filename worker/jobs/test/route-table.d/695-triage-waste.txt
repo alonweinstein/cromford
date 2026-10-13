@@ -1,0 +1,3 @@
+# TRIAGE-WASTE (BH-3926, BH-3921.3): the daily paid-unchanged triage count
+# behind /costs TRIAGE PAID UNCHANGED, appended after pool-state at the END.
+GET /api/metrics/triage-paid-unchanged

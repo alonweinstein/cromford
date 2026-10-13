@@ -1,0 +1,70 @@
+{
+  "tickets": [
+    {
+      "id": 1800,
+      "key": "TK-1800",
+      "status": "review",
+      "waitingOn": "team",
+      "triageVerdict": "ready",
+      "commentCount": 3,
+      "lastActivityAt": "2026-09-18T05:00:00Z",
+      "title": "Fee toggle API",
+      "blocked": null,
+      "parentId": null,
+      "dependsOn": null
+    },
+    {
+      "id": 1825,
+      "key": "TK-1825",
+      "status": "todo",
+      "waitingOn": "team",
+      "triageVerdict": "ready",
+      "commentCount": 1,
+      "lastActivityAt": "2026-09-18T05:01:00Z",
+      "title": "Rep-facing fee screen",
+      "blocked": null,
+      "parentId": null,
+      "dependsOn": null
+    },
+    {
+      "id": 1826,
+      "key": "TK-1826",
+      "status": "todo",
+      "waitingOn": "team",
+      "triageVerdict": "ready",
+      "commentCount": 0,
+      "lastActivityAt": "2026-09-18T05:02:00Z",
+      "title": "Fee audit log",
+      "blocked": null,
+      "parentId": null,
+      "dependsOn": null
+    },
+    {
+      "id": 1830,
+      "key": "TK-1830",
+      "status": "in_progress",
+      "waitingOn": "team",
+      "triageVerdict": "ready",
+      "commentCount": 2,
+      "lastActivityAt": "2026-09-18T05:03:00Z",
+      "title": "Fee handling, master",
+      "blocked": null,
+      "parentId": null,
+      "dependsOn": null
+    },
+    {
+      "id": 1840,
+      "key": "TK-1840",
+      "status": "todo",
+      "waitingOn": "team",
+      "triageVerdict": "ready",
+      "commentCount": 0,
+      "lastActivityAt": "2026-09-18T05:04:00Z",
+      "title": "Serialised booleans, the adversarial row",
+      "blocked": null,
+      "parentId": null,
+      "dependsOn": null
+    }
+  ],
+  "capped": false
+}

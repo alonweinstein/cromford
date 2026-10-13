@@ -1,0 +1,7 @@
+# BH-2654 (BH-2528.1): box console commands, at the END of the table after
+# fix-rounds, where src/index.js puts it. GET /:id first in the family.
+GET re:/^\/api\/box-console-commands\/([^/]+)$/
+POST /api/box-console-commands
+POST /api/box-console-commands/claim
+POST re:/^\/api\/box-console-commands\/([^/]+)\/result$/
+POST /api/box-console-commands/expire

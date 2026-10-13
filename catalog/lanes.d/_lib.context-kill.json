@@ -1,0 +1,319 @@
+{
+  "libs": [
+    {
+      "id": "context-kill",
+      "file": "bin/agent-call.sh",
+      "note": "BH-2538: every lane's context kill as an operator knob, so the console can set it. One knob per catalog/context-budgets.json lane that carries a kill or a kill basis; the settings row lib.context-kill.context_kill_tokens_<lane> overrides the manifest's context_kill_tokens for that lane, and the manifest number is the fallback when there is no row, the worker is unreachable and no row is cached, or the row is not a whole number. A row of 0 unarms the lane. CONTEXT_KILL_TOKENS (a caller's per-call override) still binds first. Applied by agent-call.sh with lib_env_apply context-kill; tests/context-kill-lanes.bh-2538-test.sh section S drives it.",
+      "knobs": [
+        {
+          "env": "CONTEXT_KILL_TOKENS_ORCHESTRATOR_TURN",
+          "type": "int",
+          "default": 0,
+          "min": 0,
+          "max": 1000000000,
+          "unit": "tokens",
+          "zero_means": "unarmed",
+          "required": false,
+          "note": "The context kill for manifest lane `orchestrator-turn` (stage `orchestrator`, project `orchestrator`), as a settings row: cumulative session tokens (input + cache_read) before bin/agent-call.sh stops the session. UNARMED in catalog/context-budgets.json; a positive row arms it. 0 = unarmed. Read through _ctx_kill_row in bin/agent-call.sh."
+        },
+        {
+          "env": "CONTEXT_KILL_TOKENS_PROJECT_TRIAGE",
+          "type": "int",
+          "default": 2700000,
+          "min": 0,
+          "max": 1000000000,
+          "unit": "tokens",
+          "zero_means": "unarmed",
+          "required": false,
+          "note": "The context kill for manifest lane `project-triage` (stage `triage`), as a settings row: cumulative session tokens (input + cache_read) before bin/agent-call.sh stops the session. The default mirrors catalog/context-budgets.json, which stays the fallback: with no row (or no reachable worker and no cached row) the manifest number applies, never 'no kill'. 0 = unarmed. Read through _ctx_kill_row in bin/agent-call.sh."
+        },
+        {
+          "env": "CONTEXT_KILL_TOKENS_ALERT_TRIAGE",
+          "type": "int",
+          "default": 400000,
+          "min": 0,
+          "max": 1000000000,
+          "unit": "tokens",
+          "zero_means": "unarmed",
+          "required": false,
+          "note": "The context kill for manifest lane `alert-triage` (stage `triage`, project `alert-triage`), as a settings row: cumulative session tokens (input + cache_read) before bin/agent-call.sh stops the session. The default mirrors catalog/context-budgets.json, which stays the fallback: with no row (or no reachable worker and no cached row) the manifest number applies, never 'no kill'. 0 = unarmed. Read through _ctx_kill_row in bin/agent-call.sh."
+        },
+        {
+          "env": "CONTEXT_KILL_TOKENS_RESPONDER",
+          "type": "int",
+          "default": 6000000,
+          "min": 0,
+          "max": 1000000000,
+          "unit": "tokens",
+          "zero_means": "unarmed",
+          "required": false,
+          "note": "The context kill for manifest lane `responder` (stage `triage`, project `responder`), as a settings row: cumulative session tokens (input + cache_read) before bin/agent-call.sh stops the session. The default mirrors catalog/context-budgets.json, which stays the fallback: with no row (or no reachable worker and no cached row) the manifest number applies, never 'no kill'. 0 = unarmed. Read through _ctx_kill_row in bin/agent-call.sh."
+        },
+        {
+          "env": "CONTEXT_KILL_TOKENS_ALERTS_MEDIC",
+          "type": "int",
+          "default": 0,
+          "min": 0,
+          "max": 1000000000,
+          "unit": "tokens",
+          "zero_means": "unarmed",
+          "required": false,
+          "note": "The context kill for manifest lane `alerts-medic` (stage `triage`, project `medic`), as a settings row: cumulative session tokens (input + cache_read) before bin/agent-call.sh stops the session. UNARMED in catalog/context-budgets.json; a positive row arms it. 0 = unarmed. Read through _ctx_kill_row in bin/agent-call.sh."
+        },
+        {
+          "env": "CONTEXT_KILL_TOKENS_BOX_CHAT",
+          "type": "int",
+          "default": 0,
+          "min": 0,
+          "max": 1000000000,
+          "unit": "tokens",
+          "zero_means": "unarmed",
+          "required": false,
+          "note": "The context kill for manifest lane `box-chat` (stage `chat`), as a settings row: cumulative session tokens (input + cache_read) before bin/agent-call.sh stops the session. UNARMED in catalog/context-budgets.json; a positive row arms it. 0 = unarmed. Read through _ctx_kill_row in bin/agent-call.sh."
+        },
+        {
+          "env": "CONTEXT_KILL_TOKENS_BUILD_PLAN",
+          "type": "int",
+          "default": 7500000,
+          "min": 0,
+          "max": 1000000000,
+          "unit": "tokens",
+          "zero_means": "unarmed",
+          "required": false,
+          "note": "The context kill for manifest lane `build-plan` (stage `plan`), as a settings row: cumulative session tokens (input + cache_read) before bin/agent-call.sh stops the session. The default mirrors catalog/context-budgets.json, which stays the fallback: with no row (or no reachable worker and no cached row) the manifest number applies, never 'no kill'. 0 = unarmed. Read through _ctx_kill_row in bin/agent-call.sh."
+        },
+        {
+          "env": "CONTEXT_KILL_TOKENS_BUILD_EXECUTE",
+          "type": "int",
+          "default": 53600000,
+          "min": 0,
+          "max": 1000000000,
+          "unit": "tokens",
+          "zero_means": "unarmed",
+          "required": false,
+          "note": "The context kill for manifest lane `build-execute` (stage `execute`), as a settings row: cumulative session tokens (input + cache_read) before bin/agent-call.sh stops the session. The default mirrors catalog/context-budgets.json, which stays the fallback: with no row (or no reachable worker and no cached row) the manifest number applies, never 'no kill'. 0 = unarmed. Read through _ctx_kill_row in bin/agent-call.sh."
+        },
+        {
+          "env": "CONTEXT_KILL_TOKENS_BUILD_REVIEW",
+          "type": "int",
+          "default": 8000000,
+          "min": 0,
+          "max": 1000000000,
+          "unit": "tokens",
+          "zero_means": "unarmed",
+          "required": false,
+          "note": "The context kill for manifest lane `build-review` (stage `review`), as a settings row: cumulative session tokens (input + cache_read) before bin/agent-call.sh stops the session. The default mirrors catalog/context-budgets.json, which stays the fallback: with no row (or no reachable worker and no cached row) the manifest number applies, never 'no kill'. 0 = unarmed. Read through _ctx_kill_row in bin/agent-call.sh."
+        },
+        {
+          "env": "CONTEXT_KILL_TOKENS_BUILD_FIX",
+          "type": "int",
+          "default": 59100000,
+          "min": 0,
+          "max": 1000000000,
+          "unit": "tokens",
+          "zero_means": "unarmed",
+          "required": false,
+          "note": "The context kill for manifest lane `build-fix` (stage `fix`), as a settings row: cumulative session tokens (input + cache_read) before bin/agent-call.sh stops the session. The default mirrors catalog/context-budgets.json, which stays the fallback: with no row (or no reachable worker and no cached row) the manifest number applies, never 'no kill'. 0 = unarmed. Read through _ctx_kill_row in bin/agent-call.sh."
+        },
+        {
+          "env": "CONTEXT_KILL_TOKENS_PREPLAN",
+          "type": "int",
+          "default": 11400000,
+          "min": 0,
+          "max": 1000000000,
+          "unit": "tokens",
+          "zero_means": "unarmed",
+          "required": false,
+          "note": "The context kill for manifest lane `preplan` (stage `preplan`), as a settings row: cumulative session tokens (input + cache_read) before bin/agent-call.sh stops the session. The default mirrors catalog/context-budgets.json, which stays the fallback: with no row (or no reachable worker and no cached row) the manifest number applies, never 'no kill'. 0 = unarmed. Read through _ctx_kill_row in bin/agent-call.sh."
+        },
+        {
+          "env": "CONTEXT_KILL_TOKENS_PREPLAN_FILES",
+          "type": "int",
+          "default": 100000,
+          "min": 0,
+          "max": 1000000000,
+          "unit": "tokens",
+          "zero_means": "unarmed",
+          "required": false,
+          "note": "The context kill for manifest lane `preplan-files` (stage `preplan-files`), as a settings row: cumulative session tokens (input + cache_read) before bin/agent-call.sh stops the session. The default mirrors catalog/context-budgets.json, which stays the fallback: with no row (or no reachable worker and no cached row) the manifest number applies, never 'no kill'. 0 = unarmed. Read through _ctx_kill_row in bin/agent-call.sh."
+        },
+        {
+          "env": "CONTEXT_KILL_TOKENS_DECOMPOSE",
+          "type": "int",
+          "default": 4600000,
+          "min": 0,
+          "max": 1000000000,
+          "unit": "tokens",
+          "zero_means": "unarmed",
+          "required": false,
+          "note": "The context kill for manifest lane `decompose` (stage `decompose`), as a settings row: cumulative session tokens (input + cache_read) before bin/agent-call.sh stops the session. The default mirrors catalog/context-budgets.json, which stays the fallback: with no row (or no reachable worker and no cached row) the manifest number applies, never 'no kill'. 0 = unarmed. Read through _ctx_kill_row in bin/agent-call.sh."
+        },
+        {
+          "env": "CONTEXT_KILL_TOKENS_PRODUCT_IDEATION",
+          "type": "int",
+          "default": 5200000,
+          "min": 0,
+          "max": 1000000000,
+          "unit": "tokens",
+          "zero_means": "unarmed",
+          "required": false,
+          "note": "The context kill for manifest lane `product-ideation` (stage `ideate`), as a settings row: cumulative session tokens (input + cache_read) before bin/agent-call.sh stops the session. The default mirrors catalog/context-budgets.json, which stays the fallback: with no row (or no reachable worker and no cached row) the manifest number applies, never 'no kill'. 0 = unarmed. Read through _ctx_kill_row in bin/agent-call.sh."
+        },
+        {
+          "env": "CONTEXT_KILL_TOKENS_PROMPT_EVAL",
+          "type": "int",
+          "default": 0,
+          "min": 0,
+          "max": 1000000000,
+          "unit": "tokens",
+          "zero_means": "unarmed",
+          "required": false,
+          "note": "The context kill for manifest lane `prompt-eval` (stage `eval`), as a settings row: cumulative session tokens (input + cache_read) before bin/agent-call.sh stops the session. UNARMED in catalog/context-budgets.json; a positive row arms it. 0 = unarmed. Read through _ctx_kill_row in bin/agent-call.sh."
+        },
+        {
+          "env": "CONTEXT_KILL_TOKENS_QA",
+          "type": "int",
+          "default": 8300000,
+          "min": 0,
+          "max": 1000000000,
+          "unit": "tokens",
+          "zero_means": "unarmed",
+          "required": false,
+          "note": "The context kill for manifest lane `qa` (stage `qa`), as a settings row: cumulative session tokens (input + cache_read) before bin/agent-call.sh stops the session. The default mirrors catalog/context-budgets.json, which stays the fallback: with no row (or no reachable worker and no cached row) the manifest number applies, never 'no kill'. 0 = unarmed. Read through _ctx_kill_row in bin/agent-call.sh."
+        },
+        {
+          "env": "CONTEXT_KILL_TOKENS_POSTMERGE_PRODQA",
+          "type": "int",
+          "default": 35000000,
+          "min": 0,
+          "max": 1000000000,
+          "unit": "tokens",
+          "zero_means": "unarmed",
+          "required": false,
+          "note": "The context kill for manifest lane `postmerge-prodqa` (stage `prodqa`), as a settings row: cumulative session tokens (input + cache_read) before bin/agent-call.sh stops the session. The default mirrors catalog/context-budgets.json, which stays the fallback: with no row (or no reachable worker and no cached row) the manifest number applies, never 'no kill'. 0 = unarmed. Read through _ctx_kill_row in bin/agent-call.sh."
+        },
+        {
+          "env": "CONTEXT_KILL_TOKENS_PREBUILD_REPRO",
+          "type": "int",
+          "default": 0,
+          "min": 0,
+          "max": 1000000000,
+          "unit": "tokens",
+          "zero_means": "unarmed",
+          "required": false,
+          "note": "The context kill for manifest lane `prebuild-repro` (stage `repro`), as a settings row: cumulative session tokens (input + cache_read) before bin/agent-call.sh stops the session. UNARMED in catalog/context-budgets.json; a positive row arms it. 0 = unarmed. Read through _ctx_kill_row in bin/agent-call.sh."
+        },
+        {
+          "env": "CONTEXT_KILL_TOKENS_PRODUCT_PRD",
+          "type": "int",
+          "default": 3300000,
+          "min": 0,
+          "max": 1000000000,
+          "unit": "tokens",
+          "zero_means": "unarmed",
+          "required": false,
+          "note": "The context kill for manifest lane `product-prd` (stage `prd`), as a settings row: cumulative session tokens (input + cache_read) before bin/agent-call.sh stops the session. The default mirrors catalog/context-budgets.json, which stays the fallback: with no row (or no reachable worker and no cached row) the manifest number applies, never 'no kill'. 0 = unarmed. Read through _ctx_kill_row in bin/agent-call.sh."
+        },
+        {
+          "env": "CONTEXT_KILL_TOKENS_PRODUCT_MOCKUP",
+          "type": "int",
+          "default": 4700000,
+          "min": 0,
+          "max": 1000000000,
+          "unit": "tokens",
+          "zero_means": "unarmed",
+          "required": false,
+          "note": "The context kill for manifest lane `product-mockup` (stage `mockup`), as a settings row: cumulative session tokens (input + cache_read) before bin/agent-call.sh stops the session. The default mirrors catalog/context-budgets.json, which stays the fallback: with no row (or no reachable worker and no cached row) the manifest number applies, never 'no kill'. 0 = unarmed. Read through _ctx_kill_row in bin/agent-call.sh."
+        },
+        {
+          "env": "CONTEXT_KILL_TOKENS_PRODUCT_REVISE",
+          "type": "int",
+          "default": 3300000,
+          "min": 0,
+          "max": 1000000000,
+          "unit": "tokens",
+          "zero_means": "unarmed",
+          "required": false,
+          "note": "The context kill for manifest lane `product-revise` (stage `revise`), as a settings row: cumulative session tokens (input + cache_read) before bin/agent-call.sh stops the session. The default mirrors catalog/context-budgets.json, which stays the fallback: with no row (or no reachable worker and no cached row) the manifest number applies, never 'no kill'. 0 = unarmed. Read through _ctx_kill_row in bin/agent-call.sh."
+        },
+        {
+          "env": "CONTEXT_KILL_TOKENS_PRODUCT_SIGNALS",
+          "type": "int",
+          "default": 5800000,
+          "min": 0,
+          "max": 1000000000,
+          "unit": "tokens",
+          "zero_means": "unarmed",
+          "required": false,
+          "note": "The context kill for manifest lane `product-signals` (stage `signals`), as a settings row: cumulative session tokens (input + cache_read) before bin/agent-call.sh stops the session. The default mirrors catalog/context-budgets.json, which stays the fallback: with no row (or no reachable worker and no cached row) the manifest number applies, never 'no kill'. 0 = unarmed. Read through _ctx_kill_row in bin/agent-call.sh."
+        },
+        {
+          "env": "CONTEXT_KILL_TOKENS_PRODUCT_SYNTH",
+          "type": "int",
+          "default": 4700000,
+          "min": 0,
+          "max": 1000000000,
+          "unit": "tokens",
+          "zero_means": "unarmed",
+          "required": false,
+          "note": "The context kill for manifest lane `product-synth` (stage `synth`), as a settings row: cumulative session tokens (input + cache_read) before bin/agent-call.sh stops the session. The default mirrors catalog/context-budgets.json, which stays the fallback: with no row (or no reachable worker and no cached row) the manifest number applies, never 'no kill'. 0 = unarmed. Read through _ctx_kill_row in bin/agent-call.sh."
+        },
+        {
+          "env": "CONTEXT_KILL_TOKENS_PREPLAN_MAP",
+          "type": "int",
+          "default": 2700000,
+          "min": 0,
+          "max": 1000000000,
+          "unit": "tokens",
+          "zero_means": "unarmed",
+          "required": false,
+          "note": "The context kill for manifest lane `preplan-map` (stage `map`), as a settings row: cumulative session tokens (input + cache_read) before bin/agent-call.sh stops the session. The default mirrors catalog/context-budgets.json, which stays the fallback: with no row (or no reachable worker and no cached row) the manifest number applies, never 'no kill'. 0 = unarmed. Read through _ctx_kill_row in bin/agent-call.sh."
+        },
+        {
+          "env": "CONTEXT_KILL_TOKENS_RULE_MINER",
+          "type": "int",
+          "default": 1500000,
+          "min": 0,
+          "max": 1000000000,
+          "unit": "tokens",
+          "zero_means": "unarmed",
+          "required": false,
+          "note": "The context kill for manifest lane `rule-miner` (stage `mine`, project `rule-miner`), as a settings row: cumulative session tokens (input + cache_read) before bin/agent-call.sh stops the session. The default mirrors catalog/context-budgets.json, which stays the fallback: with no row (or no reachable worker and no cached row) the manifest number applies, never 'no kill'. 0 = unarmed. Read through _ctx_kill_row in bin/agent-call.sh."
+        },
+        {
+          "env": "CONTEXT_KILL_TOKENS_TRAP_EVAL",
+          "type": "int",
+          "default": 0,
+          "min": 0,
+          "max": 1000000000,
+          "unit": "tokens",
+          "zero_means": "unarmed",
+          "required": false,
+          "note": "The context kill for manifest lane `trap-eval` (stage `trapeval`), as a settings row: cumulative session tokens (input + cache_read) before bin/agent-call.sh stops the session. UNARMED in catalog/context-budgets.json; a positive row arms it. 0 = unarmed. Read through _ctx_kill_row in bin/agent-call.sh."
+        },
+        {
+          "env": "CONTEXT_KILL_TOKENS_LEAD_REVIEW",
+          "type": "int",
+          "default": 8000000,
+          "min": 0,
+          "max": 1000000000,
+          "unit": "tokens",
+          "zero_means": "unarmed",
+          "required": false,
+          "note": "The context kill for manifest lane `lead-review` (stage `lead-review`), as a settings row: cumulative session tokens (input + cache_read) before bin/agent-call.sh stops the session. The default mirrors catalog/context-budgets.json, which stays the fallback: with no row (or no reachable worker and no cached row) the manifest number applies, never 'no kill'. 0 = unarmed. Read through _ctx_kill_row in bin/agent-call.sh."
+        },
+        {
+          "env": "CONTEXT_KILL_TOKENS_FEATURE_MAP_DRAFT",
+          "type": "int",
+          "default": 0,
+          "min": 0,
+          "max": 1000000000,
+          "unit": "tokens",
+          "zero_means": "unarmed",
+          "required": false,
+          "note": "The context kill for manifest lane `feature-map-draft` (stage `feature-map-draft`), as a settings row: cumulative session tokens (input + cache_read) before bin/agent-call.sh stops the session. UNARMED in catalog/context-budgets.json; a positive row arms it. 0 = unarmed. Read through _ctx_kill_row in bin/agent-call.sh."
+        }
+      ]
+    }
+  ]
+}

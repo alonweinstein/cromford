@@ -1,0 +1,1 @@
+{"name":"pr-create-rest-fallback-off","readers":["bin/lib/gh-pr-create.sh"],"box_scoped":true,"what":"stops the PR-create ladder in bin/lib/gh-pr-create.sh at rung 1, so only the graphql create and adopt run, as before #848"}

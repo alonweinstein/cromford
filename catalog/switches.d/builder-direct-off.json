@@ -1,0 +1,1 @@
+{"name":"builder-direct-off","readers":["bin/lib/builder-direct.sh"],"box_scoped":true,"what":"turns off builder-direct, so a builder no longer finishes its own job"}

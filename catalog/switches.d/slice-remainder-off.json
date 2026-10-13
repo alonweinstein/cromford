@@ -1,0 +1,1 @@
+{"name":"slice-remainder-off","readers":["bin/lib/slice-remainder.sh"],"box_scoped":true,"what":"stops a merged SLICE close-out filing the remaining slices its plan names as child issues; the old no-children comment and warn alert run instead"}

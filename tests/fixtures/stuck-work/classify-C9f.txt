@@ -1,0 +1,3 @@
+# C9f a ticket whose hold label is unreadable
+# want: unclassified	stuck-work
+ticket	o/r#40	https://github.com/o/r/issues/40	-	ai-build	-	-	-	-	-	-	-	-	-	-	-	execute	1799999400	0	?	-	1799990001

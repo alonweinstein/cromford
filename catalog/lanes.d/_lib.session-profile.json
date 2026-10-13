@@ -1,0 +1,71 @@
+{
+  "libs": [
+    {
+      "id": "session-profile",
+      "file": "bin/lib/session-profile.sh",
+      "note": "P1 headless session profile (2026-09-24). The per-stage profile every claude call through bin/agent-call.sh runs under: prompt-cache TTL, strict MCP with a stage's kept servers, user plugins forced off, per-machine system-prompt sections out of the cached prefix, and an optional one-per-session effort. Applied by agent-call.sh right after lib_env_apply agent-call. DARK by default: SESSION_PROFILE_STAGES is empty, and an empty value leaves the claude argv and env byte-identical (tests/agent-call-session-profile-test.sh section A). Rollout: docs/SESSION-PROFILE.md.",
+      "knobs": [
+        {
+          "env": "SESSION_PROFILE_STAGES",
+          "type": "string",
+          "default": "",
+          "zero_means": null,
+          "required": false,
+          "note": "Which stages run profiled: empty = none (off), `all`, or a space/comma list (triage preplan preplan-files review plan execute fix chat eval). Canary one stage on one box through env/global.env, then this row fleet-wide. Read as ${SESSION_PROFILE_STAGES:-}."
+        },
+        {
+          "env": "SESSION_PROFILE_TTL_MAP",
+          "type": "string",
+          "default": "triage=5m preplan=5m preplan-files=5m review=5m plan=5m eval=5m execute=1h fix=1h chat=1h default=5m",
+          "zero_means": null,
+          "required": false,
+          "note": "stage=5m|1h pairs, `default=` for any stage not named. Exported to the child as CLAUDE_CODE_PROMPT_CACHE_TTL (claude >= 2.1.242). One-shot lanes never idle past five minutes, so the 1h write rate (2x prompt, vs 1.25x for 5m) buys them nothing; execute/fix/chat can idle through a long build step and keep 1h. Any other value is not passed and is logged to logs/session-profile.log. Read as ${SESSION_PROFILE_TTL_MAP:-$SESSION_PROFILE_TTL_MAP_DEFAULT}."
+        },
+        {
+          "env": "SESSION_PROFILE_MCP_MAP",
+          "type": "string",
+          "default": "plan=codegraph execute=codegraph fix=codegraph default=",
+          "zero_means": null,
+          "required": false,
+          "note": "stage=<server,server> pairs: the USER MCP servers a profiled stage keeps (copied verbatim from ~/.claude.json into a --mcp-config file, with --strict-mcp-config so nothing else loads). Empty = no MCP server. CodeGraph's shell CLI still works in a stage without its MCP server. Read as ${SESSION_PROFILE_MCP_MAP:-$SESSION_PROFILE_MCP_MAP_DEFAULT}."
+        },
+        {
+          "env": "SESSION_PROFILE_EFFORT_MAP",
+          "type": "string",
+          "default": "",
+          "zero_means": null,
+          "required": false,
+          "note": "stage=<low|medium|high|xhigh|max> pairs. A named stage gets exactly one --effort at session start; unnamed = no --effort (the CLI default). Never changed mid-session. Read as ${SESSION_PROFILE_EFFORT_MAP:-}."
+        },
+        {
+          "env": "SESSION_PROFILE_PLUGINS_OFF",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 1,
+          "zero_means": "off",
+          "required": false,
+          "note": "1 = every plugin the session's user/project settings enable is forced off by an enabledPlugins:false settings file merged before the iron-law guard. Read as ${SESSION_PROFILE_PLUGINS_OFF:-1}."
+        },
+        {
+          "env": "SESSION_PROFILE_EXCLUDE_DYNAMIC",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 1,
+          "zero_means": "off",
+          "required": false,
+          "note": "1 = --exclude-dynamic-system-prompt-sections (claude >= 2.1.280 verified): cwd, env info, memory paths and git status move out of the system prompt into the first user message, so sessions in different worktrees share one cached prefix. Read as ${SESSION_PROFILE_EXCLUDE_DYNAMIC:-1}."
+        },
+        {
+          "env": "SESSION_PROFILE_SETTING_SOURCES",
+          "type": "string",
+          "default": "",
+          "zero_means": null,
+          "required": false,
+          "note": "Empty = --setting-sources is NOT passed (the default, on purpose: the `user` source carries /root/.claude/CLAUDE.md, the fleet rules, plus the rtk and codegraph hooks). A user/project/local comma list is passed as given, for a measured experiment only. Read as ${SESSION_PROFILE_SETTING_SOURCES:-}."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+GET /api/boxes
+# BH-1031: the box states its own backup freshness; added to BOTH lists in
+# the position the table puts it, per the note above.
+POST /api/boxes/backup
+# BH-2626: the box states its own CLI versions and rules hash; added to BOTH
+# lists in the position the table puts it.
+POST /api/boxes/self-report

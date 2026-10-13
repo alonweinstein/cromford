@@ -1,0 +1,1 @@
+{"name":"pr-merge-rest-off","readers":["bin/lib/gh-pr-merge.sh"],"box_scoped":true,"what":"switches off the REST merge ladder in bin/lib/gh-pr-merge.sh, so every caller runs its own gh pr merge line"}

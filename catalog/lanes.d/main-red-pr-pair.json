@@ -1,0 +1,91 @@
+{
+  "id": "main-red-pr-pair",
+  "name": "Main-red PR pair",
+  "scope": "hub",
+  "per_project_hold": true,
+  "script": "bin/main-red-pr-pair.sh",
+  "cadence": "*/10 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-main-red-pr-pair",
+    "aliases": [
+      {
+        "name": "main-red-pr-pair-off",
+        "off_when": "present"
+      },
+      {
+        "name": "main-red-detector-off",
+        "off_when": "present"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "MAIN_RED_ERR_RE",
+      "type": "string",
+      "default": "(^|[^A-Za-z])(FAIL|Error|error:|fatal|No such file|unbound variable|not found|exit code [1-9])",
+      "zero_means": null,
+      "note": "Read by bin/main-red-pr-pair.sh as ${MAIN_RED_ERR_RE:-(^|[^A-Za-z])(FAIL|Error|error:|fatal|No such file|unbound variable|not found|exit code [1-9])}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "MAIN_RED_PAIR",
+      "type": "int",
+      "default": 1,
+      "zero_means": null,
+      "note": "Read by bin/main-red-pr-pair.sh as ${MAIN_RED_PAIR:-1}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "MAIN_RED_PAIR_FREEZE",
+      "type": "int",
+      "default": 1,
+      "zero_means": "off",
+      "note": "Read by bin/main-red-pr-pair.sh as ${MAIN_RED_PAIR_FREEZE:-1}. BH-1451: when a PR pair fires AND bin/main-red-detector.sh's own state/main-red/<slug>.verdict says decision=none, this lane raises flags/main-red-<slug> (reason=pr-pair-suspected, owner=main-red-pr-pair) and every merge lane holds. 0 = the lane alerts exactly as it did before BH-1451 and writes no flag; a freeze it already raised is still cleared, so the switch cannot strand one."
+    },
+    {
+      "env": "MAIN_RED_PAIR_LEDGER_DAYS",
+      "type": "int",
+      "default": 14,
+      "zero_means": null,
+      "note": "Read by bin/main-red-pr-pair.sh as ${MAIN_RED_PAIR_LEDGER_DAYS:-14}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "MAIN_RED_PAIR_MAX_PRS",
+      "type": "int",
+      "default": 15,
+      "zero_means": null,
+      "note": "Read by bin/main-red-pr-pair.sh as ${MAIN_RED_PAIR_MAX_PRS:-15}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "MAIN_RED_PAIR_REPOS",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it ($HARNESS_REPO). Read by bin/main-red-pr-pair.sh as ${MAIN_RED_PAIR_REPOS:-$HARNESS_REPO}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "MAIN_RED_PAIR_WINDOW_S",
+      "type": "int",
+      "default": 3600,
+      "zero_means": null,
+      "note": "Read by bin/main-red-pr-pair.sh as ${MAIN_RED_PAIR_WINDOW_S:-3600}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "MAIN_RED_SKIP_RE",
+      "type": "string",
+      "default": "(e2e|nightly|smoke|publish|deploy)",
+      "zero_means": null,
+      "note": "Read by bin/main-red-pr-pair.sh as ${MAIN_RED_SKIP_RE:-(e2e|nightly|smoke|publish|deploy)}, and by bin/main-red-detector.sh (not a lane) as a contract reader of this same row: settings row, then env, then the default; a value that does not compile falls back to the default there with one warn (BH-3769). Matched case-insensitively against a workflow's name OR its path in both readers. Python decides in the detector and jq (onig) in both, so keep to syntax both dialects read alike. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/main-red-pr-pair.log"
+  }
+}

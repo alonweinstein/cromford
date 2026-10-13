@@ -1,0 +1,4 @@
+# BH-5430: the merge-queue break-risk score record, directly under the risk
+# tiers (src/index.js ROUTES: ...riskTiers, ...queueRisk, ...catalog).
+POST /api/queue-risk
+GET /api/queue-risk

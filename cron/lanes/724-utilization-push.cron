@@ -1,0 +1,10 @@
+# @hub-lanes
+
+# ── UTILIZATION-PUSH LANE (BH-4008, BH-3988 tracer) ─────────────────────────
+# Hourly at :07. Writes one utilization snapshot per fleet.conf project (the
+# builds section: running, pool_cap, free_slots) to PUT /api/utilization, which
+# GET /api/utilization reads back. One line per run in
+# logs/utilization-push.log. Off: flags/lane-off-utilization-push
+# (bin/harness-ctl.sh off utilization-push), the utilization-push-off switch,
+# or UTIL_PUSH_ENABLED=0.
+7 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/utilization-push.sh >/dev/null 2>&1

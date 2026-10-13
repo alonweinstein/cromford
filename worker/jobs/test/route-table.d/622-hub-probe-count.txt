@@ -1,0 +1,4 @@
+# HUB-PROBE-COUNT (BH-3448, BH-3434.1): the hub-probe counters, right after the
+# hub-probe ledger in src/index.js.
+GET /api/hub-probe/count-today
+GET /api/hub-probe/count

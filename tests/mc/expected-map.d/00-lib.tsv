@@ -1,0 +1,349 @@
+# tests/mc/expected-map.d/00-lib.tsv — the origin=lib rows of the conductor
+# ownership map, as they stood in tests/mc/expected-map.tsv when Lane E split
+# that file into fragments (2026-09-24). Do NOT append here: a later change
+# writes its own tests/mc/expected-map.d/<TICKET-KEY>.tsv, so two PRs never
+# edit the same hunk. tests/lib/mc-expected-map.sh assembles the union.
+#
+# The single file's history comment, verbatim:
+# tests/mc/expected-map.tsv — BH-477: module<TAB>function<TAB>origin.
+# Generated from bin/lib/merge-conductor-lib.sh at 08058e2, extended
+# 2026-09-19 for the BH-870 land trigger and BH-968 mc_regen_table; extended
+# 2026-09-20 for BH-1175's mc_resolve_deleted_ignored (defined by rebase.sh
+# alongside mc_resolve_conflicts, which it runs before); the binding ownership
+# map the mc/ split is judged by. Extended 2026-09-21 during the rebase onto
+# main for BH-979's mc_state_note_only (log, beside mc_alert) and
+# BH-587/BH-588's contested store and conflict-size sidecar (rebase, where the
+# lib keeps them — immediately before the stacked-child section and beside
+# mc_rebase, their only conductor-side caller). Extended 2026-09-21 in the
+# rebase onto ea8f9a0f for BH-784's REST decision reads (classify, beside
+# mc_num_of_url where the lib keeps them) and its per-account lane-down
+# markers (locks, beside mc_claude_lane_down). Extended 2026-09-22 in the
+# round-4 rebase of BH-1024 for mc_ap_consumed (classify, beside mc_red_rerun
+# and mc_autopilot_verdict, where #1116 appended it to the lib). Extended
+# 2026-09-21/22 in the rebase of #891 for BH-872's dequeue-reason surfacing
+# (queue, beside mc_dequeue_label which they run alongside —
+# mc_mergify_names_review, mc_dequeue_reason, mc_dequeue_surface). Extended
+# 2026-09-22 for BH-1460's mc_hold_keeps_pr (rebase, beside
+# mc_close_for_rebuild and mc_kick_ci — the two closers it guards and its only
+# callers). Extended 2026-09-22 for the BH-1486 follow-up's key digest and
+# read counter (locks, beside mc_safe_name's users and mc_tick_metrics:
+# _mc_digest_stream, _mc_key_digest, mc_tick_reads). Extended 2026-09-23 for
+# BH-1586's REST read helpers (queue, beside mc_dequeue_reason, whose comment
+# and check-run reads they carry: mc_rest_var, mc_policy_get). Extended
+# 2026-09-22 for BH-1201's PAUSED hold (log, beside mc_alert — the alert
+# boundary the hold sits on): mc_hold_mode, mc_hold_cache_file,
+# mc_hold_count_file, mc_hold_cached, mc_hold_page, mc_hold_flush_one,
+# mc_hold_tick_begin, mc_hold_breakdown, mc_hold_tick_end. Extended 2026-09-23
+# for BH-1670's stacked-child follow (rebase, beside mc_restack, which it
+# drives after conductor_settle writes a parent MERGED):
+# mc_stack_pending_file, mc_stack_pending_put, mc_stack_pending_get,
+# mc_stack_pending_clear, mc_stack_children, mc_stack_follow,
+# _mc_stack_follow_retry. Extended 2026-09-23 for BH-1677's base-conflict
+# ejection rebase (queue, beside mc_dequeue_conflict: mc_eject_conflict_note,
+# mc_eject_strikes; rebase, beside land_rebase_arm and rebase_consume:
+# eject_rebase_arm, eject_rebased_note, eject_rebased_moved), origin=lib
+# because they are new module functions, never moved out of the driver.
+# Extended 2026-09-24 for BH-1564's head-lag rows (locks, beside
+# mc_attempt_put/mc_attempt_has whose row halves they are: mc_attempt_row_put,
+# mc_attempt_rows; rebase, beside head_lag_put:
+# head_lag_held_recheck_mins_for, head_lag_note, head_lag_rows_read),
+# origin=lib because they are new module functions. Extended 2026-09-24 for
+# BH-1162's regenerate class (rebase, beside mc_ticket_of_branch and
+# mc_resolve_generated, its only caller): mc_regen_paths,
+# mc_regen_cmd_for_path, mc_regen_restore, mc_resolve_by_regen.
+log	mc_stamp	lib
+log	mc_now	lib
+log	mc_mtime	lib
+log	mc_init	lib
+log	mc_log	lib
+log	mc_use_token	lib
+log	mc_reset_token	lib
+locks	mc_safe_name	lib
+locks	mc_pr_lock	lib
+locks	mc_merge_lock	lib
+locks	mc_git_lock	lib
+locks	mc_merge_locked	lib
+locks	mc_git_locked	lib
+locks	mc_tick_id	lib
+locks	mc_count_file	lib
+locks	_mc_count_read	lib
+locks	_mc_count_set	lib
+locks	mc_count_get	lib
+locks	mc_tick_eject_file	lib
+locks	mc_tick_eject_note	lib
+locks	mc_tick_ejected_now	lib
+locks	mc_count_inc	lib
+locks	mc_tick_budget_take	lib
+locks	mc_tick_budget_give	lib
+locks	mc_tick_budget_left	lib
+locks	_mc_digest_stream	lib
+locks	_mc_key_digest	lib
+locks	mc_tick_reads	lib
+locks	mc_tick_metrics	lib
+locks	mc_pr_lock_gc	lib
+locks	mc_tick_gc	lib
+locks	mc_budget	lib
+classify	mc_slug_of_url	lib
+classify	mc_num_of_url	lib
+classify	mc_only_has	lib
+classify	mc_only_slug	lib
+classify	mc_rest_status	lib
+classify	mc_rest_slug_num	lib
+classify	mc_rest_pr_json	lib
+classify	mc_pr_view	lib
+classify	mc_pr_diff	lib
+classify	mc_issue_comment	lib
+classify	mc_pr_comment	lib
+classify	mc_rest_pages	lib
+classify	mc_close_shipped	lib
+classify	mc_record_for	lib
+classify	mc_is_harness_pr	lib
+classify	mc_issue_of	lib
+classify	mc_verdict	lib
+classify	mc_job_running	lib
+classify	mc_ci_state	lib
+classify	mc_ci_flake_runs	lib
+classify	mc_ci_word	lib
+classify	mc_iron_law_scan	lib
+classify	mc_hb_blocks	lib
+classify	mc_hb_refused	lib
+classify	mc_hb_refuse	lib
+classify	mc_prov_held	lib
+classify	mc_prov_cleared	lib
+classify	mc_prov_clear	lib
+classify	mc_prov_autoresolving	lib
+classify	mc_resolver_owns	lib
+classify	mc_hotfix_proof	lib
+classify	mc_park_state	lib
+classify	mc_state_display	lib
+classify	mc_ttl	lib
+classify	mc_park_human_action	lib
+classify	mc_stuck_waiting_on	lib
+classify	mc_stuck_check	lib
+classify	mc_stuck_gc	lib
+classify	mc_handoff_owns	lib
+classify	mc_handoff_id	lib
+classify	mc_handoff_file	lib
+classify	mc_handoff_rel_file	lib
+classify	mc_handoff_record	lib
+classify	mc_handoff_release	lib
+classify	mc_handoff_sticky	lib
+classify	mc_handoff_sticky_log	lib
+classify	mc_labels_csv_has	lib
+classify	mc_label_remove	lib
+classify	mc_handoff_human_file	lib
+classify	mc_handoff_human_release	lib
+queue	mc_batch_file	lib
+queue	mc_batch_hold	lib
+queue	mc_batch_release	lib
+queue	mc_batch_held	lib
+queue	mc_batch_train_open	lib
+queue	mc_batch_should_spawn	lib
+queue	mc_batch_gc	lib
+classify	mc_handoff_gc	lib
+rebase	mc_project_base	lib
+rebase	mc_base_guard	lib
+rebase	mc_stack_parent	lib
+rebase	mc_retry_pr	lib
+rebase	mc_retarget_base	lib
+rebase	mc_close_for_rebuild	lib
+rebase	mc_hold_keeps_pr	lib
+rebase	mc_kick_ci	lib
+settle	mc_closed_settled	lib
+classify	mc_classify	lib
+classify	mc_discount	lib
+queue	mc_queue_github_enabled	lib
+queue	mc_queue_mergify_enabled	lib
+queue	mc_queue_provider	lib
+queue	mc_queue_enabled	lib
+queue	mc_queue_conductor_only	lib
+queue	mc_inqueue	lib
+queue	mc_mergify_check	lib
+queue	mc_mergify_check_live	lib
+queue	mc_mergify_witness	lib
+queue	mc_queue_state	lib
+queue	mc_pr_queued	lib
+queue	mc_dequeue_label	lib
+queue	mc_mergify_names_review	lib
+queue	mc_dequeue_reason	lib
+queue	mc_dequeue_conflict	lib
+queue	mc_eject_conflict_note	lib
+queue	mc_eject_strikes	lib
+queue	mc_rest_var	lib
+queue	mc_policy_get	lib
+queue	mc_dequeue_surface	lib
+settle	mc_row_get	lib
+settle	mc_row_field	lib
+settle	mc_row_put	lib
+settle	mc_rows_rehydrate_view	lib
+settle	mc_rows_rehydrate	lib
+settle	mc_ledger_put	lib
+settle	mc_state_event_put	lib
+settle	mc_transition	lib
+log	mc_alert	lib
+log	mc_budget_check	lib
+locks	mc_attempted	lib
+locks	mc_attempt_pr_key	lib
+locks	mc_attempt_put	lib
+locks	mc_attempt_row_put	lib
+locks	mc_attempt_has	lib
+locks	mc_attempt_rows	lib
+locks	mc_rr_lanefail_note	lib
+locks	mc_rr_lanefail_count	lib
+locks	mc_attempt_clear	lib
+classify	mc_flake_rerun	lib
+classify	mc_rerun_mark	lib
+classify	mc_requeued_mark	lib
+classify	mc_requeued_record	lib
+classify	mc_ejection_live	lib
+classify	mc_rerun_record	lib
+classify	mc_flake_kick	lib
+classify	mc_red_rung	lib
+classify	mc_red_rerun	lib
+classify	mc_autopilot_verdict	lib
+classify	mc_ap_consumed	lib
+classify	mc_ap_read_mark	lib
+classify	mc_rr_noci_why	lib
+rebase	mc_git_auth	lib
+rebase	mc_git_auth_clear	lib
+rebase	mc_unshallow_once	lib
+rebase	mc_pool_rebase_enabled	lib
+rebase	mc_pool_rebase_key	lib
+rebase	mc_pool_rebase_enqueue	lib
+rebase	mc_pool_rebase_apply	lib
+rebase	mc_rebase	lib
+rebase	mc_restack	lib
+rebase	mc_rebase_cleanup	lib
+rebase	mc_stack_pending_file	lib
+rebase	mc_stack_pending_put	lib
+rebase	mc_stack_pending_get	lib
+rebase	mc_stack_pending_clear	lib
+rebase	mc_stack_children	lib
+rebase	mc_stack_follow	lib
+rebase	_mc_stack_follow_retry	lib
+rebase	mc_generated_globs	lib
+rebase	mc_path_is_generated	lib
+rebase	mc_ticket_of_path	lib
+rebase	mc_ticket_of_branch	lib
+rebase	mc_regen_paths	lib
+rebase	mc_regen_cmd_for_path	lib
+rebase	mc_regen_restore	lib
+rebase	mc_resolve_by_regen	lib
+rebase	mc_resolve_generated	lib
+rebase	mc_resolve_deleted_ignored	lib
+rebase	mc_resolve_conflicts	lib
+rebase	mc_resolve_package_json	lib
+rebase	mc_resolve_md_union	lib
+rebase	mc_rereview	lib
+rebase	mc_review_lane_failure	lib
+rebase	mc_rr_reason	lib
+rebase	mc_rr_key	lib
+rebase	mc_rr_file	lib
+rebase	mc_rr_field	lib
+rebase	mc_rr_num	lib
+rebase	mc_rr_write	lib
+rebase	mc_rr_state	lib
+rebase	mc_rr_running	lib
+rebase	mc_rr_fail	lib
+rebase	mc_rereview_spawn	lib
+rebase	mc_rereview_run	lib
+rebase	mc_rereview_gc	lib
+rebase	mc_lane_state	lib
+rebase	mc_lane_gc	lib
+rebase	mc_rb_file	lib
+rebase	mc_rb_write	lib
+rebase	mc_rb_state	lib
+rebase	mc_rb_running	lib
+rebase	mc_rb_fail	lib
+rebase	mc_rebase_spawn	lib
+rebase	mc_rebase_run	lib
+rebase	mc_dv_file	lib
+rebase	mc_dv_write	lib
+rebase	mc_dv_state	lib
+rebase	mc_dv_fail	lib
+rebase	mc_dv_spawn	lib
+rebase	mc_dv_run	lib
+rebase	mc_dv_reap	lib
+settle	mc_patch_id	lib
+settle	mc_patch_id_file	lib
+settle	mc_patch_id_remember	lib
+settle	mc_patch_id_rebind	lib
+rebase	mc_funnel_repo	lib
+rebase	mc_git_has_merge_tree	lib
+rebase	mc_git_bounded	lib
+rebase	mc_git_err_line	lib
+rebase	mc_merge_tree_fetch	lib
+rebase	mc_merge_tree_fetch_one	lib
+rebase	mc_merge_tree	lib
+rebase	mc_ref_ok	lib
+rebase	mc_orphan_clean	lib
+rebase	mc_pr_files	lib
+rebase	mc_pr_files_gc	lib
+rebase	mc_no_overlap	lib
+queue	mc_merge	lib
+queue	mc_enqueue	lib
+queue	mc_enqueue_github	lib
+queue	mc_enqueue_mergify	lib
+queue	mc_requeue_mergify	lib
+queue	mc_queue_inactive_alert	lib
+queue	mc_mergify_inqueue	lib
+settle	mc_settle_merged	lib
+locks	mc_land_file	lib
+locks	mc_land_main_sha	lib
+locks	mc_land_needed	lib
+locks	mc_land_prev	lib
+locks	mc_land_record	lib
+rebase	mc_regen_table	lib
+rebase	mc_regen_generated	lib
+classify	mc_hb_parked	lib
+classify	mc_hb_park	lib
+classify	mc_identity_blocked	lib
+locks	mc_lane_account_fact	lib
+locks	mc_lane_down_marker_path	lib
+locks	mc_lane_down_note	lib
+locks	mc_lane_up	lib
+locks	mc_claude_lane_down	lib
+locks	mc_lane_down_for_account	lib
+locks	mc_lane_next_review_account	lib
+locks	mc_lane_down_for_next_review	lib
+locks	mc_lane_epoch	lib
+rebase	mc_pool_rebase_fail	lib
+rebase	mc_vmr_load	lib
+rebase	mc_resolve_vmap_readme	lib
+rebase	mc_resolve_vmap_clean_merge	lib
+log	issue_close_shipped	lib
+log	rp_prov_is_claude	lib
+log	rp_is_claude	lib
+log	rp_prov_word	lib
+log	rp_out_prov	lib
+log	rp_out_is_claude	lib
+log	rp_out_label	lib
+log	mc_state_note_only	lib
+log	mc_hold_mode	lib
+log	mc_hold_cache_file	lib
+log	mc_hold_count_file	lib
+log	mc_hold_cached	lib
+log	mc_hold_page	lib
+log	mc_hold_flush_one	lib
+log	mc_hold_tick_begin	lib
+log	mc_hold_breakdown	lib
+log	mc_hold_tick_end	lib
+rebase	mc_contested_dir	lib
+rebase	mc_contested_file	lib
+rebase	mc_contested_write	lib
+rebase	mc_contested_list	lib
+rebase	mc_contested_live	lib
+rebase	mc_contested_loser	lib
+rebase	mc_contested_wins	lib
+rebase	mc_contested_release	lib
+rebase	mc_conflict_lines	lib
+rebase	mc_conflict_size_file	lib
+rebase	eject_rebase_arm	lib
+rebase	eject_rebased_note	lib
+rebase	eject_rebased_moved	lib
+rebase	head_lag_held_recheck_mins_for	lib
+rebase	head_lag_note	lib
+rebase	head_lag_rows_read	lib
+queue	mc_mergify_batch_green	lib
+queue	mc_mergify_required_checks	lib
+queue	mc_mergify_stuck_pass	lib

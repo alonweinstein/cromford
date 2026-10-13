@@ -1,0 +1,2 @@
+Tests cannot touch a real harness	Run the gated suites	2026-09-29T02:13:01.1000000Z --- tests/queue-hold-test.sh rc=0 2s
+Tests cannot touch a real harness	Run the gated suites	2026-09-29T02:13:01.2000000Z Error: Process completed with exit code 1.

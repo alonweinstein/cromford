@@ -1,0 +1,1 @@
+{"name":"stack-default-off","readers":["bin/stack-launch.sh"],"box_scoped":true,"what":"stops launching a decomposition's dependent children stacked by default: their STACKABLE lines go back to being triage offers, and a BLOCKed parent no longer holds them off the reading list"}

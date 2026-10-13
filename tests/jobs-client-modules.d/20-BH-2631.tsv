@@ -1,0 +1,3 @@
+# tests/jobs-client-modules.d/20-BH-2631.tsv — the CI health box clients (BH-2517.0).
+cost	metric_flake_quarantine_list
+cost	ci_health_put

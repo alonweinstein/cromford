@@ -1,0 +1,14 @@
+
+# clock discipline (operator line, outside managed blocks) — these containers run
+# init.sh with no systemd/ntpd/chrony, and on 2026-09-14 every fleet box was
+# 66-464s SLOW. A slow clock hands out App tokens GitHub has already expired and
+# skews every age comparison the box makes. No-op when an NTP daemon is running;
+# off via CLOCK_SYNC=0 or flags/clock-sync-off.
+*/30 * * * * /root/harness/bin/clock-sync.sh >/dev/null 2>&1
+# @box project-10
+# clock discipline (operator line, outside managed blocks) — these containers run
+# init.sh with no systemd/ntpd/chrony, and on 2026-09-14 every fleet box was
+# 66-464s SLOW. A slow clock hands out App tokens GitHub has already expired and
+# skews every age comparison the box makes. No-op when an NTP daemon is running;
+# off via CLOCK_SYNC=0 or flags/clock-sync-off.
+*/30 * * * * /root/harness/bin/clock-sync.sh >/dev/null 2>&1

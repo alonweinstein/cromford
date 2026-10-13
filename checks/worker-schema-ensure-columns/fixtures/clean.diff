@@ -1,0 +1,9 @@
+diff --git a/worker/jobs/schema.sql b/worker/jobs/schema.sql
+--- a/worker/jobs/schema.sql
++++ b/worker/jobs/schema.sql
+@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS cost_rows (
+   raw TEXT,
+   lane_id TEXT
+ );
++CREATE INDEX IF NOT EXISTS idx_cost_rows_lane_ts ON cost_rows(lane_id, ts);
+ CREATE TABLE IF NOT EXISTS lane_costs (

@@ -1,0 +1,18 @@
+# catalog/live-probes.tsv — BH-5801: the ONLY probes the live-probe lane runs
+# (bin/lib/live-probes.sh). A PR names a probe in a fenced ```live-probes block
+# (`probe: <name>`); it never supplies the command. Every probe READS: the
+# loader refuses a row that could write (POST, PUT, PATCH, DELETE, -X, --data,
+# -d), a shell metacharacter, or a cmd outside bin/.
+#
+# Columns, tab-separated: name, kind, target, note.
+#   cmd        a bin/*.sh script and its fixed literal arguments, run from the
+#              harness root with no shell (argv split on spaces, no eval)
+#   jobs-get   a jobs-worker path, read with `_jobs_req GET <path>`
+#   https-get  a fixed https URL, read with `curl -X GET`, no redirects
+#
+# Add a probe here, in a reviewed PR; never from a ticket or a PR body.
+hub-lease	cmd	bin/hub-lease.sh check	does this box hold the hub lease (a GET; refreshes its own local cache file only)
+hub-lease-api	jobs-get	/api/hub-lease	the hub lease row as the jobs worker holds it
+flags	jobs-get	/api/flags	the coordination flags (pauses, kill switches)
+lead-protected-paths	jobs-get	/api/lead-protected-paths	the protected-path globs the lead review enforces
+npm-registry	https-get	https://registry.npmjs.org/-/ping	is the npm registry answering

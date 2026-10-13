@@ -1,0 +1,49 @@
+{
+  "batches": [
+    {
+      "repo": "acme/widgets",
+      "draft": 9001,
+      "url": "https://github.com/acme/widgets/pull/9001",
+      "members": [101, 102, 103],
+      "base_sha": "1111111111111111111111111111111111111111",
+      "stage": "checking",
+      "checks": { "done": 10, "total": 14 },
+      "progress": 0.71,
+      "eta_s": 420,
+      "eta_basis": "median of 6 batches",
+      "failing": { "name": "jobs-worker", "url": "https://example.com/fixture/checks/jobs-worker" },
+      "bisect": null,
+      "outcome": null
+    },
+    {
+      "repo": "acme/widgets",
+      "draft": 9002,
+      "url": "https://github.com/acme/widgets/pull/9002",
+      "members": [101, 102],
+      "base_sha": "1111111111111111111111111111111111111111",
+      "stage": "checking",
+      "checks": { "done": 0, "total": 0 },
+      "progress": null,
+      "eta_s": null,
+      "eta_basis": null,
+      "failing": null,
+      "bisect": { "step": 1, "steps": 2, "parent": 9001 },
+      "outcome": null
+    }
+  ],
+  "waiting": [
+    { "repo": "acme/widgets", "pr": 105, "position": 2 },
+    { "repo": "acme/widgets", "pr": 104, "position": 1 }
+  ],
+  "prs": {
+    "acme/widgets#101": { "stage": "dequeued(Jobs worker failed alone)", "batch": 9002, "at": "2026-10-09T03:20:00Z" },
+    "acme/widgets#102": { "stage": "checking", "batch": 9001, "at": "2026-10-09T03:10:00Z" },
+    "acme/widgets#103": { "stage": "checking", "batch": 9001, "at": "2026-10-09T03:00:00Z" },
+    "acme/widgets#104": { "stage": "queued", "batch": null, "at": "2026-10-09T02:50:00Z" },
+    "acme/widgets#105": { "stage": "queued", "batch": null, "at": "not-a-date" }
+  },
+  "as_of": "2026-10-09T03:25:00Z",
+  "complete": true,
+  "window_s": 900,
+  "window_source": "default"
+}

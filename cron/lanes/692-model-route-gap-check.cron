@@ -1,0 +1,14 @@
+# @hub-lanes
+
+# ── MODEL ROUTE GAPS (2026-09-23) ────────────────────────────────────────────
+# Daily at 04:35Z: does every (scope, role) in `model_routes` still start at
+# rung 0? A scope whose rows begin at rung 2 is a half-written ladder from
+# before #1560's whole-scope replace, and bin/lib/model-route.sh deliberately
+# steps over it — a project scope falls back to the hub, a hub scope is treated
+# as no route — so the rows are invisible to everyone who resolves a model. The
+# library's own no-rung-0 alert cannot cover them either: it fires from inside a
+# resolve, and nobody resolves the scope the resolver is ignoring. This is the
+# sweep that asks the worker for ALL of them. Read-only, one ALERTS line per
+# gapped scope per day, sharing the library's reservoir key so the two paths
+# never double up, and the alert carries the Mission Control URL that repairs it.
+35 4 * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/model-route-gap-check.sh --quiet >/dev/null 2>&1

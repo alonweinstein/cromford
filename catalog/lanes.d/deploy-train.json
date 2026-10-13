@@ -1,0 +1,85 @@
+{
+  "id": "deploy-train",
+  "name": "Deploy train",
+  "scope": "project",
+  "factory_stop": "deploy",
+  "script": "bin/deploy-train.sh",
+  "cadence": "4,19,34,49 * * * *",
+  "boxes": [
+    "project-4",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-deploy-train",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "DEPLOY_CLAIM_STALE_MIN",
+      "type": "int",
+      "default": 30,
+      "zero_means": "off",
+      "note": "Read by bin/deploy-train.sh as ${DEPLOY_CLAIM_STALE_MIN:-30} (BH-1026.1): minutes after which a `claimed` deploy_queue row whose departed_at is still NULL is re-offered to the next departure, so a train that died mid-flight does not strand its batch. 0 = off, a claimed row is never re-offered by age. The default is above one full poll window (40 x 20s ~ 13 min), so a live train is never re-offered from under itself. Registered so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "DEPLOY_HOOK_URL",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/deploy-train.sh as ${DEPLOY_HOOK_URL:-}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "DEPLOY_TRAIN_REPO_DIR",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it (/root/repos/$PROJECT). Read by bin/deploy-train.sh as ${DEPLOY_TRAIN_REPO_DIR:-/root/repos/$PROJECT}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "SELF_SOURCE_MIN_AGE_MIN",
+      "type": "int",
+      "default": 20,
+      "zero_means": null,
+      "note": "Read by bin/deploy-train.sh as ${SELF_SOURCE_MIN_AGE_MIN:-20}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "TRAIN_POLLS",
+      "type": "int",
+      "default": 40,
+      "zero_means": null,
+      "note": "Read by bin/deploy-train.sh as ${TRAIN_POLLS:-40}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "TRAIN_POLL_SECS",
+      "type": "int",
+      "default": 20,
+      "zero_means": null,
+      "note": "Read by bin/deploy-train.sh as ${TRAIN_POLL_SECS:-20}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "VERSION_URL",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/deploy-train.sh as ${VERSION_URL:-}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/deploy-train.log"
+  }
+}

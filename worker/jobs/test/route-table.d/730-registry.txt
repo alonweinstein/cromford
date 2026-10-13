@@ -1,0 +1,6 @@
+# REGISTRY (BH-5649, BH-5633.1): the fleet registry in D1, read by
+# bin/lib/registry.sh and written only by bin/registry-seed.sh, appended after
+# queue-batch-minutes at the END of the table.
+GET /api/registry
+GET /api/registry/version
+POST /api/registry/import

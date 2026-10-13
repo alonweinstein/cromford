@@ -1,0 +1,15 @@
+# @hub-lanes
+
+# ── ARCHIE WHOLE-FACTORY WATCH LANE (BH-4586) ───────────────────────────────
+# Cron fires every 10 minutes (offset to :07, off the queue doctor's minute);
+# a tick acts once per archie.watch.interval_min (D1 settings, default 20, so
+# :07, :27 and :47) and the other ticks exit at once. A tick that acts reads
+# the open alerts plus four sweeps (unrescued reviews, hub inodes, merged lanes
+# missing from crontab, paused projects with work waiting) and pulls ONE lever
+# per incident from a fixed allowlist: ack and route the alert, kick the owning
+# lane, run disk-clean on the hub, re-run the failed deploy, or file a ticket.
+# An incident still open after archie.watch.escalate_s gets ONE ticket. Every
+# action is an archie_actions row claimed before any write; flock -n dedupes.
+# Off: ARCHIE_FMW_ENABLED=0, flags/lane-off-archie-fm-watch,
+# bin/harness-ctl.sh off archie-fm-watch, or the settings row archie.manage=off.
+7-57/10 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/archie-fm-watch.sh >/dev/null 2>&1

@@ -1,0 +1,1 @@
+5 5 * * * /root/harness/bin/model-prices-sync.sh >/dev/null 2>&1 # daily, after the hub's 04:30 refresh: pull the model_prices table into state/model-prices.json so this box prices rows from the SAME rates the hub does (BH-1032)

@@ -1,0 +1,1 @@
+{"now": "2026-10-10T06:00:00Z", "ledgers": {"build_outcomes": "most builds merged", "fix_rounds": "many, mostly flaky tests", "parks_by_reason": "a few parks", "alert_families": "main-red came up again", "cost_by_lane": "fix rounds cost a lot", "rework": "some reopened tickets"}, "open_ai_build_issues": [], "recent_ideas": []}

@@ -1,0 +1,7 @@
+diff --git a/catalog/lanes.d/foo.json b/catalog/lanes.d/foo.json
+new file mode 100644
+index 0000000..1cf1773
+--- /dev/null
++++ b/catalog/lanes.d/foo.json
+@@ -0,0 +1 @@
++{"lanes":[{"id":"foo","cron":"0 * * * *"}]}

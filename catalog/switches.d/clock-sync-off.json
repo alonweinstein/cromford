@@ -1,0 +1,1 @@
+{"name":"clock-sync-off","readers":["bin/clock-sync.sh"],"box_scoped":true,"what":"stops clock-sync.sh keeping this box's clock within 30s of real time"}

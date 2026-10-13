@@ -1,0 +1,34 @@
+{
+  "id": "stale-owed-tickets",
+  "name": "Stale owed tickets",
+  "scope": "hub",
+  "script": "bin/stale-owed-tickets.sh",
+  "cadence": "50 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-stale-owed-tickets",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "STALE_ORPHAN_LOOKBACK_H",
+      "type": "int",
+      "default": 168,
+      "min": 1,
+      "max": 8760,
+      "unit": "hours",
+      "required": false,
+      "note": "BH-2350. How far back section 4's ledger pass looks for REVIEW_BLOCKED builds with no local dir and no verdict artifact; older rows are never alerted, so a first run does not page for every historic row. Read as ${STALE_ORPHAN_LOOKBACK_H:-168}; a non-integer or 0 reads as 168."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/stale-owed-tickets.log"
+  }
+}

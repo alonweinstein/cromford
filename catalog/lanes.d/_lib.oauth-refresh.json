@@ -1,0 +1,20 @@
+{
+  "libs": [
+    {
+      "id": "oauth-refresh",
+      "file": "bin/oauth-refresh.sh",
+      "note": "BH-2558 (BH-2549.0). Knobs of bin/oauth-refresh.sh for the direct OAuth refresh a #2549 sibling slice adds. Declared here so the contract lands once; nothing reads the value yet.",
+      "knobs": [
+        {
+          "env": "OAUTH_REFRESH_CLIENT_ID",
+          "type": "string",
+          "default": "",
+          "zero_means": null,
+          "required": false,
+          "settable": false,
+          "note": "OAuth client id for the direct token refresh. An empty value makes the direct refresh inert; the CLI refresh in bin/oauth-refresh.sh is unchanged. settable:false (BH-1165): an identity a root lane authenticates with is set by the operator's env, never by a settings row."
+        }
+      ]
+    }
+  ]
+}

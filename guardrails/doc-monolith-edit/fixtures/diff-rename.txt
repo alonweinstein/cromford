@@ -1,0 +1,4 @@
+diff --git a/docs/EVENTS.md b/docs/EVENTS-archive.md
+similarity index 100%
+rename from docs/EVENTS.md
+rename to docs/EVENTS-archive.md

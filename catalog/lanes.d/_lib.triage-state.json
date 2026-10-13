@@ -1,0 +1,129 @@
+{
+  "libs": [
+    {
+      "id": "triage-state",
+      "file": "bin/lib/triage-state.sh",
+      "note": "TRIAGE-STATE (the operator, 2026-09-28). The per-ticket, DB-backed pre-check at the top of rt_shards (bin/lib/rt/shards.sh): every open ticket's input hash (bin/triage-state.py: its thread minus our own comments, its labels minus ours, the state of what it names) against the hash its stored verdict was made against (worker triage_state rows). Unchanged tickets are not sent to the model; an unchanged buildable verdict with no build or PR is launched through bin/run-build.sh. Resolved per project through lib_env_apply triage-state <project>. Kill switch: switch.triage-state-off / flags/triage-state-off. Doc: docs/TRIAGE-STATE.md.",
+      "knobs": [
+        {
+          "env": "TRIAGE_STATE_MODE",
+          "type": "string",
+          "default": "shadow",
+          "required": false,
+          "settable": true,
+          "zero_means": null,
+          "read_in": "bin/lib/triage-state.sh",
+          "note": "off | shadow | enforce. shadow (default): every decision is computed, logged to the lane log and recorded on the row (last_decision, last_mode); the tick is untouched. enforce: the decisions are applied (a $0 tick when nothing changed, direct launch of unchanged buildable tickets, unchanged keys dropped from the shard loop, a directive to the single session). off: nothing runs. Any other value reads as shadow. Rows: lib.triage-state.<project>.triage_state_mode, then lib.triage-state.triage_state_mode."
+        },
+        {
+          "env": "TRIAGE_STATE_TTL_S",
+          "type": "int",
+          "default": 0,
+          "min": 0,
+          "max": 2592000,
+          "unit": "seconds",
+          "zero_means": "off",
+          "required": false,
+          "settable": true,
+          "read_in": "bin/lib/triage-state.sh",
+          "note": "The per-ticket sweep. 0 (default) = a verdict whose inputs did not change is never re-offered on a timer, except a defer-like verdict naming no ref (TRIAGE_STATE_DEFER_TTL_S) and a client-turn verdict (TRIAGE_STATE_CLIENT_NUDGE_S); a leftover next_recheck_at on any other row is ignored. Any other value restores the sweep for every verdict (next_recheck_at = triaged_at + this) and is floored at 600. Read as ${TRIAGE_STATE_TTL_S:-0}; unset or junk is 0. Shared with the PR pre-check (bin/lib/triage-state-pr.sh). Rows: lib.triage-state.<project>.triage_state_ttl_s, then lib.triage-state.triage_state_ttl_s."
+        },
+        {
+          "env": "TRIAGE_STATE_DEFER_TTL_S",
+          "type": "int",
+          "default": 7200,
+          "min": 600,
+          "max": 2592000,
+          "unit": "seconds",
+          "zero_means": null,
+          "required": false,
+          "read_in": "bin/lib/triage-state.sh",
+          "note": "The recheck for DEFER-LIKE verdicts (bin/triage-state.py DEFER_LIKE: queued = DECISION defer / queue, and blocked) whose reason names NO ref (a defer naming a #N / KEY-N is re-offered by the input hash when that ref moves, so it gets no defer timer). A defer may wait on something no ref names (a harness code change, a gate another lane owns), so it goes back to the model after this even at TRIAGE_STATE_TTL_S=0: next_recheck_at = triaged_at + this (min(this, the TTL) when a TTL is set), and a defer stamped under a longer TTL is due at triaged_at + this. Every other verdict has no timer at TTL 0 except the client nudge (TRIAGE_STATE_CLIENT_NUDGE_S). Read as ${TRIAGE_STATE_DEFER_TTL_S:-7200}, floored at 600. Rows: lib.triage-state.<project>.triage_state_defer_ttl_s, then lib.triage-state.triage_state_defer_ttl_s."
+        },
+        {
+          "env": "TRIAGE_STATE_CLIENT_NUDGE_S",
+          "type": "int",
+          "default": 1209600,
+          "min": 0,
+          "max": 7776000,
+          "unit": "seconds",
+          "zero_means": "off",
+          "required": false,
+          "settable": true,
+          "read_in": "bin/lib/triage-state.sh",
+          "note": "BH-3921. A client-turn verdict (needs_clarification / waiting_client, or waiting_on=client) goes back to the model this long after its verdict even with unchanged inputs, so a client who never replies is nudged: due at triaged_at + this (with a TTL set, whichever comes first). 0 = off. Read by ts_nudge as ${TRIAGE_STATE_CLIENT_NUDGE_S:-1209600}, floored at 3600, junk reads as the default. Rows: lib.triage-state.<project>.triage_state_client_nudge_s, then lib.triage-state.triage_state_client_nudge_s."
+        },
+        {
+          "env": "TRIAGE_STATE_MAX_FETCH",
+          "type": "int",
+          "default": 30,
+          "min": 0,
+          "max": 300,
+          "unit": "thread reads per tick",
+          "zero_means": "off",
+          "required": false,
+          "read_in": "bin/lib/triage-state.sh",
+          "note": "Thread reads (bin/triage-gate.sh --thread, one board or GitHub fetch each) per tick per project. Only a ticket whose board entry moved, or that has no cached thread, is read (BH-3921: a webhook or a due recheck no longer forces a read); the rest re-hash their cached thread. The reads ROTATE (BH-3920): webhook-named tickets first, then the ticket least recently tried (state/triage-state/<p>/<key>.tried), so N tickets needing a read are all read within ceil(N / this) ticks. Past the cap a ticket is carried to the next tick, never to the model: skip deferred:cap (skip deferred:budget on a low GitHub budget), listed under enforce in state/triage-state/<p>/deferred.keys, which bin/triage-gate.sh step 1d drains with RUN ts-deferred ticks. 0 = no reads (and step 1d never fires). Read as ${TRIAGE_STATE_MAX_FETCH:-30}. Rows: lib.triage-state.<project>.triage_state_max_fetch, then lib.triage-state.triage_state_max_fetch."
+        },
+        {
+          "env": "TRIAGE_STATE_HANDED_NO_DECISION_BACKOFF_S",
+          "type": "int",
+          "default": 7200,
+          "min": 600,
+          "max": 2592000,
+          "unit": "seconds",
+          "zero_means": null,
+          "required": false,
+          "settable": true,
+          "read_in": "bin/lib/triage-state.sh",
+          "note": "BH-3920. A model-set ticket an rc-0 triage session returned no DECISION line for, from a session that printed no DECISION line and no tickets= summary at all, gets reason 'handed-no-decision <input hash>: ...' and next_recheck_at = now + this (no verdict is written). Until then, and while its inputs still hash to that marker, the pre-check decides it 'skip handed-no-decision' instead of sending it back to the model every tick; a new comment, label or ref state re-offers it at once. Read as ${TRIAGE_STATE_HANDED_NO_DECISION_BACKOFF_S:-7200}, floored at 600. Rows: lib.triage-state.<project>.triage_state_handed_no_decision_backoff_s, then lib.triage-state.triage_state_handed_no_decision_backoff_s."
+        },
+        {
+          "env": "TRIAGE_STATE_UNREADABLE_ALERT_AFTER",
+          "type": "int",
+          "default": 3,
+          "min": 1,
+          "max": 100,
+          "unit": "ticks",
+          "zero_means": null,
+          "required": false,
+          "settable": true,
+          "read_in": "bin/lib/triage-state-unreadable.sh",
+          "note": "BH-3921. Consecutive triage ticks skipped because triage_state rows could not be read before one alert. Read by ts_unreadable_alert_after (bin/lib/triage-state-unreadable.sh); the streak is counted by ts_rows_unreadable_tick (BH-3925), which skips an enforce tick whose rows cannot be read and sends one triage-rows-unreadable:<project> alert when the streak reaches this value. Read as ${TRIAGE_STATE_UNREADABLE_ALERT_AFTER:-3}, floored at 1. Rows: lib.triage-state.<project>.triage_state_unreadable_alert_after, then lib.triage-state.triage_state_unreadable_alert_after."
+        },
+        {
+          "env": "TRIAGE_STATE_ENQUEUE_MAX",
+          "type": "int",
+          "default": 3,
+          "min": 0,
+          "max": 50,
+          "unit": "launches per tick",
+          "zero_means": "off",
+          "required": false,
+          "read_in": "bin/lib/triage-state.sh",
+          "note": "enforce only: unchanged buildable tickets handed to bin/run-build.sh per tick. The rest are named in the lane log and offered next tick. 0 = never launch (the decision is still recorded). Read as ${TRIAGE_STATE_ENQUEUE_MAX:-3}."
+        },
+        {
+          "env": "TRIAGE_STATE_SELF_LABELS",
+          "type": "string",
+          "default": "ai-build,dequeued,stale-conflict,broke",
+          "required": false,
+          "settable": true,
+          "zero_means": null,
+          "read_in": "bin/triage-state.py",
+          "note": "Comma-separated labels the harness writes itself, kept out of the input hash so our own labelling never re-triages a ticket. Every other label is in the hash. Read as ${TRIAGE_STATE_SELF_LABELS:-} by bin/lib/triage-state.sh and handed to bin/triage-state.py, whose default is this list."
+        },
+        {
+          "env": "PR_STATE_MODE",
+          "type": "string",
+          "default": "shadow",
+          "required": false,
+          "settable": true,
+          "zero_means": null,
+          "read_in": "bin/lib/triage-state-pr.sh",
+          "note": "off | shadow | enforce for the PR pre-check (BH-3417, bin/lib/triage-state-pr.sh ts_pr_mode). Only an enforce pre-check that decided every open PR, on a board/queue/sweep tick, drops a pr-* key from the shard loop; the pre-check is a stub until a later BH-3417 slice, so no value changes a tick yet. Any other value reads as shadow. Rows: lib.triage-state.<project>.pr_state_mode, then lib.triage-state.pr_state_mode. Kill switch: switch.triage-state-off / flags/triage-state-off stops it too."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+{"name":"model-prices-sync-off","readers":["bin/model-prices-sync.sh"],"box_scoped":true,"what":"stops model-prices-sync.sh refreshing this box's model price table from the worker"}

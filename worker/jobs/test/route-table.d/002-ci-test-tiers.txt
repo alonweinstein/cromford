@@ -1,0 +1,5 @@
+# BH-5653 C1 (BH-5637.2): the test-tier sets, in OPEN_ROUTES directly after the
+# ci-durations pair. Open to the main bearer check because each handler checks
+# its own: GET takes CI_DURATIONS_TOKEN or HARNESS_SECRET, PUT HARNESS_SECRET only.
+GET /api/ci/test-tiers
+PUT /api/ci/test-tiers

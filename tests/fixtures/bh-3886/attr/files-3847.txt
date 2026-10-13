@@ -1,0 +1,3 @@
+.harness/specs/BH-3792/plan.md
+bin/lib/stuck-work/facts-ticket.sh
+tests/stuck-work-facts-ticket.bh-3781-test.sh

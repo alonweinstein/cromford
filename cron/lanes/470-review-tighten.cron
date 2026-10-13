@@ -1,0 +1,8 @@
+# @hub-lanes
+# SDLC 2 — steer by outcomes. Turns the findings above into ONE mechanical
+# decision: a repo whose trailing-14d revert/reopen rate crosses the threshold
+# stops auto-merging and parks for a judged merge. DAILY, not weekly, because
+# the window slides every day whether or not new findings landed — and 25
+# minutes after the Monday miner so a Monday run reads that morning's findings.
+# It only ever tightens; nothing in it merges, loosens or widens anything.
+45 5 * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/review-tighten.sh >> /root/harness/logs/review-tighten.log 2>&1

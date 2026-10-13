@@ -1,0 +1,101 @@
+{
+  "id": "rule-miner",
+  "name": "Rule miner",
+  "scope": "hub",
+  "script": "bin/rule-miner.sh",
+  "cadence": "30 5 * * 1",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-rule-miner",
+    "aliases": [
+      {
+        "name": "rule-miner-disabled",
+        "off_when": "present"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "RULE_MINER_BODY_MAX",
+      "type": "int",
+      "default": 60000,
+      "zero_means": null,
+      "note": "Read by bin/rule-miner.sh as ${RULE_MINER_BODY_MAX:-60000}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "RULE_MINER_DRY",
+      "type": "int",
+      "default": 0,
+      "zero_means": null,
+      "note": "Read by bin/rule-miner.sh as ${RULE_MINER_DRY:-0}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "RULE_MINER_TOP_FAMILIES",
+      "type": "int",
+      "default": 40,
+      "zero_means": null,
+      "read_in": "bin/rule-miner-digest.sh",
+      "note": "Read by bin/rule-miner-digest.sh (unset = 40): how many recurring families the digest keeps, top N by count. A set value that is not a positive integer is refused with rc 2, never clamped. Registered by BH-1749.0, applied since BH-1749.1."
+    },
+    {
+      "env": "RULE_MINER_DIGEST_MAX_TOKENS",
+      "type": "int",
+      "default": 40000,
+      "zero_means": null,
+      "read_in": "bin/rule-miner-digest.sh",
+      "note": "Read by bin/rule-miner-digest.sh (unset = 40000): the digest.md cap, tokens = bytes/4; what does not fit is counted on its INCOMPLETE line and left out of ids-out. A set value that is not a positive integer is refused with rc 2, never clamped. Registered by BH-1749.0, applied since BH-1749.1."
+    },
+    {
+      "env": "CONTEXT_BUDGETS",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "read_in": "bin/rule-miner.sh",
+      "note": "Read by bin/rule-miner.sh as ${CONTEXT_BUDGETS:-$HARNESS/catalog/context-budgets.json}: the catalog the pre-call ceiling gate (BH-1764) reads the rule-miner lane's ceiling_tokens from. Empty means that path under $HARNESS; the registry default is left empty because a $HARNESS path is not a value env/global.env can copy. An unreadable file, a missing lane or a non-integer ceiling refuses the run (fail closed). NOT settable from the control plane: it is a path and a test seam, so only env/global.env on the box moves it.",
+      "settable": false
+    },
+    {
+      "env": "LLM_LANE_ENABLED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "0 makes this lane call no model at all. bin/lib/llm-gate.sh refuses BEFORE the vendor call and writes a zero-cost row_source=refused row, so the stop is visible in the ledger rather than being a lane that went quiet."
+    },
+    {
+      "env": "LLM_RUNNER_ALLOWED",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Comma/space list of the ONLY ladder rungs this lane may reach. Empty is every rung, i.e. today's ladder unchanged. A rung outside the list is refused before the call, so a cliff or a failure on the standing lane cannot descend into one that costs ~100x (#1141, the $793 descent)."
+    },
+    {
+      "env": "LLM_USD_CAP_DAY",
+      "type": "float",
+      "default": 0,
+      "min": 0,
+      "max": 10000,
+      "unit": "usd",
+      "zero_means": "unlimited",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Dollars this lane may spend in the current UTC day, summed from D1 cost_rows through GET /api/metrics/llm-spend — never from the box's own logs/cost.csv. A second, project-scoped ceiling is the lane.<id>.<project>.llm_usd_cap_day row, which is read only when somebody wrote it."
+    }
+  ],
+  "stats": {
+    "cost_stage": "mine",
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/rule-miner.log"
+  }
+}

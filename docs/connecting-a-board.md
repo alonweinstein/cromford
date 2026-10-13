@@ -1,0 +1,88 @@
+# Connecting a board
+
+Cromford talks to every tracker through one set of verbs: list, read, comment,
+transition, add and remove a label, link a PR, and close out. Each tracker has
+an adapter for those verbs under `bin/lib/tracker/`, and
+[bin/lib/tracker.sh](../bin/lib/tracker.sh) picks one per project.
+
+A project uses the tracker it was enrolled with. To pick another, set the
+settings row `tracker_adapter.<project>` to `github-issues`, `board`, `jira` or
+`linear`. Any other value is refused. Settings rows are written with
+`bin/jobs-client.sh setting-set <key> <value>`.
+
+This page names settings and credentials only. Their values live under
+`/etc/harness/env/` on the box, never in a settings file or a log.
+
+## GitHub Issues
+
+This is the default, and it needs nothing beyond your GitHub credential.
+
+- **Reads:** open issues labeled `ai-build`, with their comments and labels,
+  over GitHub's REST API.
+- **Writes:** comments, labels, and open or closed state. Linking a PR is a
+  `PR: <url>` comment, because issues have no PR-link field.
+- **Credential:** the GitHub App or the token from your setup
+  (`GH_APP_ID` and `GH_APP_PRIVATE_KEY_FILE`, or `GH_TOKEN`). See the
+  [deployment guide](SELF-HOST.md#2-what-you-need).
+- **Webhook:** the jobs worker takes GitHub deliveries at
+  `POST /webhooks/github`, signed with `GITHUB_WEBHOOK_SECRET`.
+
+GitHub has no "waiting on" or triage verdict fields, so the adapter reports
+them as empty instead of guessing.
+
+## Jira Cloud
+
+Source: [bin/lib/tracker/jira.sh](../bin/lib/tracker/jira.sh).
+
+- **Reads:** issues from a bounded JQL search, and their comments, over REST v3
+  through Atlassian's gateway (`https://api.atlassian.com/ex/jira/<cloudId>`).
+  Jira Server and Data Center are not supported.
+- **Writes:** comments, labels and transitions. It asks Jira which transitions
+  exist, so no status name is hard-coded. Linking a PR is a `PR: <url>` comment.
+- **Credentials**, in the project's env file: `JIRA_BASE`, `JIRA_EMAIL`,
+  `JIRA_API_TOKEN`, and optionally `JIRA_SITE`.
+- **Settings rows:** `tracker_jira.<project>.write_projects`,
+  `comment_projects` and `read_projects` are allowlists of Jira project keys.
+  Also `label` (default `ai-build`), `waiting_on_field`,
+  `triage_verdict_field` and `status_map`.
+
+The allowlist is a hard guard. With no write row, nothing is written. Before
+every write the adapter reads the issue back and refuses unless Jira answers
+with the same key in the same project.
+
+**Not yet:** today only the readiness check reads Jira tickets through this
+adapter. The rest of the pipeline doesn't drive a Jira project end to end.
+
+## Linear
+
+Source: [bin/lib/tracker/linear.sh](../bin/lib/tracker/linear.sh).
+
+- **Reads:** your team's open issues with a label (default `ai-build`), over
+  Linear's GraphQL API.
+- **Writes:** comments, labels and state. Linking a PR is a real Linear
+  attachment. Labels are never created, so a label your workspace doesn't have
+  is an error.
+- **States:** mapped by Linear's state type (unstarted, started, completed,
+  canceled). Review is the state named "In Review".
+
+**Not yet:** the adapter is built and tested, but nothing in the pipeline
+loads a Linear key or calls it. A Linear board can't drive builds today.
+
+## Webhooks for Jira and Linear
+
+Without webhooks, Cromford polls. With them, a real change wakes triage right
+away. The jobs worker takes `POST /webhooks/jira` and `POST /webhooks/linear`
+([source](../worker/jobs/src/lib/tracker-webhooks.js)). Each checks its own
+signature and drops repeat deliveries. Changes made by the accounts listed in
+`webhook_self.jira` or `webhook_self.linear` are ignored.
+
+Both are off until you arm them:
+
+1. Set the worker secret `JIRA_WEBHOOK_SECRET` or `LINEAR_WEBHOOK_SECRET`.
+2. In Jira or Linear, add a webhook to `https://<jobs-host>/webhooks/jira` (or
+   `/webhooks/linear`) with the same secret.
+3. Set the row `webhook_route.jira.<project key>` or
+   `webhook_route.linear.<team key>` to your repo as `owner/repo`.
+
+Before step 1 a delivery gets a `503`. After it, a bad signature gets a `401`,
+and a delivery with no route row is accepted and does nothing.

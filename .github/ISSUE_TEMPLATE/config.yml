@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Run it on your own accounts
+    url: https://github.com/cromford-ai/cromford/blob/main/docs/SELF-HOST.md
+    about: The fork-to-deploy guide. Read it before filing a setup question.

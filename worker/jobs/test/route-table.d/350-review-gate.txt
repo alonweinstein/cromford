@@ -1,0 +1,3 @@
+GET /api/review-gate
+PUT /api/review-gate
+PUT /api/review-gate/thresholds

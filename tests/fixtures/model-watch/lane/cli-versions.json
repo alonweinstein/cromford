@@ -1,0 +1,7 @@
+{"cli_versions": [
+  {"box": "hub", "cli": "claude", "version_before": "2.1.280", "version_after": "2.1.284", "method": "npm", "ok": 1, "source": "update-runners", "at": "2026-09-29T05:17:00Z"},
+  {"box": "project-3", "cli": "claude", "version_before": "2.1.279", "version_after": "2.1.280", "method": "npm", "ok": 1, "source": "update-runners", "at": "2026-09-29T05:17:00Z"},
+  {"box": "project-4", "cli": "claude", "version_before": "2.1.190", "version_after": "2.1.200", "method": "npm", "ok": 1, "source": "update-runners", "at": "2026-09-20T05:17:00Z"},
+  {"box": "project-4", "cli": "claude", "version_before": "2.1.200", "version_after": "2.1.290", "method": "npm", "ok": 1, "source": "update-runners", "at": "2026-09-29T05:17:00Z"},
+  {"box": "project-3", "cli": "codex", "version_before": "0.1.0", "version_after": "0.0.9", "method": "npm", "ok": 1, "source": "update-runners", "at": "2026-09-29T05:17:00Z"}
+]}

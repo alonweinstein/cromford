@@ -1,0 +1,6 @@
+{
+  "gate": "board-changed",
+  "project": "project-8",
+  "board_shape": "board-api",
+  "note": "The baseline positive case for project-8: the client answered both triage questions, the turn is back on the team, no PR or branch exists and a slot is free. If this stops scoring launch, the SOP has stopped building anything."
+}

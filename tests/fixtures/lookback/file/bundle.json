@@ -1,0 +1,16 @@
+{
+  "window": {"from": "2026-09-21T00:00:00Z", "to": "2026-09-28T00:00:00Z"},
+  "items": [
+    {"id": "i0", "source": "builds", "at": "2026-09-22T10:00:00Z", "project": "project-3", "ticket": "TK-12",
+     "pr": "https://github.com/example-org/project-3/pull/912", "files": ["bin/rebase.sh", "bin/lib/x.sh"],
+     "lane": "rebase", "reason": "rebase conflicted — gave up after 3 rounds"},
+    {"id": "i1", "source": "alerts", "at": "2026-09-23T10:00:00Z", "project": "cromford", "ticket": null,
+     "pr": null, "files": ["bin/rebase.sh"], "lane": "rebase", "reason": "rebase conflicted again"},
+    {"id": "i2", "source": "alerts", "at": "2026-09-24T10:00:00Z", "project": "cromford", "ticket": "BH-900",
+     "pr": null, "files": ["bin/merge.sh"], "lane": "merge", "reason": "merge sweep timed out"},
+    {"id": "i3", "source": "alerts", "at": "2026-09-24T11:00:00Z", "project": "cromford", "ticket": null,
+     "pr": null, "files": ["bin/merge.sh"], "lane": "merge", "reason": "merge sweep timed out"}
+  ],
+  "sources": {"alerts": {"ok": true, "n": 3, "truncated": false}, "builds": {"ok": true, "n": 1, "truncated": false}},
+  "incomplete": false
+}

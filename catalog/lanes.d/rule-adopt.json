@@ -1,0 +1,35 @@
+{
+  "id": "rule-adopt",
+  "name": "Rule adopt (lint-backed rules PRs)",
+  "scope": "hub",
+  "script": "bin/rule-adopt.sh",
+  "cadence": "*/15 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-rule-adopt",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "RULE_ADOPT_MAX_REQUESTS_PER_TICK",
+      "type": "int",
+      "default": 3,
+      "min": 1,
+      "max": 20,
+      "unit": "requests",
+      "zero_means": null,
+      "required": true,
+      "note": "BH-3715: at most this many NEW lead review requests a tick for rules/mined-*-lint PRs; a re-confirm of a head already requested does not count; the rest are deferred to the next tick, never dropped."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/rule-adopt.log"
+  }
+}

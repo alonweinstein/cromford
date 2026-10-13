@@ -1,0 +1,64 @@
+{
+  "id": "doorbell-coverage-check",
+  "name": "Doorbell coverage check",
+  "scope": "hub",
+  "script": "bin/doorbell-coverage-check.sh",
+  "cadence": "50 5 * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-doorbell-coverage-check",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "DOORBELL_GH",
+      "type": "string",
+      "default": "gh",
+      "zero_means": null,
+      "note": "Read by bin/doorbell-coverage-check.sh as ${DOORBELL_GH:-gh}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "DOORBELL_RING_H",
+      "type": "int",
+      "default": 24,
+      "zero_means": null,
+      "note": "Read by bin/doorbell-coverage-check.sh as ${DOORBELL_RING_H:-24}: the hours window the wakes summary (GET /api/wakes/summary) is asked for when deciding whether the doorbell is ringing (BH-1063); the worker clamps it to 1..168. Registered by BH-1063, the change that introduced the read; no reviewed min/max yet, so nothing is clamped here.",
+      "settable": true
+    },
+    {
+      "env": "WAKES_RETENTION_DAYS",
+      "type": "int",
+      "default": 30,
+      "zero_means": "off",
+      "note": "Read by bin/doorbell-coverage-check.sh as ${WAKES_RETENTION_DAYS:-30}: how many days of `wakes` rows to keep. Once per daily run the lane calls POST /api/wakes/prune, which deletes rows whose `at` is older than this, oldest first, at most 5000 per call (a longer backlog drains over the following days). 0 = off, no prune at all; a non-numeric value prunes nothing and says so in logs/doorbell-coverage-check.log. The worker refuses anything outside 1..3650. Registered by BH-1267, the change that introduced the read.",
+      "settable": true
+    },
+    {
+      "env": "HARNESS_ALERTS",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it ($H/logs/ALERTS.log). Read by bin/doorbell-coverage-check.sh as ${HARNESS_ALERTS:-$H/logs/ALERTS.log}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "JOBS_URL",
+      "type": "string",
+      "default": "https://harness-jobs.operator.workers.dev",
+      "zero_means": null,
+      "note": "Read by bin/doorbell-coverage-check.sh as ${JOBS_URL:-https://harness-jobs.operator.workers.dev}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/doorbell-coverage.log"
+  }
+}

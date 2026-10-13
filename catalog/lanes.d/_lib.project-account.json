@@ -1,0 +1,24 @@
+{
+  "libs": [
+    {
+      "id": "project-account",
+      "file": "bin/lib/project-account.sh",
+      "note": "BH-3559. Own-account pins (BH-1657): when a pinned project's claude rung cannot resolve a token on a box (no accounts.d/<label>.env, and the live token's fp label is neither the pin nor an alias of it in catalog/account-aliases.json), agent-call.sh and bin/account-pin-probe.sh raise ONE warn lane-alert per box+project per window, id account-pin-<box>-<project>, resolved on the first pinned call that works again. Applied by agent-call.sh and account-pin-probe.sh through lib_env_apply project-account.",
+      "knobs": [
+        {
+          "env": "ACCOUNT_PIN_ALERT_WINDOW_S",
+          "read_in": "bin/lib/project-account.sh",
+          "type": "int",
+          "default": 21600,
+          "min": 600,
+          "max": 604800,
+          "unit": "seconds",
+          "zero_means": null,
+          "required": false,
+          "settable": true,
+          "note": "How long one pinned_unavailable alert covers a box+project before the next refusal alerts again. Read as ${ACCOUNT_PIN_ALERT_WINDOW_S:-21600}; a value that is not a number falls back to 21600. Settings key lib.project-account.account_pin_alert_window_s."
+        }
+      ]
+    }
+  ]
+}

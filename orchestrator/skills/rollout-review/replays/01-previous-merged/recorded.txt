@@ -1,0 +1,2 @@
+Wave 1 merged, the `initiatives` table it depends on is on main, and the plan stays inside wave 2.
+VERDICT: proceed

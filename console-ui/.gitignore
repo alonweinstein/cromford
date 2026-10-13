@@ -1,0 +1,7 @@
+node_modules
+dist/
+.vite/
+*.local
+
+# the drive writes its screenshots here; the committed ones live in docs/world-v2
+shots/

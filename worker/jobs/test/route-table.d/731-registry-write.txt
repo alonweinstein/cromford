@@ -1,0 +1,14 @@
+# REGISTRY WRITES (BH-5650, BH-5633.2): the per-row write routes bin/registry.sh
+# calls, each admin-gated and audited, appended after the wave-1 registry
+# routes at the END of the table.
+POST /api/registry/projects
+PATCH re:/^\/api\/registry\/projects\/([^/]+)$/
+DELETE re:/^\/api\/registry\/projects\/([^/]+)$/
+POST /api/registry/boxes
+PATCH re:/^\/api\/registry\/boxes\/([^/]+)$/
+DELETE re:/^\/api\/registry\/boxes\/([^/]+)$/
+POST re:/^\/api\/registry\/boxes\/([^/]+)\/drain$/
+POST /api/registry/lane-boxes
+DELETE re:/^\/api\/registry\/lane-boxes\/([^/]+)\/([^/]+)$/
+POST /api/registry/box-accounts
+DELETE re:/^\/api\/registry\/box-accounts\/([^/]+)\/([^/]+)\/([^/]+)$/

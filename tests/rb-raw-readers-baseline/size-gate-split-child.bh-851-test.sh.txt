@@ -1,0 +1,7 @@
+The one-copy pin (P1, re-pinned by BH-572). Until the cut the `split child
+check` block lived twice, inline in bin/run-build.sh and in bin/lib/rb/plan.sh,
+and P1 pinned the two byte-identical. After the cut there is one copy, in
+plan.sh, so P1 asserts it is absent from the RAW driver and present once in the
+module. The flatten puts the module's copy back in the driver's place, so only
+a raw read of the driver can see a second copy pasted into it. The behaviour
+cases drive the flatten ($RB_ALL) like every other suite.

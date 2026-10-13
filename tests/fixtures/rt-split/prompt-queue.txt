@@ -1,0 +1,12 @@
+TICK SCOPE (queue — deterministic): this tick fired because queue-side state changed, not the board. The queue right now:
+READY-QUEUE lines:
+TK-561 :: waiting on PR #1
+Queued launch requests for project-5 (from the coordination DB):
+(none)
+
+Work ONLY the queue this tick, per the SOP's queue and launch rules: for each line, verify its gating condition against reality (blocking PR merged? in-flight build finished? free slots per free-slots.sh <project> — its first word, where 'unlimited' means this project is Fly-routed and the local slot gate does not apply?), launch what is genuinely unblocked, drop lines that are satisfied or superseded, leave the rest. Results-sweep rules still apply to any finished build you encounter. Fetch ONLY the board tickets these lines name (a key that does not resolve on this project's board belongs to another lane on this box — ignore it) — SKIP the full board/ticket enumeration: the board fingerprint was re-checked at the start of this tick.
+If the queue state looks inconsistent with reality (a named PR or ticket is missing), discard this scope and run the full SOP instead.
+
+SOP for project-5. Fetch the thread. Do the work.
+
+FILE-OVERLAP GUARD (deterministic — run it, do not reason about it). Immediately before you launch a build for a ticket, run `/root/harness/bin/overlap-guard.sh project-5 <KEY>`. It answers LAUNCH (go — every error answers LAUNCH too, except an unreadable open-PR list with no cached copy, which DEFERs as `DEFER <KEY> gh unknown …`) or DEFER, and a DEFER names the sibling build or open PR whose files collide. On DEFER do NOT launch that ticket this tick: leave its queue line in place, and say in your output which key deferred and on which files. The next tick re-offers it — this is BUILD_DEFERRED semantics, not a queue and not a wait.

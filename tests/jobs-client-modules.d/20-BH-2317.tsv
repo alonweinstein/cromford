@@ -1,0 +1,2 @@
+# tests/jobs-client-modules.d/20-BH-2317.tsv — the ledger row reader that returns the detail too (BH-2317).
+jobs	job_ledger_row

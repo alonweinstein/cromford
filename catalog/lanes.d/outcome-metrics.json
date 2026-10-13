@@ -1,0 +1,92 @@
+{
+  "id": "outcome-metrics",
+  "name": "Outcome metrics",
+  "scope": "hub",
+  "script": "bin/outcome-metrics.sh",
+  "cadence": "20 5 * * 1",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-outcome-metrics",
+    "aliases": [
+      {
+        "name": "outcome-metrics-disabled",
+        "off_when": "present"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "OUTCOME_DRY",
+      "type": "int",
+      "default": 0,
+      "zero_means": null,
+      "note": "Read by bin/outcome-metrics.sh as ${OUTCOME_DRY:-0}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "OUTCOME_LOOKBACK_DAYS",
+      "type": "int",
+      "default": 30,
+      "zero_means": null,
+      "note": "Read by bin/outcome-metrics.sh as ${OUTCOME_LOOKBACK_DAYS:-30}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "OUTCOME_MAX_PRS",
+      "type": "int",
+      "default": 60,
+      "zero_means": null,
+      "note": "Read by bin/outcome-metrics.sh as ${OUTCOME_MAX_PRS:-60}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "OUTCOME_RECHECK_DAYS",
+      "type": "int",
+      "default": 7,
+      "zero_means": null,
+      "note": "Read by bin/outcome-metrics.sh as ${OUTCOME_RECHECK_DAYS:-7}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "REWORK_WINDOW_DAYS",
+      "type": "int",
+      "default": 7,
+      "zero_means": "off",
+      "note": "Read by bin/outcome-metrics.sh as ${REWORK_WINDOW_DAYS:-7} and passed to bin/lib/outcome-rework.sh (BH-3956). Days after A's merge in which a later merged PR counts as reworking it; 0 turns the reworked pass off."
+    },
+    {
+      "env": "REWORK_MIN_SHARE",
+      "type": "int",
+      "default": 30,
+      "zero_means": null,
+      "note": "Read by bin/outcome-metrics.sh as ${REWORK_MIN_SHARE:-30} and passed to bin/lib/outcome-rework.sh (BH-3956). Percent of A's product files (bin/size-scope.sh) the later PR must touch."
+    },
+    {
+      "env": "REWORK_BACKFILL_DAYS",
+      "type": "int",
+      "default": 60,
+      "zero_means": null,
+      "note": "Read by bin/outcome-metrics.sh as ${REWORK_BACKFILL_DAYS:-60} and passed to bin/lib/outcome-rework.sh (BH-3956). Days scanned until state/outcome-rework-backfill.done exists; after that the scan is the window + 14 days."
+    },
+    {
+      "env": "REWORK_FETCH_CAP",
+      "type": "int",
+      "default": 1500,
+      "zero_means": null,
+      "note": "Read by bin/outcome-metrics.sh as ${REWORK_FETCH_CAP:-1500} and passed to bin/lib/outcome-rework.sh (BH-3956). Most per-PR file-list reads in one run; a run that hits it is incomplete and resumes off the cache next run."
+    },
+    {
+      "env": "REWORK_GH_RESERVE",
+      "type": "int",
+      "default": 1500,
+      "zero_means": null,
+      "note": "Read by bin/outcome-metrics.sh as ${REWORK_GH_RESERVE:-1500} and passed to bin/lib/outcome-rework.sh (BH-3956). GitHub core calls left untouched for other hub lanes; the fetch budget is min(REWORK_FETCH_CAP, remaining - this)."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/outcome-metrics.log"
+  }
+}

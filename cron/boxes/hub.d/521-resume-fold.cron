@@ -1,0 +1,3 @@
+# BH-1031: the hub's */5 jobs-watchdog run carries the resume pass itself, so the
+# separate 24,54 line resume-dead-builds.sh had here is gone. The boxes keep theirs
+# (`--resume`): the fold is one detector, not one machine.

@@ -1,0 +1,33 @@
+rules:
+  - id: metered-vendor-call-outside-choke-point
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: >-
+      Direct call to a per-unit-billed vendor from outside the ledger-guarded
+      client. Every metered call needs a PERSISTED "have we already paid for
+      this?" check that runs BEFORE the request, keyed on a stable fingerprint
+      of the input (never a presigned/tokenized URL), with three outcomes —
+      ok / empty / failed — where "succeeded but returned nothing" is billed and
+      TERMINAL. Move this through the project's metered client wrapper: the
+      guard belongs at the one choke point, not at each of N call sites.
+      (project-4, Aug 2026: USD 1,678 in five weeks, ~99% waste, 17 call sites, one
+      dedup that ran 136 lines after the charge. No error ever fired.)
+    paths:
+      exclude:
+        - "*.test.ts"
+        - "*.spec.ts"
+        - "**/lib/metered/**"
+        - "**/metered-client.ts"
+        - "**/metered/**"
+        # Config files list vendor hostnames as DATA, not as calls — a CSP
+        # connect-src allowlist naming api.deepgram.com is the opposite of a
+        # rogue call site, and flagging it teaches people the check cries wolf.
+        - "**/*.config.ts"
+        - "**/*.config.js"
+        - "**/*.config.mjs"
+        - "**/next.config.*"
+        - "**/csp.ts"
+        - "**/content-security-policy.*"
+    patterns:
+      - pattern-regex: |-
+          https?://(api\.deepgram\.com|api\.assemblyai\.com|api\.x\.ai|api\.fireworks\.ai|api\.openai\.com|api\.anthropic\.com|api\.elevenlabs\.io|api\.apollo\.io|api\.twilio\.com|api\.resend\.com|api\.scrapingbee\.com)

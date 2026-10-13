@@ -1,0 +1,4 @@
+# C14 a ticket with an open Blocked-by
+# want: excluded	-
+# decide: - quiet
+ticket	o/r#40	https://github.com/o/r/issues/40	-	ai-build	-	-	-	-	-	-	-	-	-	-	-	-	-	1	0	-	1799913600

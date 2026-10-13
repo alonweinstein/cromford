@@ -1,0 +1,2 @@
+GET /api/cap-flags
+PUT /api/cap-flags

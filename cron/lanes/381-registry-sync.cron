@@ -1,0 +1,4 @@
+# registry sync (BH-5650): in REGISTRY_SOURCE=db mode, re-render and apply this box's crontab
+# when the D1 fleet registry version changed since the last apply; file mode exits at once.
+# Off via flags/lane-off-registry-sync.
+*/5 * * * * /root/harness/bin/registry-sync.sh >/dev/null 2>&1

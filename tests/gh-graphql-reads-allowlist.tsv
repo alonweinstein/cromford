@@ -1,0 +1,31 @@
+# tests/gh-graphql-reads-allowlist.tsv — BH-1585, widened by BH-1648. The GraphQL
+# lines (`gh pr view|list`, `gh issue view|list|comment|close|edit`) each file under bin/ may still
+# carry, as "<count> <path>". A file not named here is granted 0. Lower a grant
+# when a conversion lands; never raise one — give the line a REST read
+# (bin/lib/gh-rest.sh), or a `# gh-guard-allow: <reason>` that says why it
+# cannot have one. Enforced by tests/gh-graphql-reads-lint.bh-1585-test.sh.
+2 bin/alert-triage.sh
+1 bin/alerts-groom.sh
+1 bin/alerts-medic.sh
+2 bin/board-invariants.sh
+1 bin/check-migration-prs.sh
+1 bin/hotfix-migrate.sh
+1 bin/jobs-watchdog.sh
+1 bin/lander.sh
+1 bin/lane-checkpoint.sh
+1 bin/lib/gh-pr-create.sh
+1 bin/lib/main-red-gate.sh
+0 bin/lib/rb/gates.sh
+1 bin/lib/revdep-lib.sh
+1 bin/migration-autopilot.sh
+1 bin/outcome-metrics.sh
+1 bin/postmerge-qa.sh
+2 bin/pr-owner-sweep.sh
+2 bin/remediations/health-stalepr.sh
+2 bin/review-autopilot.sh
+2 bin/review-rescue.sh
+2 bin/rule-miner.sh
+# bin/run-decompose.sh: the hit is prompt text handed to a model, not a call.
+1 bin/run-decompose.sh
+1 bin/verify-claims.sh
+2 bin/watchdog-responder.sh

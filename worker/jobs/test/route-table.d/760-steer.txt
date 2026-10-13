@@ -1,0 +1,9 @@
+# STEER (BH-5839): the ticket page's step-in notes, appended after lane
+# snapshots at the END of the table.
+POST /api/steer
+GET /api/steer
+POST /api/steer/take
+POST /api/steer/settle
+GET /api/steer/outbox
+POST re:/^\/api\/steer\/([0-9]{1,12})\/claim$/
+POST re:/^\/api\/steer\/([0-9]{1,12})\/delivered$/

@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/example-org/cromford/agent-core/schema/decision.schema.json",
+  "title": "Autonomy decision",
+  "description": "The result of decide(level, cap, action) for one action, recorded for the audit trail.",
+  "type": "object",
+  "required": [
+    "agent",
+    "class",
+    "action",
+    "level",
+    "cap",
+    "result",
+    "at"
+  ],
+  "properties": {
+    "agent": {
+      "type": "string",
+      "minLength": 1
+    },
+    "class": {
+      "type": "string",
+      "minLength": 1
+    },
+    "action": {
+      "type": "string",
+      "minLength": 1
+    },
+    "level": {
+      "type": "string",
+      "enum": [
+        "automation",
+        "augmentation",
+        "autonomy"
+      ]
+    },
+    "cap": {
+      "type": "string",
+      "enum": [
+        "automation",
+        "augmentation",
+        "autonomy"
+      ]
+    },
+    "result": {
+      "type": "string",
+      "enum": [
+        "allow",
+        "ask",
+        "refuse"
+      ]
+    },
+    "at": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "additionalProperties": false
+}

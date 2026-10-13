@@ -1,0 +1,1 @@
+{"name":"br-profile-off","readers":["bin/lib/br/opt/profile.sh"],"box_scoped":true,"what":"turns off the run profile of bin/blocked-resolver.sh (bin/lib/br/opt/profile.sh): no prof: line and no per-row TSV"}

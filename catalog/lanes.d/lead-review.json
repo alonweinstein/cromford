@@ -1,0 +1,283 @@
+{
+  "id": "lead-review",
+  "name": "Lead review jobs",
+  "scope": "box",
+  "script": "bin/lead-review.sh",
+  "cadence": "*/15 * * * *",
+  "boxes": [
+    "project-4",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-lead-review"
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "LEAD_REVIEW_MAX_PER_PR_DAY",
+      "type": "int",
+      "default": 4,
+      "min": 1,
+      "max": 50,
+      "unit": "reviews",
+      "zero_means": null,
+      "required": true,
+      "note": "BH-4956: lead reviews of one PR the model may answer per UTC day on this box (the BH-3545 tripwire); one line a review the model answered in state/lead-review/started.tsv (a refusal before billing or a rate limit is not counted). A PR over it is skipped (capped) until the next UTC day, with one lane-alert warn a PR a day (id lead-trip-<owner_repo>-<pr>-<day>). The tick itself has no start cap: it starts every eligible review as soon as a slot is free."
+    },
+    {
+      "env": "LEAD_REVIEW_WORKLIST",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 1,
+      "zero_means": "off",
+      "note": "BH-4956: 1 makes the tick read the needs-review worklist (GET /api/pr-state/needs-review) for the LEAD_REVIEW_AUTO_REPOS repos before the request rows. 0 (the default): the request rows bin/lead-review-enqueue.sh writes are the only input, so the enqueue's holds (self-check, silence, rebase, traced, risk tier, in-build grace) stay the gate in front of the review (#4956 option (b)). Turn it on once #5870 ports those gates. Read by bin/lead-review.sh as ${LEAD_REVIEW_WORKLIST:-0}; any other value is one log line and no worklist.",
+      "settable": true
+    },
+    {
+      "env": "LEAD_REVIEW_DEADLINE_S",
+      "type": "int",
+      "default": 3600,
+      "min": 300,
+      "max": 14400,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "Wall time in which the tick starts reviews. No new review starts past it; one already running finishes and records, and the tick waits for it. Each review's budget is this many seconds from its own start: the host suite gets half of what is left and the reviewer the rest."
+    },
+    {
+      "env": "LEAD_REVIEW_DIFF_MAX_BYTES",
+      "type": "int",
+      "default": 400000,
+      "min": 10000,
+      "max": 600000,
+      "unit": "bytes",
+      "zero_means": null,
+      "note": "Diff bytes handed to the reviewer. A longer diff is cut and the prompt says so. Max 600000 keeps the diff under the lane's 200K-token ceiling in catalog/context-budgets.json."
+    },
+    {
+      "env": "LEAD_REVIEW_MAX_PAGES",
+      "type": "int",
+      "default": 20,
+      "min": 1,
+      "max": 100,
+      "unit": "pages",
+      "zero_means": null,
+      "note": "BH-5151: pages of 100 requests one tick reads from GET /api/lead-reviews. Past it the tick logs the cap and works what it read; the next tick reads again from the start."
+    },
+    {
+      "env": "LEAD_REVIEW_THREAD_MAX_BYTES",
+      "type": "int",
+      "default": 60000,
+      "min": 1000,
+      "max": 500000,
+      "unit": "bytes",
+      "zero_means": null,
+      "required": true,
+      "note": "BH-3479.0: the cap on the ticket thread (issue body + comments) printed into the lead review prompt (BH-3479.2). A longer thread is cut and the prompt says so."
+    },
+    {
+      "env": "LEAD_REVIEW_CONCURRENCY",
+      "type": "int",
+      "default": 10,
+      "min": 0,
+      "max": 32,
+      "unit": "reviews",
+      "zero_means": "unlimited",
+      "note": "BH-5284: Lead reviews one tick runs at once (bin/lib/review-pool.sh), each in its own worker with its own claim, heartbeat and scratch dir. 0 = no cap: every eligible review starts, bounded only by the box guardrails, the spend cap and the start cap. Capped per box by LEAD_REVIEW_BOX_MAX."
+    },
+    {
+      "env": "LEAD_REVIEW_BOX_MAX",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 32,
+      "unit": "reviews",
+      "zero_means": null,
+      "note": "BH-5284, BH-5337: a hard cap on LEAD_REVIEW_CONCURRENCY on this box; it overrides the derived cap. 0 derives one from three terms and the smallest wins: cpu (vCPUs / LEAD_REVIEW_WORKER_CPUS), memory (MemAvailable / LEAD_REVIEW_WORKER_MEM_MB; with a tmpfs /tmp, (MemAvailable - tmpfs used) / (LEAD_REVIEW_WORKER_MEM_MB + LEAD_REVIEW_WORKER_TMP_MB)) and tmp ((free /tmp - LEAD_REVIEW_TMP_MIN_MB) / LEAD_REVIEW_WORKER_TMP_MB, 256 a worker). The tick logs `concurrency capped at N by cpu|memory|tmp (...)`."
+    },
+    {
+      "env": "LEAD_REVIEW_TMP_MIN_MB",
+      "type": "int",
+      "default": 1536,
+      "min": 256,
+      "max": 65536,
+      "unit": "MB",
+      "zero_means": null,
+      "note": "BH-5284: no new review worker starts while /tmp has less free space than this; one alert line per low episode. A full /tmp broke lead reviews on 2026-10-06."
+    },
+    {
+      "env": "LEAD_REVIEW_WORKER_CPUS",
+      "type": "int",
+      "default": 1,
+      "min": 1,
+      "max": 16,
+      "unit": "vCPU",
+      "zero_means": null,
+      "read_in": "bin/lib/review-pool.sh",
+      "note": "BH-5337: vCPUs one lead review worker is given when the box cap is derived (LEAD_REVIEW_BOX_MAX=0). The cpu term is vCPUs / this, so at 1 a 4 vCPU box runs at most 4 workers whatever its RAM. Ten workers froze box-small on 2026-10-08 (the ticket records 4 vCPU; the box reports 8 since its restart that day)."
+    },
+    {
+      "env": "LEAD_REVIEW_WORKER_MEM_MB",
+      "type": "int",
+      "default": 700,
+      "required": true,
+      "min": 256,
+      "max": 65536,
+      "unit": "MB",
+      "zero_means": null,
+      "read_in": "bin/lib/review-pool.sh",
+      "note": "BH-5337: memory one lead review worker is given when the box cap is derived (LEAD_REVIEW_BOX_MAX=0): the claude CLI, its checkout and its test run. The memory term is MemAvailable / this; with a tmpfs /tmp the tmpfs use comes off MemAvailable and LEAD_REVIEW_WORKER_TMP_MB is added to this. 700 = the measured peak plus 25%: on box-small (2026-10-12, 25 min, 61 samples with claude running) one worker's whole process tree peaked at 545 MB RSS (p50 430, p90 494). required, so this default is exported when no row is set; the code fallback in bin/lib/review-pool.sh (2048) applies only when the registry cannot be read."
+    },
+    {
+      "env": "LEAD_REVIEW_WORKER_TMP_MB",
+      "type": "int",
+      "default": 256,
+      "min": 64,
+      "max": 8192,
+      "unit": "MB",
+      "zero_means": null,
+      "note": "BH-6042: the /tmp one review worker is counted at when bin/lib/review-pool.sh derives this box's cap: (free /tmp - LEAD_REVIEW_TMP_MIN_MB) / this. The default and the fleet row are both 256. A larger value lowers lead-review capacity (8 GB /tmp: 26 workers at 256, 17 at 384), so raise it only when a review is measured to need more /tmp than this."
+    },
+    {
+      "env": "LEAD_REVIEW_CAP_ALERT_AFTER_MIN",
+      "type": "int",
+      "default": 30,
+      "min": 5,
+      "max": 1440,
+      "unit": "minutes",
+      "zero_means": null,
+      "read_in": "bin/lib/lead-review-capped.sh",
+      "note": "BH-6041: minutes a tick may stay capped by /tmp or memory below LEAD_REVIEW_CONCURRENCY before bin/lib/lead-review-capped.sh sends one warn (the batched digest, id lead-review-capped-<box>). The first uncapped tick resolves it. A cap by LEAD_REVIEW_BOX_MAX never warns. Each firing is one digest line; no page."
+    },
+    {
+      "env": "LEAD_REVIEW_CAP_ALERT_MIN",
+      "type": "int",
+      "default": 4,
+      "min": 1,
+      "max": 32,
+      "unit": "reviews",
+      "zero_means": null,
+      "read_in": "bin/lib/lead-review-capped.sh",
+      "note": "BH-6041: with LEAD_REVIEW_CONCURRENCY at 0 (no cap), the capped-concurrency warn compares the /tmp or memory cap against this number instead. Unused while LEAD_REVIEW_CONCURRENCY is above 0."
+    },
+    {
+      "env": "LEAD_REVIEW_RATE_BACKOFF_S",
+      "type": "int",
+      "default": 60,
+      "min": 10,
+      "max": 900,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "BH-5284: after an agent call hits a rate or concurrency limit (429, overloaded, the account's concurrency cap) no new review starts for this long; it doubles on each repeat up to 900s and resets on the next review that ends normally. The limited review records no verdict and is not counted as failed."
+    },
+    {
+      "env": "LEAD_REVIEW_SPILLOVER",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "BH-5284: 1 lets this box also take lead review requests for repos another box owns, after its own, once a request has waited LEAD_REVIEW_SPILL_AFTER_S and only when this box holds a clone of the repo. The per-(pr, head) claim keeps each to one reviewer. Off by default; a data change turns it on."
+    },
+    {
+      "env": "LEAD_REVIEW_SPILL_AFTER_S",
+      "type": "int",
+      "default": 900,
+      "min": 60,
+      "max": 86400,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "BH-5284: how long a request waits on its owning box before LEAD_REVIEW_SPILLOVER=1 lets another box take it."
+    },
+    {
+      "env": "LEAD_REVIEW_HOST_SUITE",
+      "type": "string",
+      "default": "skip-if-ci-green",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "settable": true,
+      "note": "When the lead review runs the repo's Verification Contract suite on the box before the model call. skip-if-ci-green (default): skip it when every check the base branch's .mergify.yml queue_conditions require (never the PR's own copy) has a successful run on the exact head being reviewed and no check run on that head is pending or failed; anything unknown (a check missing, pending or failed, the check-run read failing, runs on another sha, no .mergify.yml) runs it. always: run it every time (the behaviour before this knob). off: never run it, on EVERY repo the fleet reviews (fleet-wide, product repos included); each review then logs '<repo>: host suite not run (LEAD_REVIEW_HOST_SUITE=off, fleet-wide)' and the prompt says no host suite ran. Neither skip applies when the PR's diff touches what decides CI (.github/, .mergify.yml, bin/ci-*, bin/test-impact*, catalog/ci-*, catalog/test-impact*, the files the base workflows name and what their CI scripts read): CI's green is then the PR's own. Any other value is treated as always and logged once per tick. The same check-run read decides the lead's own rules pack (cromford only): unless always, it is not re-run when the PR's diff touches none of the pack's own inputs (derived from the box's trusted copy, since CI runs the PR's own pack) and CI's 'Syntax + shellcheck + config integrity' and 'Test determinism lint' jobs both passed on the reviewed sha (report: `- rules pack: skipped (CI green on <sha12>)`, read as clean); off stops the host suite only. The report's `- host suite:` and `- rules pack:` lines say which happened."
+    },
+    {
+      "env": "LEAD_REVIEW_BUILDS_ON_BUILDER",
+      "type": "string",
+      "default": "on",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "settable": true,
+      "note": "BH-5355: on (default) | off. on: a non-delta lead review reads the builder review bin/review-prs.sh posted on GitHub for the EXACT head (commit_id and the footer's sha both equal the head, author a verdict author; bin/lib/builder-review.sh br_fetch) and gets it as a `## Builder review (same head)` section before the diff, plus the build-on instructions (prompts/lead-review-builds-on.md) after the checklist. Same model route, same full diff, the lead's own verdict. No such review, a failed or full-page (100) reviews read, the lib or the prompt missing = the full-review prompt, logged. off: the full-review prompt on every review from the next tick (read once per tick). Any other value is treated as off and logged once per tick. Each lead agent call's cost row carries the note lead-mode=build-on|full|delta, so input and output tokens split by mode in the cost ledger."
+    },
+    {
+      "env": "LEAD_REVIEW_RERUN_MAX",
+      "type": "int",
+      "default": 3,
+      "min": 0,
+      "max": 20,
+      "unit": "reruns",
+      "zero_means": "off",
+      "required": true,
+      "note": "BH-5317: how deep the owed-rerun chain may go. A tick that finds the tick lock held writes state/lead-review/rerun-owed, and the holder relaunches ONE tick when it ends (also when it left work deferred to its start cap or deadline under the review pool). Each rerun is one level deeper; at this depth the */15 cron takes over. 0 = off: the marker is kept and the cron covers it."
+    },
+    {
+      "env": "LLM_LANE_ENABLED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "0 makes this lane call no model at all. bin/lib/llm-gate.sh refuses BEFORE the vendor call and writes a zero-cost row_source=refused row, so the stop is visible in the ledger rather than being a lane that went quiet."
+    },
+    {
+      "env": "LLM_RUNNER_ALLOWED",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Comma/space list of the ONLY ladder rungs this lane may reach. Empty is every rung, i.e. today's ladder unchanged. A rung outside the list is refused before the call, so a cliff or a failure on the standing lane cannot descend into one that costs ~100x (#1141, the $793 descent)."
+    },
+    {
+      "env": "LLM_USD_CAP_DAY",
+      "type": "float",
+      "default": 0,
+      "min": 0,
+      "max": 10000,
+      "unit": "usd",
+      "zero_means": "unlimited",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Dollars this lane may spend in the current UTC day, summed from D1 cost_rows through GET /api/metrics/llm-spend — never from the box's own logs/cost.csv. A second, project-scoped ceiling is the lane.<id>.<project>.llm_usd_cap_day row, which is read only when somebody wrote it."
+    },
+    {
+      "env": "LEAD_REVIEW_CONSOLE_QA_GATE",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 1,
+      "zero_means": "off",
+      "note": "BH-5909: 1 makes a harness PR that changes console-ui/src/ a BLOCK, with no model call, until a PR comment names its head with QA: PASS and a QA COVERAGE line with screens and shots of 1 or more (bin/lib/console-qa-gate.sh). The hub's lead-review-enqueue reads this row too: it resets the review once the PASS is posted (no push needed) and replays no lead word onto such a head. Turn it on after bin/console-preview-deploy.sh has posted its first green QA."
+    }
+  ],
+  "stats": {
+    "cost_stage": "lead-review",
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/lead-review.log"
+  }
+}

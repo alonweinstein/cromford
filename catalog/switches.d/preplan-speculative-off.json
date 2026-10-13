@@ -1,0 +1,1 @@
+{"name":"preplan-speculative-off","readers":["bin/lib/preplan-lib.sh"],"box_scoped":true,"what":"turns speculative pre-planning off: one pre-plan at a time, the next queued ticket only, and no consumer in run-build.sh"}

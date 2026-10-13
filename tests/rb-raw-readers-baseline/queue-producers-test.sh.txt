@@ -1,0 +1,1 @@
+It EXECUTES the driver against a scratch $HARNESS rather than reading it, so it needs the real runnable path — and it copies the stage-module stubs into that scratch tree, which is what keeps the driver's own fail-closed source loop from stopping it at module one. The flatten is not runnable.

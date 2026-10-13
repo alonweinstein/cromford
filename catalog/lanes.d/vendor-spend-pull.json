@@ -1,0 +1,86 @@
+{
+  "id": "vendor-spend-pull",
+  "name": "Vendor spend pull",
+  "scope": "hub",
+  "script": "bin/vendor-spend-pull.sh",
+  "cadence": "33 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-vendor-spend-pull",
+    "aliases": [
+      {
+        "name": "vendor-spend-off",
+        "off_when": "present"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "FLY_PRICES",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it ($H/catalog/fly-prices.json). Read by bin/vendor-spend-pull.sh as ${FLY_PRICES:-$H/catalog/fly-prices.json}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "VENDOR_BALANCE_FLOOR_USD",
+      "type": "int",
+      "default": 20,
+      "zero_means": null,
+      "note": "Read by bin/vendor-spend-pull.sh as ${VENDOR_BALANCE_FLOOR_USD:-20}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "VENDOR_HTTP_TIMEOUT",
+      "type": "int",
+      "default": 25,
+      "zero_means": null,
+      "note": "Read by bin/vendor-spend-pull.sh as ${VENDOR_HTTP_TIMEOUT:-25}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "VENDOR_SKIP",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/vendor-spend-pull.sh as ${VENDOR_SKIP:-}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "VENDOR_SPEND",
+      "type": "int",
+      "default": 1,
+      "zero_means": null,
+      "note": "Read by bin/vendor-spend-pull.sh as ${VENDOR_SPEND:-1}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "VENDOR_SPEND_FAIL_STREAK",
+      "type": "int",
+      "default": 3,
+      "zero_means": null,
+      "note": "Read by bin/vendor-spend-pull.sh as ${VENDOR_SPEND_FAIL_STREAK:-3}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "VENDOR_WINDOW_DEFAULT_SECS",
+      "type": "int",
+      "default": 3600,
+      "zero_means": null,
+      "note": "Read by bin/vendor-spend-pull.sh as ${VENDOR_WINDOW_DEFAULT_SECS:-3600}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "VENDOR_WINDOW_MAX_SECS",
+      "type": "int",
+      "default": 21600,
+      "zero_means": null,
+      "note": "Read by bin/vendor-spend-pull.sh as ${VENDOR_WINDOW_MAX_SECS:-21600}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/vendor-spend.log"
+  }
+}

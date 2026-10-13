@@ -1,0 +1,4 @@
+# C6 MERGE on head, conductor BLOCKED_HUMAN: waits on the operator
+# want: waiting-on-human	the operator
+# decide: - quiet
+pr	o/r#12	https://github.com/o/r/pull/12	0	ai-build	success	1799991000	MERGE	abc	1799991000	abc	-	BLOCKED_HUMAN	1799996400	-	-	-	-	-	-	-	1799990001

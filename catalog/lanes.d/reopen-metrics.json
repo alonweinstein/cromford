@@ -1,0 +1,63 @@
+{
+  "id": "reopen-metrics",
+  "name": "Reopen metrics",
+  "scope": "hub",
+  "script": "bin/reopen-metrics.sh",
+  "cadence": "15 4 * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-reopen-metrics",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "PROJECT_4_API_BASE",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/reopen-metrics.sh as ${PROJECT_4_API_BASE:-}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "PROJECT_1_API_BASE",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/reopen-metrics.sh as ${PROJECT_1_API_BASE:-}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "PROJECT_3_APP_BASE",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/reopen-metrics.sh as ${PROJECT_3_APP_BASE:-}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "REOPEN_GH_LABEL",
+      "type": "string",
+      "default": "ai-build",
+      "zero_means": null,
+      "note": "Read by bin/reopen-metrics.sh as ${REOPEN_GH_LABEL:-ai-build}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "PROJECT_2_APP_BASE",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/reopen-metrics.sh as ${PROJECT_2_APP_BASE:-}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/reopen-metrics.log"
+  }
+}

@@ -1,0 +1,1 @@
+{"name":"gh-app-rotate-off","readers":["bin/fly-pool.sh"],"box_scoped":true,"what":"stops fly-pool.sh re-minting and pushing a fresh App token to running pool machines each tick, leaving the spawn-time token swap alone"}

@@ -1,0 +1,15 @@
+diff --git a/worker/jobs/src/routes/usage.js b/worker/jobs/src/routes/usage.js
+--- a/worker/jobs/src/routes/usage.js
++++ b/worker/jobs/src/routes/usage.js
+@@ -1,0 +1,11 @@
++export async function snapshots(env, url, box, lim) {
++  const until = str(url.searchParams.get("until"), 64);
++  const where = [], binds = [];
++  if (box) { binds.push(box); where.push(`box=?${binds.length}`); }
++  if (until) { binds.push(until); where.push(`ts<=?${binds.length}`); }
++  const rows = await env.DB.prepare(
++    `SELECT * FROM extra_usage_snapshots${where.length ? " WHERE " + where.join(" AND ") : ""}
++     ORDER BY ts DESC, box DESC LIMIT ${lim}`
++  ).bind(...binds).all();
++  return rows;
++}

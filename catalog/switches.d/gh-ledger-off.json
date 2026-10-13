@@ -1,0 +1,1 @@
+{"name":"gh-ledger-off","readers":["bin/gh-ledger/gh"],"box_scoped":true,"what":"stops the PATH-first gh wrapper writing quota-ledger rows, so every gh call goes straight to the real binary"}

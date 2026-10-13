@@ -1,0 +1,178 @@
+{
+  "window": {
+    "from": "2026-09-21T06:45:00Z",
+    "to": "2026-09-28T06:45:00Z"
+  },
+  "items": [
+    {
+      "id": "r1",
+      "source": "reopens",
+      "at": "2026-09-22T10:00:00Z",
+      "project": "cromford",
+      "ticket": "BH-10",
+      "pr": 101,
+      "files": [
+        "bin/foo.sh",
+        "docs/a.md"
+      ],
+      "lane": null,
+      "reason": "reopened after merge 123"
+    },
+    {
+      "id": "r2",
+      "source": "reopens",
+      "at": "2026-09-23T10:00:00Z",
+      "project": "cromford",
+      "ticket": "BH-11",
+      "pr": 102,
+      "files": [
+        "bin/foo.sh"
+      ],
+      "lane": null,
+      "reason": "reopened after merge 456"
+    },
+    {
+      "id": "r3",
+      "source": "builds",
+      "at": "2026-09-24T10:00:00Z",
+      "project": "cromford",
+      "ticket": "BH-12",
+      "pr": 103,
+      "files": [
+        "bin/foo.sh"
+      ],
+      "lane": null,
+      "reason": "build blocked twice"
+    },
+    {
+      "id": "la",
+      "source": "alerts",
+      "at": "2026-09-22T11:00:00Z",
+      "project": "cromford",
+      "ticket": null,
+      "pr": null,
+      "files": [],
+      "lane": "a",
+      "reason": "rebase conflict on abc1234"
+    },
+    {
+      "id": "lb",
+      "source": "alerts",
+      "at": "2026-09-23T11:00:00Z",
+      "project": "cromford",
+      "ticket": null,
+      "pr": null,
+      "files": [],
+      "lane": "b",
+      "reason": "rebase conflict on def5678"
+    },
+    {
+      "id": "o1",
+      "source": "rereviews",
+      "at": "2026-09-22T12:00:00Z",
+      "project": "project-3",
+      "ticket": "TK-1",
+      "pr": 11,
+      "files": [
+        "src/x.ts"
+      ],
+      "lane": null,
+      "reason": "review blocked: missing test"
+    },
+    {
+      "id": "o2",
+      "source": "rereviews",
+      "at": "2026-09-23T12:00:00Z",
+      "project": "project-3",
+      "ticket": "TK-2",
+      "pr": 12,
+      "files": [
+        "src/x.ts"
+      ],
+      "lane": null,
+      "reason": "review blocked: missing test"
+    },
+    {
+      "id": "c1",
+      "source": "rereviews",
+      "at": "2026-09-24T12:00:00Z",
+      "project": "project-4",
+      "ticket": "CT-1",
+      "pr": 13,
+      "files": [
+        "src/x.ts"
+      ],
+      "lane": null,
+      "reason": "review blocked: missing test"
+    },
+    {
+      "id": "e1",
+      "source": "reopens",
+      "at": "2026-09-25T10:00:00Z",
+      "project": "cromford",
+      "ticket": "BH-13",
+      "pr": 104,
+      "files": [],
+      "lane": null,
+      "reason": "reopened, no diff"
+    },
+    {
+      "id": "x1",
+      "source": "reopens",
+      "at": "2026-09-25T11:00:00Z",
+      "project": "cromford",
+      "ticket": "BH-14",
+      "pr": 105,
+      "files": [
+        "bin/foo.shx"
+      ],
+      "lane": null,
+      "reason": "reopened, prefix path"
+    },
+    {
+      "id": "n1",
+      "source": "alerts",
+      "at": "2026-09-26T10:00:00Z",
+      "project": "cromford",
+      "ticket": null,
+      "pr": null,
+      "files": [],
+      "lane": null,
+      "reason": "lint failed on foo 12"
+    },
+    {
+      "id": "n2",
+      "source": "alerts",
+      "at": "2026-09-26T11:00:00Z",
+      "project": "cromford",
+      "ticket": null,
+      "pr": null,
+      "files": [],
+      "lane": null,
+      "reason": "lint failed on bar 13"
+    }
+  ],
+  "sources": {
+    "reopens": {
+      "ok": true,
+      "n": 5,
+      "truncated": false
+    },
+    "builds": {
+      "ok": true,
+      "n": 1,
+      "truncated": false
+    },
+    "alerts": {
+      "ok": true,
+      "n": 4,
+      "truncated": false
+    },
+    "rereviews": {
+      "ok": true,
+      "n": 3,
+      "truncated": false
+    }
+  },
+  "incomplete": false
+}

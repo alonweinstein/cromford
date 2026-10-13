@@ -1,0 +1,23 @@
+{
+  "id": "untriaged-sweep",
+  "name": "Untriaged sweep",
+  "scope": "hub",
+  "script": "bin/untriaged-sweep.sh",
+  "cadence": "8,38 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-untriaged-sweep",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/untriaged-sweep.log"
+  }
+}

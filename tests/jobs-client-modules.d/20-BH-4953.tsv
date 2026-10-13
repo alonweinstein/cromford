@@ -1,0 +1,4 @@
+# tests/jobs-client-modules.d/20-BH-4953.tsv — the PR gate fact client: gate events, latest facts, needs-review (BH-4953).
+jobs	pr_gate_event_put
+jobs	pr_gate_facts
+jobs	pr_needs_review

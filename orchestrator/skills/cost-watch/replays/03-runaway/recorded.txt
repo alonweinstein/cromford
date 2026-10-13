@@ -1,0 +1,2 @@
+fly-pool is past its $80 cap at $96, and 29 of the last hour's 31 rows are the same BH-4071 build paying again. Turn the lane off with `flags/lane-off-fly-pool` and look at that build before anything else.
+VERDICT: stop

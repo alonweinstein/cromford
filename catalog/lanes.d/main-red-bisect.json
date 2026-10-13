@@ -1,0 +1,102 @@
+{
+  "id": "main-red-bisect",
+  "name": "Main-red bisect",
+  "scope": "hub",
+  "script": "bin/main-red-bisect.sh",
+  "cadence": "*/10 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-main-red-bisect",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "MAIN_RED_BISECT_MAX_STEPS",
+      "type": "int",
+      "default": 8,
+      "min": 2,
+      "max": 32,
+      "zero_means": null,
+      "note": "BH-3685: probes per episode, P0 and P1 included; the bisect gets this minus 2 (2 means a bisect budget of 0, which answers bounded). Read by bin/main-red-bisect.sh as ${MAIN_RED_BISECT_MAX_STEPS:-8}; an invalid or out-of-range value falls back to 8."
+    },
+    {
+      "env": "MAIN_RED_BISECT_MAX_MERGES",
+      "type": "int",
+      "default": 40,
+      "min": 1,
+      "max": 400,
+      "zero_means": null,
+      "note": "BH-3685: the most first-parent merges between green and red the lane will bisect; more is recorded bounded with a warn and no bisect. Read by bin/main-red-bisect.sh as ${MAIN_RED_BISECT_MAX_MERGES:-40}."
+    },
+    {
+      "env": "MAIN_RED_BISECT_SUITE_TIMEOUT_S",
+      "type": "int",
+      "default": 900,
+      "min": 60,
+      "max": 3600,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "BH-3685: the most one probe may run its suites. Read by bin/main-red-bisect.sh as ${MAIN_RED_BISECT_SUITE_TIMEOUT_S:-900}, validated and exported for mrb_probe (bin/lib/mrb-probe.sh)."
+    },
+    {
+      "env": "MAIN_RED_BISECT_REVERT",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "zero_means": "off",
+      "note": "BH-3685: 1 lets the act open a revert PR for a culprit merge, 0 turns that off. Read by bin/main-red-bisect.sh as ${MAIN_RED_BISECT_REVERT:-1}, validated and exported for the act functions (bin/lib/mrb-act.sh)."
+    },
+    {
+      "env": "MAIN_RED_BISECT_QUARANTINE_MAX",
+      "type": "int",
+      "default": 3,
+      "min": 0,
+      "max": 20,
+      "zero_means": "off",
+      "note": "BH-3685: the most suites the act may quarantine for one episode, 0 turns quarantine off. Read by bin/main-red-bisect.sh as ${MAIN_RED_BISECT_QUARANTINE_MAX:-3}, validated and exported for the act functions (bin/lib/mrb-act.sh)."
+    },
+    {
+      "env": "MAIN_RED_BISECT_PROTECTED_RE",
+      "type": "string",
+      "default": "(ratchet|switch-|merge-|approval|spend|brake|scratch|trace-safety)",
+      "zero_means": null,
+      "note": "BH-3685: the ERE of suite paths the act must never quarantine. Read by bin/main-red-bisect.sh as ${MAIN_RED_BISECT_PROTECTED_RE:-…} and exported for the act functions (bin/lib/mrb-act.sh). NOT settable from the control plane: narrowing it would let the act quarantine a ratchet, approval, spend, brake or merge suite.",
+      "settable": false
+    },
+    {
+      "env": "MAIN_RED_BISECT_REPOS",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "BH-3685: the repos the lane walks, space or comma separated. Empty (the default) means $HARNESS_REPO. Any slug other than the harness repo is logged unsupported and skipped. Read by bin/main-red-bisect.sh as ${MAIN_RED_BISECT_REPOS:-$HARNESS_REPO}. NOT settable from the control plane: it names repos a root lane checks out and runs suites in.",
+      "settable": false
+    },
+    {
+      "env": "MAIN_RED_BISECT_FIXTURE",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Test seam: a file bin/main-red-bisect.sh sources after the contract libs, only when HARNESS_TEST_SANDBOX=1 (tests/main-red-bisect.bh-3685-test.sh). NOT settable from the control plane: it names a file a root lane sources.",
+      "settable": false
+    },
+    {
+      "env": "HARNESS_TEST_SANDBOX",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Test seam gate: bin/main-red-bisect.sh sources MAIN_RED_BISECT_FIXTURE only when this is 1 (the test harness sets it). Never set on a box, and NOT settable from the control plane.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/main-red-bisect.log"
+  }
+}

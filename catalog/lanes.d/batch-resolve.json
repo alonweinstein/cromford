@@ -1,0 +1,237 @@
+{
+  "id": "batch-resolve",
+  "name": "Merge-time batch train (per project)",
+  "scope": "project",
+  "factory_stop": "merge",
+  "script": "bin/batch-resolve.sh",
+  "cadence": "*/5 * * * * (via bin/merge-conductor.sh)",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-batch-resolve",
+    "aliases": [
+      {
+        "name": "batch-resolve-off",
+        "off_when": "present"
+      },
+      {
+        "name": "automerge-disabled",
+        "off_when": "present"
+      },
+      {
+        "name": "automerge-disabled-",
+        "off_when": "present"
+      },
+      {
+        "name": "conductor-owns-merges",
+        "off_when": "partial"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "BATCH_RESOLVE",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "The lane, for one project. 0 settles a train already in flight and builds no new one."
+    },
+    {
+      "env": "BATCH_TRAIN_MIN",
+      "type": "int",
+      "default": 1,
+      "min": 1,
+      "max": 50,
+      "unit": "members",
+      "zero_means": null,
+      "note": "Members a train needs. 1 lets a lone approved PR ride immediately \u2014 a train of one costs the CI run a direct merge costs and keeps the post-merge closure. 2 is the pre-BH-1269 wait-for-a-partner behaviour. mc_batch_should_spawn (bin/lib/mc/queue.sh, the one copy since BH-477.3 emptied bin/lib/merge-conductor-lib.sh into its shim) resolves THIS row through lane_knob before deciding whether the conductor spawns the lane at all, so the threshold and the spawn decision cannot disagree."
+    },
+    {
+      "env": "BATCH_MAX_MEMBERS",
+      "type": "int",
+      "default": 8,
+      "min": 1,
+      "max": 50,
+      "unit": "members",
+      "zero_means": null,
+      "note": "Members one train may carry. The rest ride the next one."
+    },
+    {
+      "env": "BATCH_SPLIT_MAX",
+      "type": "int",
+      "default": 2,
+      "min": 0,
+      "max": 8,
+      "unit": "levels",
+      "zero_means": "off",
+      "note": "Levels of binary split a red union may buy before its members go back to the one-at-a-time path. Each level costs one CI run per half."
+    },
+    {
+      "env": "BATCH_TRAIN_TTL",
+      "type": "int",
+      "default": 21600,
+      "min": 600,
+      "max": 86400,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "How long a train may sit in flight before it is closed, its members released and one alert raised."
+    },
+    {
+      "env": "BATCH_OWN_CI_RED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "Read each candidate's OWN check runs before building the union. A member whose head is already red sinks the whole train and buys a binary split to rediscover it; one read per candidate is cheaper than one CI run per half."
+    },
+    {
+      "env": "BATCH_REBASE_MAX",
+      "type": "int",
+      "default": 2,
+      "min": 0,
+      "max": 10,
+      "unit": "rebases",
+      "zero_means": "off",
+      "note": "Inherited-red rebases one PR may buy. A red that came from a red base cannot be rerun \u2014 GitHub pins the run to the original merge ref \u2014 so the recovery is a pure rebase onto the base, once per head, with the verdict carried only when the patch's own added/removed lines are identical."
+    },
+    {
+      "env": "BATCH_TOKEN_MIN_LIFE",
+      "type": "int",
+      "default": 600,
+      "min": 60,
+      "max": 3300,
+      "unit": "seconds",
+      "zero_means": null,
+      "read_in": "bin/batch-resolve.sh",
+      "note": "Seconds of life the repo's GitHub App installation token must still have before a union branch is pushed (BH-1630, #1624 round 4). The push is followed by `gh pr create` on that token, and a token that dies in between leaves a pushed union with no train PR. The mint is asked for this much life (gh-token.sh --min-life re-mints a shorter cached token), then the cached expiry is read back with `gh-token.sh --expires-at`: no expiry for this repo, or one inside this window, refuses the train and defers its members (never marks them red). An installation token lives 3600s; the cache never hands out one with under 300s left."
+    },
+    {
+      "env": "BATCH_PREEMPT_LATE_RED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "Close a train and re-form it without the member whose own CI concluded failure AFTER the train was built, instead of paying the red run and the binary split that would rediscover it."
+    },
+    {
+      "env": "BATCH_MAIN_RED_CLEAR",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "A PR labelled MC_MAIN_RED_LABEL (default fix-main-red) that has MERGED since the freeze went up, whose merge-ref head has a CONCLUDED SUCCESS run, lifts flags/main-red-<repo> and its D1 pause row here and now rather than at bin/main-red-detector.sh's next pass over main. A head with no check runs, with any still queued or in flight, or with only skipped ones lifts nothing."
+    },
+    {
+      "env": "BATCH_EXCLUDE_KEEP",
+      "type": "int",
+      "default": 2000,
+      "min": 100,
+      "max": 100000,
+      "unit": "lines",
+      "zero_means": null,
+      "note": "Lines kept in each (PR, head) exclusion file. Every candidate read greps them, so they are trimmed rather than kept for ever."
+    },
+    {
+      "env": "BATCH_CI_WORKFLOW",
+      "type": "string",
+      "default": "Harness CI",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/mc/train.sh",
+      "note": "The workflow run a head is judged GREEN on, by name. Check-run counts lie \u2014 train #1229 merged on \"0 pending, 6 ok\" while its shard jobs were still waiting for a pool runner and had raised no check runs at all \u2014 so the workflow run is asked for too, and when this repo raises one of this name for the sha it must have concluded success. A repo with no run of this name is judged on its check runs alone, which is the strict gate and not a waiver."
+    },
+    {
+      "env": "BATCH_CI_RUN_REQUIRED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "read_in": "bin/lib/mc/train.sh",
+      "note": "Must a run of BATCH_CI_WORKFLOW EXIST for the merge-ref head before the main-red freeze may be lifted? 1, the default, refuses a sha that has none and logs \"no <workflow> run for <sha> \u2014 not lifting\". That is this fleet's own shape: a push made with the App token raises no pull_request run, so a fix PR landed that way carries a Summary success, a neutral Mergify run and ZERO workflow runs \u2014 a head whose shards never ran, which the check-runs half alone reads as green. 0 is the fallback for a repo that genuinely raises no workflow of this name, where requiring one would make its freezes unliftable for ever. Spelled RUN and not WORKFLOW because the project-scoped settings key for the longer name is 65 characters and PUT /api/settings refuses anything over 64."
+    },
+    {
+      "env": "BATCH_CI_IGNORE",
+      "type": "string",
+      "default": "^(Mergify|Publish share mirror)",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/mc/train.sh",
+      "note": "ERE of check-run NAMES that are not this repo's CI and must never make a head look red OR pending: Mergify's own reporter, which stays pending until the queue takes the PR, and a mirror publish that fails on a leak guard. `^Mergify` and not a full name on purpose \u2014 that reporter has been called both \"Mergify Merge Protections\" and \"Mergify Merge Queue\", and a name that drifts out of this list makes a queued Mergify run read as \"still pending\" and the freeze lift then never fires."
+    },
+    {
+      "env": "TRAIN_PARALLEL",
+      "type": "int",
+      "default": 2,
+      "min": 1,
+      "max": 8,
+      "unit": "trains",
+      "zero_means": null,
+      "note": "Trains this lane may have in flight at once, on DISJOINT planned-file sets (BH-1270). One train bounds the base branch's merge rate at one CI run and nothing about that wait is a safety property: two unions cut from the same base only meet if they touch the same files. The candidates are partitioned so that any two that could ever conflict \u2014 intersecting planned-file sets, or the same module directory, or either one unjudged \u2014 ride the SAME train, and one train per group is opened in one tick. 1 is the pre-BH-1270 behaviour byte for byte: one group, every candidate in it, in the order the pass found them. The effective number is min(this, floor(BATCH_CI_RUNNERS / BATCH_CI_SHARDS)) when a pool size is declared."
+    },
+    {
+      "env": "BATCH_CI_RUNNERS",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 500,
+      "unit": "runners",
+      "zero_means": "off",
+      "note": "How many runners the CI pool has, as the catalog declares it. N trains in flight raise N concurrent runs of the repo's workflow, and a run that is BATCH_CI_SHARDS jobs wide cannot have a second copy on a pool that size without the second one's shards QUEUEING \u2014 and a queued job is indistinguishable from a slow one (docs/CI-RUNNERS.md), so the lane would buy latency instead of throughput. 0, the default, means no pool size is declared, which is this fleet's honest state: CI runs on the `CI_RUNNER` repo variable, hosted by default, whose concurrency is the account's and not ours to count. Then only TRAIN_PARALLEL binds. A fleet that moves CI onto the Fly pool sets this and gets the arithmetic."
+    },
+    {
+      "env": "BATCH_CI_SHARDS",
+      "type": "int",
+      "default": 8,
+      "min": 1,
+      "max": 100,
+      "unit": "jobs",
+      "zero_means": null,
+      "note": "How many runner seats ONE run of the repo's CI workflow occupies at once. cromford runs two 4-way matrices (`Pure-logic gate fixtures` and `Tests cannot touch a real harness`), so 8. Only read when BATCH_CI_RUNNERS declares a pool size; it is the divisor in min(TRAIN_PARALLEL, floor(runners / shards))."
+    },
+    {
+      "env": "BATCH_REFORM_MAX",
+      "type": "int",
+      "default": 3,
+      "min": 0,
+      "max": 20,
+      "unit": "re-forms",
+      "zero_means": "off",
+      "note": "Re-forms one train may buy (BH-1270). When a sibling group's train lands, this one's union stops merging onto the new tip \u2014 its members are unchanged, so the union is rebuilt on the new tip and force-pushed to the SAME branch: same PR, same queue entry, same D1 row, a fresh CI run and NO re-review, because nothing any verdict is bound to has moved. Bounded because a repo whose base moves faster than a union verifies would otherwise re-form for ever and never reach its own queue; past the bound the age budget owns the train. The trigger is BEHIND OR DIRTY (BH-1306): a union that still merges but whose base no longer contains the tip was verified against a base that is gone, and the queue lander reads no CI \u2014 so it is re-verified on the tip, and closed rather than landed when that verification is red or the budget is spent. 0 turns re-forming off, behind included, and a stale train waits for BATCH_TRAIN_TTL."
+    },
+    {
+      "env": "BATCH_MODULE_DIRS",
+      "type": "string",
+      "default": "bin/lib/*/ bin/lib/ bin/ worker/jobs/src/routes/ worker/jobs/src/lib/ console-ui/src/screens/",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/mc/train.sh",
+      "note": "Module boundaries two trains may never be split across (BH-1270). Two PRs editing different files of one module are a textual non-conflict and often a semantic one, and it is that module's own suite that would catch it \u2014 so they ride the same train rather than two at once. Space separated; an entry ending in `*/` means the CHILD directory names the module (bin/lib/mc/, bin/lib/jobs/ and bin/lib/rb/ are three), an entry ending in `/` means the directory itself is one module. ORDER MATTERS \u2014 the first pattern that matches wins, so a `*/` child pattern must precede its plain parent (`bin/lib/*/` before `bin/lib/` before `bin/`), or the three lib modules collapse into one. `bin/lib/` is the top-level shared libs every lane sources, `bin/` the lane scripts, `worker/jobs/src/lib/` the worker's shared code \u2014 the repo's most-coupled files, which belonged to no module at all before BH-1306. A wider list is the SAFE direction: it merges groups, never splits them."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/batch-resolve.log"
+  }
+}

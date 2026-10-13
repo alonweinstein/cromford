@@ -1,0 +1,21 @@
+diff --git a/src/actions/delete-project.js b/src/actions/delete-project.js
+new file mode 100644
+index 0000000..53f15ca
+--- /dev/null
++++ b/src/actions/delete-project.js
+@@ -0,0 +1,15 @@
++'use strict';
++const { confirmDialog } = require('../ui/dialog');
++
++// deleteProject(id, store): store is a Map of project id -> project.
++// Resolves to true when the project was deleted, false when the user said no.
++async function deleteProject(id, store) {
++  const project = store.get(id);
++  if (!project) return false;
++  const ok = await confirmDialog(`Delete "${project.name}"? This cannot be undone.`);
++  if (!ok) return false;
++  store.delete(id);
++  return true;
++}
++
++module.exports = { deleteProject };

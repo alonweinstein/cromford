@@ -1,0 +1,5 @@
+# tests/mc/expected-map.d/BH-6000-3.tsv — BH-6000 part 5: a queue-ejected-twice
+# park gets its fix round now, with its two failing batch runs; origin=lib, new
+# module functions.
+queue	mc_eject_runs_file	lib
+queue	mc_eject_fix_now	lib

@@ -1,0 +1,6 @@
+{
+  "gate": "board-changed",
+  "project": "project-5",
+  "board_shape": "gh-issues",
+  "note": "The GitHub-Issues equivalent of the baseline positive case: labeled ai-build, open, no Blocked-by, no HOLD, no existing PR. Also grades the key format — a GH project's decisions are keyed TK-<issue>, not #<issue>."
+}

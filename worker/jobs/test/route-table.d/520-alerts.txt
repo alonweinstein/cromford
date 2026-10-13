@@ -1,0 +1,9 @@
+# BH-1068: the alerts slice, added to BOTH lists as the comment above says —
+# at the END of the table, which is where the chain this branch was built on
+# had them (under the wakes ack, above the 404).
+POST /api/alerts/note
+PATCH /api/alerts/state
+POST /api/alerts/resolve
+POST /api/alerts/claim
+POST /api/alerts/flush
+GET any:/api/alerts|/api/alerts/families

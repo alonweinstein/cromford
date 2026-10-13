@@ -1,0 +1,3 @@
+# COST-BREAKDOWN (BH-3557): the grouped cost_rows read behind /costs SPEND
+# BREAKDOWN, appended after model-watch at the END of the table.
+GET /api/metrics/cost-breakdown

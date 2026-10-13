@@ -1,0 +1,5 @@
+{"ledgers":[
+ {"kind":"abandoned","key":"project-3 project-3-8","status":"abandoned","job_id":null,"actor":"blocked-resolver","detail":"ladder ran out","created_at":"@AT_IN@","updated_at":"@AT_IN@"},
+ {"kind":"abandoned","key":"project-3 project-3-10","status":"released","job_id":null,"actor":"operator","detail":"released","created_at":"@AT_IN@","updated_at":"@AT_IN@"},
+ {"kind":"abandoned","key":"project-3 project-3-11","status":"abandoned","job_id":null,"actor":"blocked-resolver","detail":"ladder ran out","created_at":"@AT_OLD@","updated_at":"@AT_OLD@"}
+],"as_of":"@AT_NOW@"}

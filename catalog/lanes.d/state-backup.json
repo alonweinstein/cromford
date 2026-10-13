@@ -1,0 +1,172 @@
+{
+  "id": "state-backup",
+  "name": "State backup",
+  "scope": "box",
+  "script": "bin/state-backup.sh",
+  "cadence": "5,20,35,50 * * * *",
+  "boxes": [
+    "project-4",
+    "hub",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-10",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-state-backup",
+    "aliases": [
+      {
+        "name": "state-backup-off",
+        "off_when": "present"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "BACKUP_KEEP_ALL_DAYS",
+      "type": "int",
+      "default": 7,
+      "zero_means": null,
+      "note": "Read by bin/state-backup.sh as ${BACKUP_KEEP_ALL_DAYS:-7}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "BACKUP_KEEP_DAILY_DAYS",
+      "type": "int",
+      "default": 30,
+      "zero_means": null,
+      "note": "Read by bin/state-backup.sh as ${BACKUP_KEEP_DAILY_DAYS:-30}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "BACKUP_NOW",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it ($(date +%s)). Read by bin/state-backup.sh as ${BACKUP_NOW:-$(date +%s)}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "BACKUP_S3_BUCKET",
+      "type": "string",
+      "default": "harness-state",
+      "zero_means": null,
+      "note": "Read by bin/state-backup.sh as ${BACKUP_S3_BUCKET:-harness-state}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "BACKUP_S3_CLIENT",
+      "type": "string",
+      "default": "aws",
+      "zero_means": null,
+      "note": "Read by bin/state-backup.sh as ${BACKUP_S3_CLIENT:-aws}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "BACKUP_S3_REGION",
+      "type": "string",
+      "default": "auto",
+      "zero_means": null,
+      "note": "Read by bin/state-backup.sh as ${BACKUP_S3_REGION:-auto}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "HARNESS_CHECKOUT",
+      "type": "string",
+      "default": "/root/harness-checkout",
+      "zero_means": null,
+      "note": "Read by bin/state-backup.sh as ${HARNESS_CHECKOUT:-/root/harness-checkout}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "HARNESS_ROOT",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it (${HARNESS:-/root/harness). Read by bin/state-backup.sh as ${HARNESS_ROOT:-${HARNESS:-/root/harness}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "ORCHESTRATOR_DIR",
+      "type": "string",
+      "default": "/root/orchestrator",
+      "zero_means": null,
+      "note": "Read by bin/state-backup.sh as ${ORCHESTRATOR_DIR:-/root/orchestrator}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "BF_PUSH_CMD",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it ($H/bin/jobs-client.sh). Read by bin/state-backup.sh as ${BF_PUSH_CMD:-$H/bin/jobs-client.sh}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "BF_PUSH_TIMEOUT",
+      "type": "int",
+      "default": 5,
+      "zero_means": null,
+      "note": "Seconds the backup-fact push waits on the worker. Read by bin/state-backup.sh as ${BF_PUSH_TIMEOUT:-5}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "STATE_BACKUP",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "zero_means": "off",
+      "required": true,
+      "settable": true,
+      "note": "BH-1938. The lane's kill switch: 0 stops the backup before anything runs (flags/state-backup-off is the other). bin/state-backup.sh has no literal for it and tests it as ${STATE_BACKUP:-} = 0: row > cached row > env > this default. bin/lib/backup-freshness.sh still reads only env/global.env and the flag when it decides a box is deliberately off, so a row 0 shows that box as stale there."
+    },
+    {
+      "env": "BACKUP_ZSTD_LEVEL",
+      "type": "int",
+      "default": 1,
+      "min": 1,
+      "max": 19,
+      "zero_means": null,
+      "required": true,
+      "note": "BH-6173. zstd level for the archive, run as `zstd -<level> -T1`. Required: bin/state-backup.sh has no literal for it and reads ${BACKUP_ZSTD_LEVEL:-} (row > cached row > env > this default; empty only in a scratch tree, where 1 answers). A value outside 1-19 is logged and 1 is used. Level 1 measured 34% less CPU than 3 for a 16% bigger object."
+    },
+    {
+      "env": "BACKUP_SKIP_UNCHANGED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "zero_means": "off",
+      "required": true,
+      "note": "BH-6173. 1: a run whose input manifest matches the last shipped object ships nothing (after a head-object of that object) and only moves .ts in state/backup-last.json. 0: every run ships. Required: bin/state-backup.sh has no literal for it and reads ${BACKUP_SKIP_UNCHANGED:-}; a value other than 0 or 1 is logged and 1 is used."
+    },
+    {
+      "env": "BACKUP_FORCE_HOURS",
+      "type": "int",
+      "default": 24,
+      "min": 1,
+      "zero_means": null,
+      "required": true,
+      "note": "BH-6173. A full upload at least once per this many hours even when no input changed. Required: bin/state-backup.sh has no literal for it and reads ${BACKUP_FORCE_HOURS:-}; a value that is not a positive number is logged and 24 is used."
+    },
+    {
+      "env": "BACKUP_FORCE",
+      "type": "int",
+      "default": 0,
+      "zero_means": null,
+      "settable": false,
+      "note": "BH-6173. 1 ships even when no input changed. Read by bin/state-backup.sh as ${BACKUP_FORCE:-} (empty or 0 = not forced). NOT settable from the control plane: it is the operator and test seam, set by bin/box-ops.sh backup_now so \"back up now\" always uploads."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/state-backup.log"
+  }
+}

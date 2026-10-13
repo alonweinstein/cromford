@@ -1,0 +1,23 @@
+{
+  "libs": [
+    {
+      "id": "fly-image-row",
+      "file": "bin/lib/fly-image-row.sh",
+      "note": "BH-2523. The fly_images row seam: the Fly builder image a project's pool dispatches from, its bake manifest and its bake time as a row on the jobs worker, written by bin/fly-image-build.sh and bin/fly-pool-rollout.sh through fir_put and read DB-first through fir_load/fir_digest/fir_baked_at/fir_bake_to by bin/fleet-propagate.sh (the rebake debounce), bin/fly-pool.sh and bin/fly-provision.sh (the image) and bin/fly-image-build.sh (the last-baked fallback). Every reader falls back to its state/fly file on anything but an answer. Sourcing stays side-effect free: the knob is resolved on the first fir_* call, through lib_env_apply fly-image-row in a subshell, as operator row (settings key lib.fly-image-row.fly_images_db) > cached row > env > on. Any failure in that read leaves the env value.",
+      "knobs": [
+        {
+          "env": "FLY_IMAGES_DB",
+          "read_in": "bin/lib/fly-image-row.sh",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 1,
+          "zero_means": "off",
+          "required": false,
+          "settable": true,
+          "note": "The kill switch for the fly_images row. 0 = every fir_* function is a no-op (put rc 0 and sends nothing, reads rc 2 unknown), so every reader runs on its state/fly file alone and no writer sends a row, exactly as before BH-2523. Unset or anything else = on. Read as ${FLY_IMAGES_DB:-1} after the settings resolution."
+        }
+      ]
+    }
+  ]
+}

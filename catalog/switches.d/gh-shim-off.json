@@ -1,0 +1,1 @@
+{"name":"gh-shim-off","readers":["bin/gh-rest-shim"],"box_scoped":true,"what":"stops gh-rest-shim translating gh calls, so every call passes through to the real gh"}

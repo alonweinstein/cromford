@@ -1,0 +1,28 @@
+rules:
+  - id: native-browser-dialog
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: >-
+      Native browser dialog. window.confirm/alert/prompt are off-brand,
+      inaccessible, and they FREEZE browser automation — a Chrome MCP or QA
+      agent hangs on them until a human clicks. Use the project's in-app modal
+      (Cancel/Confirm, Escape-to-cancel, focus handling); create one shared
+      component if the project has none yet.
+    paths:
+      exclude:
+        - "*.test.ts"
+        - "*.test.tsx"
+        - "*.spec.ts"
+        - "*.spec.tsx"
+        - "**/e2e/**"
+        - "**/playwright/**"
+        - "**/*.config.ts"
+        - "**/scripts/**"
+    patterns:
+      - pattern-either:
+          - pattern: window.confirm(...)
+          - pattern: window.alert(...)
+          - pattern: window.prompt(...)
+          - pattern: globalThis.confirm(...)
+          - pattern: globalThis.alert(...)
+          - pattern: globalThis.prompt(...)

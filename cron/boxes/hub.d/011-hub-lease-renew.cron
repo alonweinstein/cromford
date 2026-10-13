@@ -1,0 +1,1 @@
+* * * * * /root/harness/bin/hub-lease.sh renew >/dev/null 2>&1

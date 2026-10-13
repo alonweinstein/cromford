@@ -1,0 +1,51 @@
+{
+  "id": "box-console-commands",
+  "name": "Box console commands",
+  "scope": "box",
+  "script": "bin/box-console-commands.sh",
+  "cadence": "* * * * *",
+  "boxes": [
+    "project-4",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-box-console-commands"
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "BOX_CONSOLE_COMMANDS_CLAIM_LIMIT",
+      "type": "int",
+      "default": 10,
+      "min": 1,
+      "max": 100,
+      "unit": "rows",
+      "zero_means": null,
+      "note": "Read by bin/box-console-commands.sh as ${BOX_CONSOLE_COMMANDS_CLAIM_LIMIT:-10}: the most forwarded console commands one claim takes. The lane claims 4 times a minute, so this times 4 is the per-box ceiling per minute."
+    },
+    {
+      "env": "BOX_CONSOLE_COMMANDS_TTL_S",
+      "type": "int",
+      "default": 300,
+      "min": 30,
+      "max": 86400,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "Read by bin/box-console-commands.sh as ${BOX_CONSOLE_COMMANDS_TTL_S:-300}: a claimed row whose created_at is older than this is refused as expired instead of run. A row with no created_at runs; the hub's expire owns those."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/box-console-commands.log"
+  }
+}

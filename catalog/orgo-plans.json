@@ -1,0 +1,39 @@
+{
+  "_comment": [
+    "THE ORGO PLAN MAP (BH-5748). One entry per Orgo account the fleet buys computers on.",
+    "Read by bin/box-launch.sh: --account <key> picks the entry. Editable here, in git,",
+    "because plan limits and prices are business facts and not code constants.",
+    "",
+    "plan: the Orgo plan name. key_env: the env var that holds this account's API key.",
+    "template_ref: the Orgo template a new box is created from (the claude-code template).",
+    "  null = not recorded; box-launch --apply refuses until it is set.",
+    "cost_account: the key in catalog/cost-accounts.json .accounts that box-register.sh",
+    "  --account gets for a box made here. register_like: box-register.sh --like <box-id>",
+    "  (project-6-os carries the @reboot sshd/tailscaled line of an Orgo claude-code box).",
+    "limits: max_vcpus_per_computer is the plan cap per computer; ram_tiers_gb are the only",
+    "  RAM sizes a computer can have.",
+    "pool: the account-level add-on pool (computers, vCPU, RAM GB, disk GB). Capacity is a",
+    "  MONTHLY pool, so a box uses its share for the whole month. null = not recorded;",
+    "  box-launch --apply refuses (never assumes free capacity) until it is set.",
+    "prices_usd_mo: monthly add-on price per computer, per vCPU, per RAM GB, per disk GB.",
+    "  null = not recorded; a request that needs that price is refused.",
+    "defaults: the specs box-launch uses when a --vcpus/--mem-gb/--disk-gb flag is absent.",
+    "  disk_gb null = no disk size is sent and none is priced.",
+    "",
+    "Source: Orgo billing, as recorded in docs/SCALE-PLAN-2.md on 2026-07-31 (startup_v2:",
+    "4 vCPU per computer cap, RAM tiers 4/8/16/32 GB, $4/GB/mo, $10/vCPU/mo, $1/mo per computer)."
+  ],
+  "accounts": {
+    "project-6-account": {
+      "plan": "startup_v2",
+      "key_env": "ORGO_API_KEY",
+      "template_ref": null,
+      "cost_account": "project-6-account",
+      "register_like": "project-6-os",
+      "limits": { "max_vcpus_per_computer": 4, "ram_tiers_gb": [4, 8, 16, 32] },
+      "pool": { "computers": null, "vcpus": null, "ram_gb": null, "disk_gb": null },
+      "prices_usd_mo": { "computer": 1, "vcpu": 10, "ram_gb": 4, "disk_gb": null },
+      "defaults": { "vcpus": 4, "mem_gb": 8, "disk_gb": null }
+    }
+  }
+}

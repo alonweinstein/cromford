@@ -1,0 +1,10 @@
+{
+  "name": "archie",
+  "role": "factory orchestrator",
+  "accountable": "operator@example.com",
+  "autonomy": "augmentation",
+  "cap": "autonomy",
+  "status": "active",
+  "soul": "prompts/archie-soul.d",
+  "lanes": ["archie", "archie-research"]
+}

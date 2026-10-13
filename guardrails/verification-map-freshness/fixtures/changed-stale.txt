@@ -1,0 +1,3 @@
+src/app/clients/[id]/page.tsx
+src/app/api/clients/route.ts
+src/lib/format.ts

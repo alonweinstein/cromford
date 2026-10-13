@@ -1,0 +1,59 @@
+{
+  "id": "ci-batch-ledger",
+  "name": "CI batch ledger",
+  "scope": "hub",
+  "script": "bin/ci-batch-ledger.sh",
+  "cadence": "11,41 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-ci-batch-ledger",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "CI_BATCH_LEDGER_REPO",
+      "type": "string",
+      "default": "example-org/cromford",
+      "zero_means": null,
+      "note": "BH-4971: the repo whose Harness CI (harness-ci.yml) merge-queue batch runs are recorded, one worker ci_batches row per run. Only cromford runs that workflow. NOT settable from the control plane: it is an identity the lane reads GitHub as, so only env/global.env on the box moves it.",
+      "settable": false
+    },
+    {
+      "env": "CI_BATCH_LEDGER_MAX",
+      "type": "int",
+      "default": 20,
+      "min": 1,
+      "max": 100,
+      "zero_means": null,
+      "note": "BH-4971: at most this many unrecorded batch runs are read and recorded per tick (two GitHub reads each in practice: the jobs of every attempt and the plan job's annotations; a run with over 100 jobs pages up to CI_BATCH_LEDGER_PAGES). The rest are logged as deferred and drain oldest first on later ticks."
+    },
+    {
+      "env": "CI_BATCH_LEDGER_DAYS",
+      "type": "int",
+      "default": 7,
+      "min": 1,
+      "max": 30,
+      "zero_means": null,
+      "note": "BH-4971: the window. Runs created in the last this-many days are candidates, and the ledger GET over the same window is the skip-set. A run older than the window that was never recorded is not backfilled."
+    },
+    {
+      "env": "CI_BATCH_LEDGER_PAGES",
+      "type": "int",
+      "default": 5,
+      "min": 1,
+      "max": 10,
+      "zero_means": null,
+      "note": "BH-4971: at most this many 100-run pages of the harness-ci.yml run list per tick. When every page is full the log says the window was not fully read. Also the page cap on one run's jobs list. Per-tick GitHub reads: this + 2 x CI_BATCH_LEDGER_MAX in practice, at most this + (this + 1) x CI_BATCH_LEDGER_MAX."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/ci-batch-ledger.log"
+  }
+}

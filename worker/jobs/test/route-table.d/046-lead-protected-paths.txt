@@ -1,0 +1,4 @@
+# BH-4146: the lead's protected-path globs, directly under the lead review
+# requests (src/index.js ROUTES: ...leadReviews, ...leadProtectedPaths, ...catalog).
+GET /api/lead-protected-paths
+PUT /api/lead-protected-paths

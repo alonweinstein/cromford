@@ -1,0 +1,3 @@
+{
+  "body": "<p>We split this one into 3 waves and filed each as its own ticket. They are built in order, and this ticket stays open as the master until they land.</p><ol><li><a href=\"https://ledger.example/board/LG-101\">LG-101</a>: Schema</li><li><a href=\"https://ledger.example/board/LG-102\">LG-102</a>: API</li><li><a href=\"https://ledger.example/board/LG-103\">LG-103</a>: UI</li></ol>"
+}

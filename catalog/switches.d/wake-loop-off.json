@@ -1,0 +1,1 @@
+{"name":"wake-loop-off","readers":["bin/wake-loop.sh","bin/lib/wake-armed-watch.sh"],"box_scoped":true,"what":"pauses the wake loop's drain, so every lane runs on its own cron tick; the armed-class watchdog stands down while it is on"}

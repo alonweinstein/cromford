@@ -1,0 +1,1 @@
+{"name":"audit-off","readers":["bin/audit-install.sh","bin/audit-tail.sh"],"box_scoped":true,"what":"stops the audit trail: audit-install.sh installs nothing and audit-tail.sh exits"}

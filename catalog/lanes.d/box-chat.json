@@ -1,0 +1,109 @@
+{
+  "id": "box-chat",
+  "name": "Mission Control chat pane (per box)",
+  "scope": "project",
+  "script": "bin/box-chat.sh",
+  "cadence": "on demand (via a Mission Control chat hand-off from bin/poll-commands.sh; no cron line)",
+  "boxes": [
+    "project-4",
+    "hub",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-box-chat",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "LLM_LANE_ENABLED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "0 makes the Mission Control chat pane on this box call no model at all: the claude rung (bin/claude-cost.sh) and the fallback rung (bin/agent-call.sh) are refused BEFORE the vendor call with a zero-cost row_source=refused row, and the pane gets the bash rung's one reply."
+    },
+    {
+      "env": "LLM_RUNNER_ALLOWED",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Comma/space list of the ONLY runners the chat pane may reach. Empty is every runner, i.e. today's ladder unchanged. The claude rung is runner claude; the fallback rung is RUNNER_CHAT_FALLBACK through bin/agent-call.sh. A runner outside the list is refused before the call."
+    },
+    {
+      "env": "LLM_USD_CAP_DAY",
+      "type": "float",
+      "default": 0,
+      "min": 0,
+      "max": 10000,
+      "unit": "usd",
+      "zero_means": "unlimited",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Dollars the chat pane may spend in the current UTC day, summed from D1 cost_rows stamped lane_id=box-chat through GET /api/metrics/llm-spend, never from the box's own logs/cost.csv. Checked before both the claude rung and the fallback rung."
+    },
+    {
+      "env": "BOX_CHAT_TIMEOUT",
+      "type": "int",
+      "default": 900,
+      "min": 60,
+      "max": 3600,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "Seconds one chat turn may run (each claude rung and the fallback rung), and how long a second question waits for the per-project turn lock before it is answered busy. Read as ${BOX_CHAT_TIMEOUT:-900}."
+    },
+    {
+      "env": "BOX_CHAT_MODEL",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "settable": false,
+      "note": "Empty by default: the model is the model_routes row for role orchestrate (bin/lib/lane-model.sh, ORCHESTRATOR_MODEL wins over it). Set this in env/global.env only to override that row on one box."
+    },
+    {
+      "env": "RUNNER_CHAT_FALLBACK",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "settable": false,
+      "note": "The runner the fallback rung hands to bin/agent-call.sh when the claude rung fails. Empty falls back to RUNNER_TRIAGE_FALLBACK, and both empty means no fallback rung. Registered so it is visible; set it in env/global.env on the box."
+    },
+    {
+      "env": "RUNNER_TRIAGE_FALLBACK",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "settable": false,
+      "note": "Read here only as the second choice for the chat fallback runner (${RUNNER_CHAT_FALLBACK:-${RUNNER_TRIAGE_FALLBACK:-}}). Set it in env/global.env on the box."
+    }
+  ],
+  "stats": {
+    "cost_stage": "chat",
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/box-chat.log"
+  }
+}

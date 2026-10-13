@@ -1,0 +1,88 @@
+{
+  "id": "lead-review-land",
+  "name": "Lead review promotion",
+  "scope": "hub",
+  "script": "bin/lead-review-land.sh",
+  "cadence": "*/15 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-lead-review-land",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "LEAD_REVIEW_OVERDUE_MIN",
+      "type": "int",
+      "default": 120,
+      "min": 5,
+      "max": 10080,
+      "unit": "minutes",
+      "zero_means": null,
+      "note": "A lead review request still requested or running this many minutes after created_at gets one ALERTS line (once per request)."
+    },
+    {
+      "env": "LEAD_REVIEW_ENV_RETRY_MAX",
+      "type": "int",
+      "default": 3,
+      "min": 0,
+      "max": 20,
+      "unit": "resets",
+      "zero_means": "off",
+      "note": "BH-5793: a lead review request that failed on its environment (checkout, no clone, an empty model answer, a rules pack that failed on its own setup) is reset to requested until reset_count reaches this; past it, one ALERTS line. 0 turns the requeue off: every failed request alerts, as before BH-5793."
+    },
+    {
+      "env": "LEAD_REVIEW_AUTO_REPOS",
+      "type": "string",
+      "default": "example-org/cromford",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "settable": false,
+      "required": true,
+      "note": "BH-3479.0: the space-separated owner/repo slugs whose builder-APPROVE PRs get an automatic lead review request (hub trigger, BH-3479.1) and whose merges are scored for lead precision (BH-3479.4). Both read it through lane_env_apply lead-review-land. settable:false because a *_REPOS name could re-aim a root lane at another repo (tests/lanes-registry-test.sh section 17a). Change it through env/global.env until a HAZ_OK exception is argued for."
+    },
+    {
+      "env": "LEAD_REVIEW_SPOTCHECK_PCT",
+      "type": "int",
+      "default": 10,
+      "min": 0,
+      "max": 100,
+      "unit": "percent",
+      "zero_means": "off",
+      "required": true,
+      "note": "BH-3479.0: the share of lead MERGE / MERGE-WITH-NOTES verdicts flagged to the warn Telegram digest for a human spot-check (BH-3479.3), picked by a deterministic cksum bucket of <slug>#<n>@<head>. 0 = off: no MERGE verdict is sampled."
+    },
+    {
+      "env": "LEAD_REVIEW_LAND_RERUN_MAX",
+      "type": "int",
+      "default": 3,
+      "min": 0,
+      "max": 20,
+      "zero_means": "off",
+      "required": false,
+      "note": "BH-4057 (BH-4094): how deep a chain of owed reruns may go. A tick refused by the tick lock leaves state/lead-review-land/rerun-owed and the tick holding the lock reruns bin/lead-review-land.sh once, detached, after its summary line (lcw_rerun, bin/lib/lead-chain-wake.sh); the child counts LEAD_CHAIN_RERUN_DEPTH and stops at this cap. Read as ${LEAD_REVIEW_LAND_RERUN_MAX:-}: unset or 0 = no rerun, the marker is kept, and the cron tick covers it."
+    },
+    {
+      "env": "LEAD_REVIEW_LAND_POST_RETRIES",
+      "type": "int",
+      "default": 3,
+      "min": 0,
+      "max": 3,
+      "unit": null,
+      "zero_means": "off",
+      "required": false,
+      "note": "BH-5773: how many times a lead verdict POST that answered 503 is retried in the same tick, after 2 s, 5 s and 10 s, each after a re-read that finds no row. 0 = off: one post, the next tick retries. Anything not 0..3 is logged and reads 3. One request that uses every retry makes the rest of that tick post once."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/lead-review-land.log"
+  }
+}

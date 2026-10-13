@@ -1,0 +1,109 @@
+{
+  "id": "console-preview-deploy",
+  "name": "Console preview deploy and QA (a Cloudflare Pages preview of each open console-ui PR head, browser QA as a read-only session)",
+  "scope": "hub",
+  "script": "bin/console-preview-deploy.sh",
+  "cadence": "*/5 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-console-preview-deploy",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "CONSOLE_PREVIEW_DEPLOY",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 1,
+      "zero_means": "off",
+      "note": "BH-5909: 1 = deploy and QA each open console-ui PR head. 0 (the default) = off. It is turned on after the first green proof on a real console PR.",
+      "settable": true
+    },
+    {
+      "env": "CONSOLE_PREVIEW_MAX_PER_RUN",
+      "type": "int",
+      "default": 3,
+      "min": 1,
+      "max": 20,
+      "zero_means": null,
+      "note": "BH-5909: Pages preview deploys per tick. The rest are logged as deferred and deploy on a later tick, never dropped. Read by bin/console-preview-deploy.sh as ${CONSOLE_PREVIEW_MAX_PER_RUN:-3}; a non-number is one log line and the default.",
+      "settable": true
+    },
+    {
+      "env": "CONSOLE_PREVIEW_MAX_ATTEMPTS",
+      "type": "int",
+      "default": 2,
+      "min": 1,
+      "max": 10,
+      "zero_means": null,
+      "note": "BH-5909: build or deploy attempts per PR head. A failure takes no CONSOLE_PREVIEW_MAX_PER_RUN slot; the head's state file records `failed <n>`, and at this many the head is terminal: one PR comment says so (<!-- console-preview-failed sha=… -->) and no later run builds it. A new push is a new head. Read as ${CONSOLE_PREVIEW_MAX_ATTEMPTS:-2}; a non-number or 0 is one log line and the default.",
+      "settable": true
+    },
+    {
+      "env": "CONSOLE_PREVIEW_BUILD_USER",
+      "type": "string",
+      "default": "nobody",
+      "zero_means": null,
+      "note": "BH-5909 review: the user the PR head's npm ci --ignore-scripts and vite build run as (bin/lib/console-preview.sh cpv_run_unpriv), with a clean env and no read of the env dir. A root lane that cannot drop to it (no setpriv, no such user, uid 0) deploys nothing and logs why. NOT settable from the control plane: the value decides what unreviewed code can read, so only env/global.env on the box moves it.",
+      "settable": false
+    },
+    {
+      "env": "CONSOLE_PREVIEW_BUILD_TMP",
+      "type": "string",
+      "default": "/tmp",
+      "zero_means": null,
+      "note": "BH-5909 review: where the unprivileged build tree console-preview-build.* is made. It must be reachable by CONSOLE_PREVIEW_BUILD_USER, so never under /root. NOT settable from the control plane: it is a path a root lane uses.",
+      "settable": false
+    },
+    {
+      "env": "HARNESS_CHECKOUT",
+      "type": "string",
+      "default": "/root/harness-checkout",
+      "zero_means": null,
+      "note": "Read by bin/console-preview-deploy.sh as ${HARNESS_CHECKOUT:-/root/harness-checkout}: the hub checkout the PR heads are fetched into and archived from. NOT settable from the control plane: it is a path a root lane uses, so only env/global.env on the box moves it.",
+      "settable": false
+    },
+    {
+      "env": "CONSOLE_PREVIEW_QA_SCREENS",
+      "type": "string",
+      "default": "/",
+      "zero_means": null,
+      "note": "BH-5909: the console paths the preview QA loads, space-separated, each at 1440px and 390px. The thin slice drives one screen."
+    },
+    {
+      "env": "CONSOLE_PREVIEW_WRANGLER",
+      "type": "string",
+      "default": "3.114.17",
+      "zero_means": null,
+      "note": "BH-5909: the exact wrangler version npx runs for a preview deploy (pinned, never a range). A value that is not x.y.z falls back to 3.114.17 with one log line."
+    },
+    {
+      "env": "CONSOLE_PREVIEW_CF_API",
+      "type": "string",
+      "default": "https://api.cloudflare.com/client/v4",
+      "zero_means": null,
+      "note": "BH-5909: the Cloudflare API base the lane reads the Pages project's preview bindings from before any deploy. Only changed for a test or a proxy. Not settable from a settings row: the lane sends a credential to this host, so only the box env may set it.",
+      "settable": false
+    },
+    {
+      "env": "CONSOLE_WORKER_URL",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "BH-5909: the console worker the hub mints the read-only QA session from (POST /api/qa/session, Bearer HARNESS_SECRET). Empty = https://harness-console.<HARNESS_WORKERS_SUBDOMAIN>.workers.dev (bin/lib/deployment.sh). Not settable from a settings row: the lane sends a credential to this host, so only the box env may set it.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/console-preview-deploy.log"
+  },
+  "note": "BH-5909 slice 1. Off by default (CONSOLE_PREVIEW_DEPLOY 0) until the first green proof. Runs only where env/cloudflare.env and the harness checkout exist (the hub). Same-repo PR heads only. The build runs as CONSOLE_PREVIEW_BUILD_USER with npm ci --ignore-scripts, never as root beside the Cloudflare token. The deploy tree holds the PR's built dist/ and origin/main's functions/ and src/ only, and wrangler runs pinned with npm config off. A preview environment with a D1, KV or R2 binding or a secret-named env var stops every deploy with one alert. QA signs in with a read-only session the console worker mints (POST /api/qa/session, cromford-console #46) and loads CONSOLE_PREVIEW_QA_SCREENS at 1440px and 390px. The PR comment carries <!-- console-preview sha=<40hex> url=<url> --> and <!-- console-qa sha=<40hex> result=PASS|FAIL -->; state/console-preview-deploy/<sha> is a 14-day cost cache."
+}

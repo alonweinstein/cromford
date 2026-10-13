@@ -1,0 +1,25 @@
+rules:
+  - id: hardcoded-model-id
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: >-
+      Hardcoded model id. Model selection is database-driven and resolved at
+      runtime per agent (the project-4 reference: AgentConfig.parameters.model via
+      resolveModel(key, dept)). A model upgrade must be a data edit, not a
+      deploy — and a literal here is how agents end up silently calling model
+      ids that no longer exist. Resolve the model instead, and keep the literal
+      only inside the resolver as a documented fallback.
+    paths:
+      exclude:
+        - "*.test.ts"
+        - "*.test.tsx"
+        - "*.spec.ts"
+        - "*_test.ts"
+        - "**/model-selector.ts"
+        - "**/model-resolver.ts"
+        - "**/models.ts"
+        - "**/seed*.ts"
+        - "**/migrations/**"
+    patterns:
+      - pattern-regex: |-
+          ["'`](claude-[A-Za-z0-9._-]+|gpt-[0-9][A-Za-z0-9._-]*|gemini-[0-9][A-Za-z0-9._-]*|grok-[0-9][A-Za-z0-9._-]*|deepseek-[A-Za-z0-9._-]+)["'`]

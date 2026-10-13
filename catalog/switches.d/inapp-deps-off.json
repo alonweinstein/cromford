@@ -1,0 +1,1 @@
+{"name":"inapp-deps-off","readers":["bin/lib/inapp-deps.sh"],"box_scoped":true,"what":"stops in-app boards from holding and releasing tickets on their Blocked-by text lines"}

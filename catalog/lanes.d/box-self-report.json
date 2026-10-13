@@ -1,0 +1,61 @@
+{
+  "id": "box-self-report",
+  "name": "Box self-report",
+  "scope": "box",
+  "script": "bin/box-self-report.sh",
+  "cadence": "27 * * * *",
+  "boxes": [
+    "project-4",
+    "hub",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-10",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-box-self-report",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "BOX_SELF_REPORT_ENABLED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "zero_means": "off",
+      "required": true,
+      "settable": true,
+      "note": "BH-2626. The lane's on/off switch: 0 stops the hourly self-report before it reads anything (flags/lane-off-box-self-report is the other). bin/box-self-report.sh has no literal for it and tests it as ${BOX_SELF_REPORT_ENABLED:-} = 0. With it off, rules-drift-check and cli-version-check see the row go stale and ssh the box, as before BH-2626."
+    },
+    {
+      "env": "BOX_SELF_REPORT_CLAUDE_DIR",
+      "type": "string",
+      "default": "/root/.claude",
+      "zero_means": null,
+      "note": "Read by bin/box-self-report.sh as ${BOX_SELF_REPORT_CLAUDE_DIR:-/root/.claude}: where the CLAUDE.md whose md5 is reported lives. Test seam; NOT settable from the control plane — it is a path a root lane uses, so only env/global.env on the box moves it.",
+      "settable": false
+    },
+    {
+      "env": "BOX_SELF_REPORT_TIMEOUT",
+      "type": "int",
+      "default": 30,
+      "zero_means": null,
+      "note": "Read by bin/box-self-report.sh as ${BOX_SELF_REPORT_TIMEOUT:-30}: seconds the whole report (both --version reads and the POST) may take before it is killed and logged as failed. Test seam; NOT settable from the control plane.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/box-self-report.log"
+  }
+}

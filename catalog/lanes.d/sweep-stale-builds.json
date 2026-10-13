@@ -1,0 +1,23 @@
+{
+  "id": "sweep-stale-builds",
+  "name": "Sweep stale builds",
+  "scope": "hub",
+  "script": "bin/sweep-stale-builds.sh",
+  "cadence": "55 4 * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-sweep-stale-builds",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/sweep-stale-builds.log"
+  }
+}

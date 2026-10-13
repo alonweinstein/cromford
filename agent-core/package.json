@@ -1,0 +1,12 @@
+{
+  "name": "@example-org/agent-core",
+  "version": "0.1.0",
+  "description": "Pure functions for an always-on staff agent: soul, autonomy, fingerprint, learning, schemas.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "private": true,
+  "exports": "./src/index.js",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  }
+}

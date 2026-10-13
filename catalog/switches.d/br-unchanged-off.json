@@ -1,0 +1,1 @@
+{"name":"br-unchanged-off","readers":["bin/lib/br/opt/unchanged.sh"],"box_scoped":true,"what":"turns off the unchanged-row skip of bin/blocked-resolver.sh (bin/lib/br/opt/unchanged.sh): every quiet row is read again on every run"}

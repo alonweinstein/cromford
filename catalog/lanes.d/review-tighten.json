@@ -1,0 +1,43 @@
+{
+  "id": "review-tighten",
+  "name": "Review tighten",
+  "scope": "hub",
+  "script": "bin/review-tighten.sh",
+  "cadence": "45 5 * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-review-tighten",
+    "aliases": [
+      {
+        "name": "review-tighten-disabled",
+        "off_when": "present"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "REVIEW_TIGHTEN_DRY",
+      "type": "int",
+      "default": 0,
+      "zero_means": null,
+      "note": "Read by bin/review-tighten.sh as ${REVIEW_TIGHTEN_DRY:-0}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "REVIEW_TIGHTEN_LEDGER_MAX",
+      "type": "int",
+      "default": 500,
+      "zero_means": null,
+      "note": "Read by bin/review-tighten.sh as ${REVIEW_TIGHTEN_LEDGER_MAX:-500}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/review-tighten.log"
+  }
+}

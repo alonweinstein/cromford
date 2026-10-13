@@ -1,0 +1,66 @@
+{
+  "id": "disk-guard",
+  "name": "Disk guard",
+  "scope": "box",
+  "script": "bin/disk-guard.sh",
+  "cadence": "*/10 * * * *",
+  "boxes": [
+    "project-4",
+    "hub",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-disk-guard"
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "DISK_ALERT_PCT",
+      "type": "int",
+      "default": 85,
+      "min": 50,
+      "max": 99,
+      "zero_means": null,
+      "note": "Root disk Use% at or over which bin/disk-guard.sh raises disk-high-<host> (warn). BH-1123."
+    },
+    {
+      "env": "DISK_BUILD_REFUSE_PCT",
+      "type": "int",
+      "default": 92,
+      "min": 50,
+      "max": 100,
+      "zero_means": null,
+      "note": "Root disk Use% at or over which bin/run-build.sh (# >>> disk gate) answers BUILD_DEFERRED instead of starting a build, and bin/disk-guard.sh raises disk-refuse-<host> (critical). 100 stops the refusal. BH-1123."
+    },
+    {
+      "env": "DISK_TOP_DIRS_TTL_MIN",
+      "type": "int",
+      "default": 60,
+      "min": 10,
+      "zero_means": null,
+      "note": "Minutes bin/disk-guard.sh reuses its cached top-5 directory listing (state/disk-guard/top-dirs) in the disk-high text before running du again. BH-4440."
+    },
+    {
+      "env": "DISK_TOP_DIRS_TIMEOUT_S",
+      "type": "int",
+      "default": 120,
+      "min": 10,
+      "zero_means": null,
+      "note": "Seconds bin/disk-guard.sh gives `nice du -xk -d 2 /` for the top-5 listing; past it the text reads 'top dirs: unavailable (du timed out)'. BH-4440."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/disk-guard.log"
+  }
+}

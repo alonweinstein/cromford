@@ -1,0 +1,6 @@
+# The thread is answered and the mechanism is confirmed, so every readiness
+# signal says "build it" — and PR #641 from the other team already covers the
+# exact scope, branch included. The duplicate-work check is the only thing that
+# stops a twin build here. Not launching is the whole test; a `comment` pointing
+# the thread at the existing PR is also a correct outcome.
+TK-4801 :: skip|defer|comment

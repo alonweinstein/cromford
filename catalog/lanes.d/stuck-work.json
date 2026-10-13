@@ -1,0 +1,246 @@
+{
+  "id": "stuck-work",
+  "name": "Stuck-work SLA pager",
+  "scope": "hub",
+  "script": "bin/stuck-work.sh",
+  "cadence": "*/5 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-stuck-work",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "STUCK_WORK_ENABLED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "zero_means": "off",
+      "note": "BH-3781: read by bin/stuck-work.sh as ${STUCK_WORK_ENABLED:-1}: 0 writes ` disabled` and stops.",
+      "settable": true
+    },
+    {
+      "env": "STUCK_WORK_NOW",
+      "type": "int",
+      "default": 0,
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/stuck-work/seen.sh",
+      "note": "Test seam: the epoch sw_first_seen and bin/stuck-work.sh use as now. Honoured only under HARNESS_TEST_SANDBOX=1 and only when it is all digits; otherwise the clock is date -u +%s. NOT settable from the control plane.",
+      "settable": false
+    },
+    {
+      "env": "STUCK_WORK_SLA_LEAD_REVIEW_MIN",
+      "type": "int",
+      "default": 60,
+      "min": 1,
+      "max": 10080,
+      "unit": "minutes",
+      "zero_means": null,
+      "read_in": "bin/lib/stuck-work/classify.sh",
+      "note": "BH-3781: minutes a awaiting-lead-review (no merge verdict bound to the head) item may sit before it pages. Read by sw_sla_s as ${STUCK_WORK_SLA_LEAD_REVIEW_MIN:-60}; a non-digit or 0 value uses 60. Seeded as lane.stuck-work.stuck_work_sla_lead_review_min.",
+      "settable": true
+    },
+    {
+      "env": "STUCK_WORK_SLA_READY_MIN",
+      "type": "int",
+      "default": 15,
+      "min": 1,
+      "max": 10080,
+      "unit": "minutes",
+      "zero_means": null,
+      "read_in": "bin/lib/stuck-work/classify.sh",
+      "note": "BH-3781: minutes a ready (merge verdict on head, lead passed) item may sit before it pages. Read by sw_sla_s as ${STUCK_WORK_SLA_READY_MIN:-15}; a non-digit or 0 value uses 15. Seeded as lane.stuck-work.stuck_work_sla_ready_min.",
+      "settable": true
+    },
+    {
+      "env": "STUCK_WORK_SLA_QUEUED_MIN",
+      "type": "int",
+      "default": 90,
+      "min": 1,
+      "max": 10080,
+      "unit": "minutes",
+      "zero_means": null,
+      "read_in": "bin/lib/stuck-work/classify.sh",
+      "note": "BH-3781: minutes a queued (in the Mergify queue) item may sit before it pages. Read by sw_sla_s as ${STUCK_WORK_SLA_QUEUED_MIN:-90}; a non-digit or 0 value uses 90. Seeded as lane.stuck-work.stuck_work_sla_queued_min.",
+      "settable": true
+    },
+    {
+      "env": "STUCK_WORK_SLA_DEQUEUED_MIN",
+      "type": "int",
+      "default": 30,
+      "min": 1,
+      "max": 10080,
+      "unit": "minutes",
+      "zero_means": null,
+      "read_in": "bin/lib/stuck-work/classify.sh",
+      "note": "BH-3781: minutes a dequeued (dropped from the queue) item may sit before it pages. Read by sw_sla_s as ${STUCK_WORK_SLA_DEQUEUED_MIN:-30}; a non-digit or 0 value uses 30. Seeded as lane.stuck-work.stuck_work_sla_dequeued_min.",
+      "settable": true
+    },
+    {
+      "env": "STUCK_WORK_SLA_BLOCKED_MIN",
+      "type": "int",
+      "default": 60,
+      "min": 1,
+      "max": 10080,
+      "unit": "minutes",
+      "zero_means": null,
+      "read_in": "bin/lib/stuck-work/classify.sh",
+      "note": "BH-3781: minutes a blocked (BLOCK on head, age from the newer of the verdict and the resolver's last action) item may sit before it pages. Read by sw_sla_s as ${STUCK_WORK_SLA_BLOCKED_MIN:-60}; a non-digit or 0 value uses 60. Seeded as lane.stuck-work.stuck_work_sla_blocked_min.",
+      "settable": true
+    },
+    {
+      "env": "STUCK_WORK_SLA_HUMAN_MIN",
+      "type": "int",
+      "default": 1440,
+      "min": 1,
+      "max": 10080,
+      "unit": "minutes",
+      "zero_means": null,
+      "read_in": "bin/lib/stuck-work/classify.sh",
+      "note": "BH-3781: minutes a waiting-on-human (digest only: sw_decide never pages this state) item may sit before it pages. Read by sw_sla_s as ${STUCK_WORK_SLA_HUMAN_MIN:-1440}; a non-digit or 0 value uses 1440. Seeded as lane.stuck-work.stuck_work_sla_human_min.",
+      "settable": true
+    },
+    {
+      "env": "STUCK_WORK_SLA_UNLAUNCHED_MIN",
+      "type": "int",
+      "default": 60,
+      "min": 1,
+      "max": 10080,
+      "unit": "minutes",
+      "zero_means": null,
+      "read_in": "bin/lib/stuck-work/classify.sh",
+      "note": "BH-3781: minutes a unlaunched (an ai-build ticket with no job and no PR) item may sit before it pages. Read by sw_sla_s as ${STUCK_WORK_SLA_UNLAUNCHED_MIN:-60}; a non-digit or 0 value uses 60. Seeded as lane.stuck-work.stuck_work_sla_unlaunched_min.",
+      "settable": true
+    },
+    {
+      "env": "STUCK_WORK_REPAGE_FACTOR",
+      "type": "int",
+      "default": 4,
+      "min": 2,
+      "max": 100,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/stuck-work/classify.sh",
+      "note": "BH-3781: a paged item repages once, at this many times its SLA; after that it is quiet. Read by sw_repage_factor as ${STUCK_WORK_REPAGE_FACTOR:-4}; non-digit is 4, below 2 is 2.",
+      "settable": true
+    },
+    {
+      "env": "STUCK_WORK_MAX_ITEMS",
+      "type": "int",
+      "default": 300,
+      "min": 1,
+      "max": 5000,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/stuck-work/classify.sh",
+      "note": "BH-3781: the most items one stuck-work tick classifies. Read by sw_max_items as ${STUCK_WORK_MAX_ITEMS:-300}; non-digit or 0 is 300.",
+      "settable": true
+    },
+    {
+      "env": "STUCK_WORK_CI_TTL_S",
+      "type": "int",
+      "default": 900,
+      "min": 0,
+      "max": 3600,
+      "unit": "seconds",
+      "zero_means": "off",
+      "read_in": "bin/lib/stuck-work/facts-pr.sh",
+      "note": "BH-4660: seconds a PR's cached CI line (state/stuck-work/ci/<owner_repo>-<n>: lead status and Mergify phase) may be reused while its head and updated_at are unchanged and no checks/pr wake arrived. The backstop for an in-progress Mergify run that emits no wake. Read by _swf_ci_hit as ${STUCK_WORK_CI_TTL_S:-900}; non-digit is 900, 0 turns the cache off (every pass reads). Seeded as lane.stuck-work.stuck_work_ci_ttl_s.",
+      "settable": true
+    },
+    {
+      "env": "STUCK_WORK_THREAD_FULL_S",
+      "type": "int",
+      "default": 1800,
+      "min": 0,
+      "max": 86400,
+      "unit": "seconds",
+      "zero_means": "off",
+      "read_in": "bin/lib/stuck-work/facts-ticket.sh",
+      "note": "BH-4660: seconds between full reads of a ticket's comment thread; in between it is read with since= (or not at all when no issue wake arrived) and merged into state/stuck-work/thread/. Also the bound on how long a deleted HOLD comment can stay counted. Read by _swf_thread as ${STUCK_WORK_THREAD_FULL_S:-1800}; non-digit is 1800, 0 turns the thread cache off (every pass reads in full). Seeded as lane.stuck-work.stuck_work_thread_full_s.",
+      "settable": true
+    },
+    {
+      "env": "STUCK_WORK_SLA_BUILD_STAGES",
+      "type": "string",
+      "default": "plan=45,execute=120,review=45,fix=60,default=90",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/stuck-work/classify.sh",
+      "note": "BH-3781: minutes per build stage for building:<stage>, as stage=minutes pairs; a stage with no entry uses default=, else 90. Read by sw_sla_s as ${STUCK_WORK_SLA_BUILD_STAGES:-plan=45,execute=120,review=45,fix=60,default=90}; a value that does not parse uses that default. Seeded as lane.stuck-work.stuck_work_sla_build_stages.",
+      "settable": true
+    },
+    {
+      "env": "STUCK_WORK_REPO",
+      "type": "string",
+      "default": "example-org/cromford",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/stuck-work/classify.sh",
+      "note": "BH-3781: the owner/name repo the stuck-work lane watches. Read by sw_repo as ${STUCK_WORK_REPO:-example-org/cromford}; a value that is not owner/name uses that default. NOT settable from the control plane: a repo name is an identity the lane acts on (tests/lanes-registry-test.sh section 17), so only env/global.env on the hub moves it.",
+      "settable": false
+    },
+    {
+      "env": "STUCK_WORK_FIXTURE",
+      "type": "string",
+      "default": "",
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/stuck-work.sh",
+      "note": "Test seam: a file of FACTS lines bin/stuck-work.sh reads instead of GitHub, or a directory holding one <project>.txt per project (BH-5943), only when HARNESS_TEST_SANDBOX=1. NOT settable from the control plane.",
+      "settable": false
+    },
+    {
+      "env": "HARNESS_TEST_SANDBOX",
+      "type": "string",
+      "default": "",
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/stuck-work.sh",
+      "note": "Test seam gate: bin/stuck-work.sh honours STUCK_WORK_NOW and STUCK_WORK_FIXTURE only when this is 1 (the test harness sets it). Never set on a box, and NOT settable from the control plane.",
+      "settable": false
+    },
+    {
+      "env": "STUCK_WORK_PROJECTS",
+      "read_in": "bin/stuck-work.sh",
+      "type": "string",
+      "default": "self",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "note": "BH-5943: the projects stuck-work watches. `self` (also empty) = only the home project (the fleet.conf project whose repo is sw_repo, else cromford), which is the behaviour before BH-5943; `all` = every fleet.conf project; or a comma list of project names, exact match, no spaces. Any other value is one stderr line in logs/stuck-work-cron.log and reads as self. The dispatcher starts a run for every fleet project; a run for a project that is not watched exits 0 before the lane gate: no flag read, no liveness POST, no ledger read, no log; its one read is the TTL-shared settings cache (lane_env_apply), which makes one GET /api/settings only when that cache is older than LANE_GATE_CACHE_S. A watched non-home project pages with --project <p> and writes the ledger row stuck_work_snapshot/<p>, which the daily digest does not read yet (it reads only stuck_work_snapshot/latest, the home project's).",
+      "settable": true
+    },
+    {
+      "env": "STUCK_WORK_DISPATCH_SPREAD_S",
+      "read_in": "bin/stuck-work.sh",
+      "type": "int",
+      "default": 240,
+      "min": 0,
+      "max": 290,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "BH-5943: the cron line runs `stuck-work.sh --dispatch`, which starts one detached `stuck-work.sh <project>` per fleet project (bin/lib/project-lanes.sh pl_dispatch), each at a stable offset inside this many seconds, so the starts spread over the 5-minute cadence. 0 starts every run at once. A value that is not a number of seconds is one line in logs/stuck-work-cron.log and 240.",
+      "settable": true
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/stuck-work.log"
+  }
+}

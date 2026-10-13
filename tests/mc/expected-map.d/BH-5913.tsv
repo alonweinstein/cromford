@@ -1,0 +1,4 @@
+# tests/mc/expected-map.d/BH-5913.tsv — 2026-10-10: mc_resolver_saturated reads the
+# blocked-resolver SATURATED marker, fleet-wide or per repo (one run per project).
+# origin=lib because it is a new module function.
+classify	mc_resolver_saturated	lib

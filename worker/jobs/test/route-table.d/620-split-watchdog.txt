@@ -1,0 +1,4 @@
+# SPLIT-WATCHDOG (BH-1806): the split-watchdog action ledger, appended after
+# triage-state at the END of the table, where src/index.js puts it.
+POST /api/split-watchdog
+GET /api/split-watchdog

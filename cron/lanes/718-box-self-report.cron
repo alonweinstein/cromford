@@ -1,0 +1,4 @@
+# box-self-report (BH-2626): every box, hourly, the lane posts this box's claude/codex versions and the md5 of its rendered /root/.claude/CLAUDE.md to /api/boxes/self-report, so rules-drift-check and cli-version-check judge a box from its own row and ssh it only when that row is stale.
+# Off: BOX_SELF_REPORT_ENABLED=0 (settings row) or bin/harness-ctl.sh off box-self-report. flock -n dedupes; timeout 30, no retry.
+# :27 lands after rules-drift-check (:13) and after the 05:17 update-runners/cli-update tick, and before the 05:40 cli-version-check.
+27 * * * * /root/harness/bin/box-self-report.sh >/dev/null 2>&1

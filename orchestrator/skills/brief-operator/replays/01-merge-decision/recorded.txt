@@ -1,0 +1,6 @@
+I'd merge #4117. Review approved it and CI is green, but it changes a harness rule, so it's your call.
+
+https://github.com/example-org/cromford/pull/4117
+
+Reply "merge 4117" or tell me what to change.
+VERDICT: send

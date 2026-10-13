@@ -1,0 +1,18 @@
+diff --git a/src/actions/delete-project.js b/src/actions/delete-project.js
+new file mode 100644
+index 0000000..508d7b9
+--- /dev/null
++++ b/src/actions/delete-project.js
+@@ -0,0 +1,12 @@
++'use strict';
++
++// deleteProject(id, store): store is a Map of project id -> project.
++async function deleteProject(id, store) {
++  const project = store.get(id);
++  if (!project) return false;
++  if (!confirm(`Delete "${project.name}"? This cannot be undone.`)) return false;
++  store.delete(id);
++  return true;
++}
++
++module.exports = { deleteProject };

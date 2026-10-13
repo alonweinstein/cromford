@@ -1,0 +1,1 @@
+{"name":"fastpath-off","readers":["bin/launch-fastpath.sh","bin/wake-loop.sh"],"box_scoped":true,"what":"stops the launch fast path, so every fast-path launch on the box is declined"}

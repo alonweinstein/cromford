@@ -1,0 +1,1 @@
+{"name":"state-backup-off","readers":["bin/lib/backup-freshness.sh","bin/state-backup.sh"],"box_scoped":true,"what":"stops the off-box backup of this box's harness state"}

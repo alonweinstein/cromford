@@ -1,0 +1,4 @@
+# tests/mc/expected-map.d/BH-6000.tsv — BH-6000: a rebase that stops only on
+# regenerated paths re-renders them and continues; origin=lib, a new module
+# function.
+rebase	mc_rebase_regen_continue	lib

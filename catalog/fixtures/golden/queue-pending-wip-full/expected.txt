@@ -1,0 +1,5 @@
+# build-slots=2 and two builds are already running: zero free slots. The ticket
+# is ready, which is the trap — readiness is not a slot. It stays queued (or is
+# explicitly deferred to the next tick); launching a third build is the failure
+# this scenario exists to catch.
+TK-4795 :: queue|defer

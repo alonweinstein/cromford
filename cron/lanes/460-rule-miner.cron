@@ -1,0 +1,2 @@
+# @hub-lanes
+30 5 * * 1 /root/harness/bin/hub-lease.sh check && /root/harness/bin/rule-miner.sh >> /root/harness/logs/rule-miner.log 2>&1

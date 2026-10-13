@@ -1,0 +1,7 @@
+# tests/mc/expected-map.d/BH-2354.tsv — BH-2354 (BH-2311.0): the four attempt
+# verbs beside the BH-1025.0 twin; origin=lib because they are new module functions.
+locks	_mc_attempt_awk	lib
+locks	mc_attempt_lines	lib
+locks	mc_attempt_count	lib
+locks	mc_attempt_tail	lib
+locks	mc_attempt_put_n	lib

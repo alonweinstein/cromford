@@ -1,0 +1,6 @@
+{
+  "gate": "results-sweep",
+  "project": "project-2",
+  "board_shape": "board-api",
+  "note": "A finished build with PR_MERGED and no COMMENTED marker. The sweep must close it out on the board — an unswept RESULT is work the client never hears about, and the dir re-fires the gate every tick until someone comments."
+}

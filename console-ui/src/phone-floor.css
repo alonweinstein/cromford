@@ -1,0 +1,79 @@
+/* The phone floor (BH-6001). Under 600px every link, button and row action
+   has a hit area of 44x44 CSS px or more, body text is 13px or more and meta
+   text 11px or more. It is ONE shared layer, imported by src/main.js right
+   after styles.css, so a rule here wins over an equal-specificity rule there
+   by source order. Nothing in this file applies above 600px.
+   tests/tap-targets.bh-6001.test.js pins the contract against the markup the
+   shared components render; tests/drive/tap-drive.mjs measures the real hit
+   area in a browser (npm run drive:tap). */
+
+@media (max-width: 600px) {
+  /* --fs-3xs (9px, the <=420px bottom-nav label) lifts to the 11px step; every
+     other step is already 11px or more and body (--fs-lg) is 15px. --tap is a
+     phone-only token: themes cannot set it (src/theme/custom.js allowlist). */
+  :root { --fs-3xs: var(--fs-2xs); --tap: 44px; }
+
+  /* The hit area: an empty ::after centred on the control, never smaller than
+     the control. The visual size does not change. :where() keeps the host
+     rule at zero specificity, so a class that already sets position wins
+     (an absolute or fixed box is a containing block for its ::after too). */
+  :where(a, button, summary, [role="button"], label:has(> input[type="checkbox"], > input[type="radio"])) {
+    position: relative;
+  }
+  :where(a, button, summary, [role="button"], label:has(> input[type="checkbox"], > input[type="radio"]))::after {
+    content: ''; position: absolute; left: 50%; top: 50%;
+    width: max(100%, var(--tap)); height: max(100%, var(--tap));
+    transform: translate(-50%, -50%);
+  }
+
+  /* A form field has no ::after, so the box itself is the target. */
+  :where(input:not([type="checkbox"], [type="radio"], [type="hidden"]), select, textarea) { min-height: var(--tap); }
+
+  /* A one-line truncator (overflow: hidden) clips an ::after, so a link that
+     is one, or sits in one, gets the height on its own box. The ellipsis
+     stays. */
+  a.cell-wrap, .cell-wrap a, .stat__value a { display: block; line-height: var(--tap); }
+
+  /* A link in a table cell is at least 44x44 on its own box, so its hit
+     area neither spills into the next column nor past the table's scrolling
+     edge (a cell has 12px of padding; a one-digit link spills 18px). The
+     height is the box's too: an 18px key link left the rest to its ::after,
+     and the scroll container clipped that on Linux chromium (lead review at
+     d661ae84b, /now "BH-7"). The 44px line keeps one-line text centred. Zero
+     specificity: a class that sets display (a.cell-wrap above) still wins. */
+  :where(table.tbl td) a { display: inline-block; min-width: var(--tap); min-height: var(--tap); line-height: var(--tap); }
+
+  /* Block controls take the full box. styles.css gives most of them 44px of
+     height at 768px; the width is new. */
+  .btn, .btn--sm, .toggle, .tab, .navlink, .crumb, .themeswitch__btn, .stat--link, .statgrid__cell {
+    min-width: var(--tap); min-height: var(--tap);
+  }
+
+  /* styles.css (768px block, table.tbl a.tag) holds a table's chips at 32px so
+     a dense row stays dense. Under 600px the ticket asks for 44px. */
+  table.tbl a.tag { min-height: var(--tap); }
+
+  /* Overlap guards: a hit area that spills into a neighbour hands the tap to
+     whichever control comes later. A row that holds a control is 44px tall
+     (a td height is a minimum), so no link's area reaches the next row; a row
+     with no control keeps its dense height. */
+  table.tbl tr:has(a, button) > td { height: var(--tap); }
+  /* A section head (ui/primitives.js Section) that carries a control is a
+     44px row, so its link's area stays off the content under it. */
+  .section__head:has(a, button) { min-height: var(--tap); align-items: center; }
+  /* The one screen-owned rule (src/screens/Ticket.js): .d-meta wraps its
+     label-and-link spans 6px apart, so two stacked links overlap. A 44px line
+     keeps each link's area on its own line. No shared component draws it. */
+  .d-meta { line-height: var(--tap); }
+  /* A key and its second link ("open", "job", 17px wide) sit side by side.
+     Each is at least 44px wide on its own box, so neither area spills onto
+     the other, and the gap between them grows from 8px to 12px. */
+  .tk-pair { column-gap: 12px; }
+  .tk-pair > a { display: inline-block; min-width: var(--tap); }
+  /* At 11px the 17 bottom-nav tabs no longer fit 390px. Each tab is as
+     wide as its label and at least 44px, so no label runs under the next tab,
+     and the row scrolls inside itself (styles.css already allows that); the
+     420px "reachable without a swipe" tightening gives way to the 11px floor. */
+  .bottomnav { grid-auto-columns: minmax(max-content, 1fr); }
+  .bottomnav a { min-width: var(--tap); min-height: var(--tap); padding-inline: 6px; }
+}

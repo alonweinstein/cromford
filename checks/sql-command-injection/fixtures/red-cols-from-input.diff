@@ -1,0 +1,8 @@
+diff --git a/worker/jobs/src/routes/r.js b/worker/jobs/src/routes/r.js
+--- a/worker/jobs/src/routes/r.js
++++ b/worker/jobs/src/routes/r.js
+@@ -1,0 +1,4 @@
++const cols = url.searchParams.get("cols");
++export async function h(env) {
++  return env.DB.prepare(`SELECT ${cols} FROM t`).all();
++}

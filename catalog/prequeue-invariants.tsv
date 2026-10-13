@@ -1,0 +1,29 @@
+# catalog/prequeue-invariants.tsv — the whole-repo invariant suites the pre-queue
+# gate runs on every head (BH-5438, #5429), via bin/prequeue-invariants.sh.
+# The impact map never selects these: they scan the whole tree, so a diff
+# anywhere can break them. The workflow reads THIS file from main, never the
+# PR's copy, so a PR cannot drop a row to get past it.
+# One row per invariant, five TAB-separated columns:
+#   id        stable name; why=invariant:<ids>, failed.txt, fail/<id>.txt and
+#             --overrides <id>=off|<n> use it. ^[a-z0-9][a-z0-9-]*$, unique
+#   kind      suite (one tests/[mc/]*.sh, run via bin/test-suite-run.sh
+#             --only-file) | cmd (argv split on spaces, never through a shell)
+#   argv      what runs, from the repo root
+#   budget_s  declared seconds, about 1.5x one measured run. Over it is
+#             reported (OVER BUDGET), never killed
+#   guards    what the invariant catches. Never empty: TAB is IFS whitespace,
+#             so an empty field would shift the columns
+share-mirror-clean	suite	tests/share-mirror-clean-test.sh	478	the public mirror this tree would publish carries no client identifier or unallowlisted token
+share-publish-clean	suite	tests/share-publish-clean.bh-795-test.sh	575	the share publish leakcheck and gitleaks scan pass on this tree
+lanes-registry	suite	tests/lanes-registry.bh-2205-test.sh	206	every wired lane renders, gates, and declares every knob it reads
+config-inventory	suite	tests/no-hardcoded-deployment.bh-4080-test.sh	51	no deployment literal outside its home, and the deployment report renders the same twice (BH-5518)
+rules-pack-contract	suite	tests/rules-pack-contract.bh-3509-test.sh	31	the rules-pack entry point, its catalog and its knobs agree
+hold-push-ratchet	suite	tests/hold-push-ratchet.bh-2504-test.sh	3	no lane pushes a PR branch except through bin/lib/hold-push.sh
+gh-graphql-reads-lint	suite	tests/gh-graphql-reads-lint.bh-1585-test.sh	13	no new GraphQL call in bin/
+pr-trailers-sites	suite	tests/pr-trailers-sites.bh-4015-test.sh	25	every PR the harness opens says who opened it
+scratch-closure	suite	tests/scratch-closure-lint.bh-4552-test.sh	7	no suite hand-copies a bin closure
+determinism	cmd	bin/test-determinism-lint.sh	27	no test reads the clock, randomness or sleeps for a race
+triage-state-pr-contract	suite	tests/triage-state-pr-contract.bh-3418-test.sh	13	the triage-state PR pre-check seams stay wired
+pr-scoped-tests	cmd	bin/pr-scoped-test-lint.sh	15	no test asserts on its own PR's commit range without an empty-range guard or a pr-scoped marker
+render-doc-sections	cmd	bin/render-doc-sections.sh --check	2	every committed docs/<doc>.md render matches its docs/<doc>.d/ section files on the merged tree
+worker-jobs-schema	cmd	bin/prequeue-worker-schema.sh worker/jobs/test/machines-schema.bh-1054.test.js worker/jobs/test/model-routes.bh-1510.test.js worker/jobs/test/schema-deploy-queue.bh-1026.test.js	15	worker/jobs/schema.sql re-applies clean and stays additive (no ALTER, no DROP) on the merged tree

@@ -1,0 +1,6 @@
+# PROVENANCE: a session ledger with no usage object at any depth — the honest
+# "nothing to read" case. A settings-shaped dict carrying maxInputTokens is in
+# here on purpose: a matcher that keys off the substring rather than the token
+# key FAMILY would price a config line as a call.
+{"jsonrpc":"2.0","method":"session/update","params":{"sessionId":"s-406c","update":{"sessionUpdate":"agent_message_chunk","content":{"type":"text","text":"no usage in this session"}}}}
+{"jsonrpc":"2.0","method":"session/config","params":{"settings":{"maxInputTokens":2000000,"model":"grok-4.6"}}}

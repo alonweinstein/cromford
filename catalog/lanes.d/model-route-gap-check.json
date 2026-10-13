@@ -1,0 +1,41 @@
+{
+  "id": "model-route-gap-check",
+  "name": "Model route gap check",
+  "scope": "hub",
+  "script": "bin/model-route-gap-check.sh",
+  "cadence": "35 4 * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-model-route-gap-check",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "HARNESS_ALERTS",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it ($H/logs/ALERTS.log). Read by bin/model-route-gap-check.sh as ${HARNESS_ALERTS:-$H/logs/ALERTS.log}. Registered by BH-1563 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "JOBS_URL",
+      "type": "string",
+      "default": "https://harness-jobs.operator.workers.dev",
+      "zero_means": null,
+      "read_in": "bin/lib/jobs/req.sh",
+      "note": "Read as ${JOBS_URL:-https://harness-jobs.operator.workers.dev} by bin/lib/jobs/req.sh, which is where this lane's one request (GET /api/model-routes, through bin/jobs-client.sh) is aimed. Registered by BH-1563 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/model-route-gap-check.log"
+  }
+}

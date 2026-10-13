@@ -1,0 +1,4 @@
+# BH-2523: the fly_images store (image pointer, bake, baked_at) at the END of
+# the table, after progress, where src/index.js puts it.
+PUT /api/fly-images
+GET /api/fly-images

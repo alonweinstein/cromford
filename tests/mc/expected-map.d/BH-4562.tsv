@@ -1,0 +1,4 @@
+# tests/mc/expected-map.d/BH-4562.tsv — BH-4562: the queue settle asks why a QUEUED PR
+# left the queue (merged / merging / ejected / nowitness / unknown) before it counts an
+# ejection; origin=lib because it is a new module function.
+queue	mc_queue_left_why	lib

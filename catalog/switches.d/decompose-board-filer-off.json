@@ -1,0 +1,1 @@
+{"name":"decompose-board-filer-off","readers":["bin/run-decompose.sh"],"box_scoped":true,"what":"in-app decompose: the model files the children again (pre-BH-3965 path, BH-866 label re-map) instead of the harness filing them from children.json"}

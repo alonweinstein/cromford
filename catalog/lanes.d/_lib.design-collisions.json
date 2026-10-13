@@ -1,0 +1,37 @@
+{
+  "libs": [
+    {
+      "id": "design-collisions",
+      "file": "bin/lib/plan-collisions.sh",
+      "note": "BH-5791. The design-collision check at PLAN: the `design collisions` block in bin/lib/rb/plan.sh runs bin/plan-collisions.sh after the plan gate, and checks each symbol under the plan's `## Changed symbols` against main since the plan's base and against every open PR. Read per project through lib_env_apply design-collisions <project> in pc_conf. Doc: docs/notes/2026-10-10-BH-5791-design-collisions.md.",
+      "knobs": [
+        {
+          "env": "PLAN_COLLISION_ENFORCE",
+          "type": "string",
+          "default": "1",
+          "required": false,
+          "note": "1 (default): a listed symbol that collides and has no combine or needs-human line under `## Design collisions` gets one repair pass, then the build ends PLAN_BLOCKED. 0|false|no|off: the note is written and the build continues (verdict note-only). Any other value is treated as ON and writes one ALERTS line."
+        },
+        {
+          "env": "PLAN_COLLISION_MAX_PRS",
+          "type": "int",
+          "default": 100,
+          "min": 0,
+          "max": 1000,
+          "zero_means": "off",
+          "required": false,
+          "note": "How many open PRs the check lists (one paginated REST list, gh_rest_pr_list_all). 0 = the PR check is off (OPEN_PRS: off) and no GitHub call is made. A value that is not a whole number uses 100 and writes one ALERTS line."
+        },
+        {
+          "env": "PLAN_COLLISION_MAX_SYMBOLS",
+          "type": "int",
+          "default": 40,
+          "min": 1,
+          "max": 500,
+          "required": false,
+          "note": "How many symbols the check reads from the plan (listed first, then derived). The note states how many it dropped over the cap. A value that is not a whole number above 0 uses 40 and writes one ALERTS line."
+        }
+      ]
+    }
+  ]
+}

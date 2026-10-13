@@ -1,0 +1,23 @@
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T04:53:09.0109549Z   CI_QUARANTINE: -
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T04:53:09.0109797Z ##[endgroup]
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T04:53:09.0634751Z tiers: guard tests/registry-no-commit-test.sh skipped — no path it guards changed (it runs nightly)
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T04:53:09.0635440Z tiers: guard tests/share-mirror-clean-test.sh runs — .harness/specs/BH-3863/plan.md changed
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T04:53:09.0635959Z tiers: guard tests/share-publish-clean.bh-795-test.sh runs — .harness/specs/BH-3863/plan.md changed
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T04:53:09.0636669Z tiers: guard tests/trap-target-safety-test.sh runs — bin/test-impact-gate.sh changed
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T04:53:09.0658099Z impact: 1422 of 1522 suites (full: merge queue batch dc5524761b; tiers: 1422 suite(s) run (3 guard(s) triggered), 100 left to the nightly run) — 8 shard(s), mode=full
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T04:53:09.0690981Z ##[group]Run set -euo pipefail
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T04:53:09.0691209Z ^[[36;1mset -euo pipefail^[[0m
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T04:53:09.0691422Z ^[[36;1m# GUARDED, NOT DELETED (BH-1206). The Fly image bakes in 1.5.0 and a^[[0m
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T04:53:09.0691698Z ^[[36;1m# GitHub-hosted one does not, and CI_RUNNER can point at either^[[0m
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T04:53:42.5206802Z --- tests/client-court-gate-test.sh rc=0 0s
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T04:53:42.8435070Z --- tests/clock-sync-test.sh rc=0 0s
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T04:53:43.7355109Z --- tests/closed-settle-guard-test.sh rc=0 1s
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T04:53:43.9039315Z --- tests/config-detail-console.bh-2379-test.sh rc=0 0s
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T04:53:43.9742780Z --- tests/cost-caps-contract.bh-2563-test.sh rc=0 0s
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T04:53:44.7017639Z --- tests/cost-live-rollup.bh-3499-test.sh rc=1 1s
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T04:53:44.7021811Z FAIL: R5: worker/jobs/test/cost-live.bh-3499.test.js is red: not ok 1 - test/cost-live.bh-3499.test.js
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T04:53:44.7022545Z cost-live-rollup.bh-3499: PASS=24 FAIL=1
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T04:53:44.8070381Z EXIT 1 cost-live-rollup.bh-3499-test.sh
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T04:53:45.7330378Z --- tests/cost-rollup-db-first.bh-2312-test.sh rc=0 1s
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T04:53:46.5817446Z --- tests/daily-digest-render.bh-3688-test.sh rc=0 1s
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T04:53:47.3554409Z --- tests/dequeue-watch-act.bh-3719-test.sh rc=0 1s

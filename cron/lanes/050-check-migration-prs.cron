@@ -1,0 +1,2 @@
+# @hub-lanes
+7,27,47 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/check-migration-prs.sh

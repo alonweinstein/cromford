@@ -1,0 +1,7 @@
+# BH-2670 (BH-2530.1): fix-round jobs, at the END of the table after
+# product-proposals, where src/index.js puts it.
+POST /api/fix-rounds
+GET /api/fix-rounds
+POST /api/fix-rounds/claim
+POST /api/fix-rounds/finish
+POST /api/fix-rounds/adopt

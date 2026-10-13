@@ -1,0 +1,7 @@
+# tests/mc/expected-map.d/BH-3806.tsv — BH-3806: the withheld lead-verdict on
+# every enqueue caller (classify: the per-(PR, head) la_decide memo, the head's
+# lead-verdict status read, and the unqueue of a row labelled before the gate);
+# origin=lib, new functions.
+classify	mc_la_decide	lib
+classify	mc_vs_success_on	lib
+classify	mc_nhv_unqueue	lib

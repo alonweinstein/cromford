@@ -1,0 +1,4 @@
+[
+ {"title":"metrics table + read API","contract":"src/db/metrics.ts: MetricRow; src/api/metrics.ts: GET /api/metrics","after":[],"body":"Create the table and the read endpoint.\n\nFiles: src/db/metrics.ts, src/api/metrics.ts\nTests: tests/metrics.test.ts\n\n## Observable outcome\nThe slice acceptance test passes end to end."},
+ {"title":"dashboard tile","after":[],"body":"Render the tile against the read API.\n\nFiles: src/app/dashboard/MetricTile.tsx\n\n## Observable outcome\nThe slice acceptance test passes end to end."}
+]

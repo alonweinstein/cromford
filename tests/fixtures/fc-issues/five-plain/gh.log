@@ -1,0 +1,7 @@
+gh issue create -R example-org/scoutish --title 'TK-552.0: contract — scan result types + empty store' --label ai-build --body-file <BUILD>/children/child-1.md
+gh issue create -R example-org/scoutish --title 'TK-552.1: scan ingest' --label ai-build --body-file <BUILD>/children/child-2.md
+gh issue create -R example-org/scoutish --title 'TK-552.2: scan read API' --label ai-build --body-file <BUILD>/children/child-3.md
+gh issue create -R example-org/scoutish --title 'TK-552.3: scan dashboard tile' --label ai-build --body-file <BUILD>/children/child-4.md
+gh issue create -R example-org/scoutish --title 'TK-552.4: weekly scan digest' --label ai-build --body-file <BUILD>/children/child-5.md
+gh api -X POST repos/example-org/scoutish/issues/552/comments -F body=@<BUILD>/decompose-comment.md
+gh api -X DELETE repos/example-org/scoutish/issues/552/labels/ai-build

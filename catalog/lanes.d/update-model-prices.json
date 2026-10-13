@@ -1,0 +1,50 @@
+{
+  "id": "update-model-prices",
+  "name": "Update model prices",
+  "scope": "hub",
+  "script": "bin/update-model-prices.sh",
+  "cadence": "30 4 * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-update-model-prices",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "HARNESS_CHECKOUT",
+      "type": "string",
+      "default": "/root/harness-checkout",
+      "zero_means": null,
+      "note": "Read by bin/update-model-prices.sh as ${HARNESS_CHECKOUT:-/root/harness-checkout}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "MODEL_SLUGS",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/update-model-prices.sh as ${MODEL_SLUGS:-}. An explicit path to the model -> openrouter slug map, used AS GIVEN in place of catalog/model-slugs.json — the same seam $MODEL_PRICES is for the price table, and like it, an unreadable override falls back to the script constant rather than to a different file. Registered by BH-1361 so it is visible; NOT settable from the control plane — it is a path and a test seam a root lane uses, so only env/global.env on the box moves it.",
+      "settable": false
+    },
+    {
+      "env": "MODEL_PRICES_CATALOG_MAX_AGE_DAYS",
+      "type": "int",
+      "default": 14,
+      "min": 0,
+      "max": 365,
+      "zero_means": "off",
+      "note": "BH-3990. Read by bin/update-model-prices.sh as ${MODEL_PRICES_CATALOG_MAX_AGE_DAYS:-14}: when catalog/model-prices.json's updated_at is more than this many days old (or unreadable) the lane raises one warn lane-alert, id model-prices-catalog-stale, and resolves it once the catalog is within the threshold. Checked before the OpenRouter fetch, so a failed refresh cannot hide it. 0 = off; a non-integer is the default.",
+      "settable": true
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/update-model-prices.log"
+  }
+}

@@ -1,0 +1,4 @@
+# BH-4971 (BH-4964.3): the per-merge-queue-batch CI cost ledger, at the END of
+# the table, after archie-autonomy, where src/index.js puts it.
+PUT /api/ci-batches
+GET /api/ci-batches

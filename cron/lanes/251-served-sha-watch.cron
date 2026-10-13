@@ -1,0 +1,13 @@
+# @hub-lanes
+
+# ── SERVED-SHA WATCH (BH-4936, part 1 of #4916) ─────────────────────────────
+# Every 5 minutes: for each vercel.conf project, compare the sha the Vercel
+# production domain serves with main HEAD and judge in-sync / wait / alert /
+# unreadable. State in state/served-sha-watch/<project>.json, one line per
+# project not in sync plus a summary in logs/served-sha-watch.log. Hub only:
+# the hub holds the Vercel CLI auth. GET requests only; it sends no alert and
+# starts no deploy yet (#4937, #4938). Knobs: SERVED_SHA_LAG_MIN (0 = off),
+# SERVED_SHA_AUTODEPLOY, SERVED_SHA_HTTP_TIMEOUT, in this lane's
+# catalog/lanes.d/ registry entry.
+# Off via the lane's flags/lane-off-<id> flag (bin/harness-ctl.sh off <id>).
+*/5 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/served-sha-watch.sh >/dev/null 2>&1

@@ -1,0 +1,73 @@
+{
+  "libs": [
+    {
+      "id": "gh-app-default",
+      "file": "bin/lib/gh-app-default.sh",
+      "note": "C2 (2026-09-24). A gh call made with no GH_TOKEN used to spend the box's keyring login, which is the operator's personal PAT on every box. bin/gh-ledger/gh (first `gh` on every cron PATH) and gh_rest now ask this lib first, and a call whose target repo belongs to an owner below runs on a cached GitHub App installation token from bin/gh-token.sh. A failed mint, an unresolvable target or GH_USE_PAT=1 leaves the call on today's credential. Resolved at most once a minute per box into state/gh-app-default.knobs. No-DB kill switch: flags/gh-app-default-off.",
+      "knobs": [
+        {
+          "env": "GH_APP_DEFAULT",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 1,
+          "zero_means": "off",
+          "required": false,
+          "note": "1 = a gh call with no token of its own, aimed at a repo of GH_APP_DEFAULT_OWNERS, runs on the GitHub App. 0 = every such call spends the keyring login exactly as before C2. The rollback for the whole change is this row. Read as ${GH_APP_DEFAULT:-1}."
+        },
+        {
+          "env": "GH_APP_DEFAULT_OWNERS",
+          "type": "string",
+          "default": "example-org",
+          "zero_means": null,
+          "required": false,
+          "note": "Comma list of GitHub owners the App is installed on. A call aimed at any other owner (operator/elsewhere, say) keeps its PAT. Case-insensitive. Read as ${GH_APP_DEFAULT_OWNERS:-$HARNESS_GH_OWNER}; HARNESS_GH_OWNER (bin/lib/deployment.sh, BH-4080) defaults to the owner half of HARNESS_REPO, example-org."
+        },
+        {
+          "env": "GH_APP_DEFAULT_MIN_LIFE_S",
+          "type": "int",
+          "default": 600,
+          "min": 300,
+          "max": 3300,
+          "unit": "seconds",
+          "zero_means": null,
+          "required": false,
+          "note": "Life a cached installation token must still have to be handed to a call (bin/gh-token.sh --min-life); anything shorter is re-minted. Each gh call resolves its own token, so a long lane is covered call by call; ONE call that outlives the token (a `gh run watch` longer than this) is not, so raise the row for such a lane or give it its own token. Read as ${GH_APP_DEFAULT_MIN_LIFE_S:-600}."
+        },
+        {
+          "env": "GH_APP_DEFAULT_MINT_TIMEOUT_S",
+          "type": "int",
+          "default": 15,
+          "min": 1,
+          "max": 60,
+          "unit": "seconds",
+          "zero_means": null,
+          "required": false,
+          "note": "Review of #2231: the longest a gh call waits for bin/gh-token.sh to mint before it runs on today's credential instead (`timeout` around the mint; the minter's own curls carry -m 10). The mint sits in front of every cron gh call, so a hanging GitHub must cost one bounded wait. Read as ${GH_APP_DEFAULT_MINT_TIMEOUT_S:-15}."
+        },
+        {
+          "env": "GH_APP_DEFAULT_FAIL_TTL_S",
+          "type": "int",
+          "default": 60,
+          "min": 0,
+          "max": 3600,
+          "unit": "seconds",
+          "zero_means": "off",
+          "required": false,
+          "note": "Review of #2231: after a mint for a repo failed or timed out, calls for that repo skip the mint and use today's credential for this many seconds (per-slug stamp in state/gh-app-default.fail/). 0 = retry the mint on every call. Read as ${GH_APP_DEFAULT_FAIL_TTL_S:-60}."
+        },
+        {
+          "env": "GH_APP_DEFAULT_ALERT_EVERY_S",
+          "type": "int",
+          "default": 3600,
+          "min": 0,
+          "max": 86400,
+          "unit": "seconds",
+          "zero_means": null,
+          "required": false,
+          "note": "Lead review of #2231: a failed App mint (and gh_ci_api's PAT rung) appends ONE ALERTS.log line per repo per this many seconds, 0 = every new failure stamp (state/gh-app-default.alerted/), routed to the warn digest by bin/lib/alert-state.sh. Read as ${GH_APP_DEFAULT_ALERT_EVERY_S:-3600}."
+        }
+      ]
+    }
+  ]
+}

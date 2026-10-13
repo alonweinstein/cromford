@@ -1,0 +1,2 @@
+The client answered triage's question in comment 2: five named columns, one file for the filtered range. That answer is the latest turn and nothing else is open.
+VERDICT: buildable

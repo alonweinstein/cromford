@@ -1,0 +1,10 @@
+# @hub-lanes
+
+# stranded-watch (BH-5967): one `orphan-reconcile.sh --stranded <project>` per
+# project on the per-project lane runner (BH-5913), started by
+# bin/stranded-watch.sh at stable offsets inside STRANDED_WATCH_SPREAD_SECS. It
+# re-offers an open ai-build ticket nothing has owned or attempted for
+# STRANDED_IDLE_MIN, and writes NEEDS-HUMAN: on its fourth re-offer in 24 h.
+# 8,38: off the quarter hours and off the resolver's minutes. Lease (BH-1000):
+# a box that does not hold it runs nothing. Off: flags/lane-off-stranded-watch.
+8,38 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/stranded-watch.sh >> /root/harness/logs/stranded-watch-cron.log 2>&1

@@ -1,0 +1,6 @@
+# @hub-lanes
+# SDLC 7 — outcome tracking, twenty minutes AHEAD of the rule miner so the week's
+# bad outcomes (reverts, board reopens, merged-then-red main) are already rows in
+# logs/findings.log when the miner reads it. The miner also calls this script
+# itself; both are idempotent, so whichever runs first, the other adds nothing.
+20 5 * * 1 /root/harness/bin/hub-lease.sh check && /root/harness/bin/outcome-metrics.sh >> /root/harness/logs/outcome-metrics.log 2>&1

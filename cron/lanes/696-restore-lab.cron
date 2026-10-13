@@ -1,0 +1,3 @@
+# restore-lab (BH-1944 / #1909): claim one console-requested restore-lab run and dry-run restore it into a /tmp scratch dir; never --apply, never the live tree.
+# @hub-lanes
+*/5 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/restore-lab.sh >> /root/harness/logs/restore-lab.log 2>&1

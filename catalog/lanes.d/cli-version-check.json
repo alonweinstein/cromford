@@ -1,0 +1,122 @@
+{
+  "id": "cli-version-check",
+  "name": "CLI version check",
+  "scope": "hub",
+  "script": "bin/cli-version-check.sh",
+  "cadence": "40 5 * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-cli-version-check",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "CLI_CHECK_BOXES",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/cli-version-check.sh as ${CLI_CHECK_BOXES:-}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "CLI_CHECK_CATALOG",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it ($CHECKOUT/catalog/cli-min-versions.json). Read by bin/cli-version-check.sh as ${CLI_CHECK_CATALOG:-$CHECKOUT/catalog/cli-min-versions.json}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "CLI_CHECK_ENV_FILE",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it ($E/global.env). Read by bin/cli-version-check.sh as ${CLI_CHECK_ENV_FILE:-$E/global.env}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "CLI_CHECK_HOME",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the probe computes it ($HOME, which is /root on every box). Read inside the probe as ${CLI_CHECK_HOME:-$HOME} to find grok's native launcher, ~/.grok/bin/grok, before PATH. Registered by BH-1494 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "CLI_CHECK_LOGIN_PATH",
+      "type": "string",
+      "default": "/usr/local/bin:/usr/bin:/bin",
+      "zero_means": null,
+      "note": "Read by bin/cli-version-check.sh as ${CLI_CHECK_LOGIN_PATH:-/usr/local/bin:/usr/bin:/bin}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "CLI_CHECK_OPTIONAL",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "BH-1636. Space-separated <cli>@<box-id> pairs (box ids as cron_box_id_for prints them: hub, project-4, small...). A listed pair whose CLI reads MISSING on that box is not an alert; its TSV row and DB row say 'not required on this box (CLI_CHECK_OPTIONAL)'. Only MISSING is waived: an installed CLI below its floor, behind the hub or split across PATHs still alerts. A token not matching ^[a-z0-9_-]+@[a-z0-9_-]+$ is ignored and named in logs/cli-version-check.log. Empty = every CLI required on every box. Read by bin/cli-version-check.sh as ${CLI_CHECK_OPTIONAL:-}.",
+      "settable": true
+    },
+    {
+      "env": "CLI_CHECK_SSH",
+      "type": "string",
+      "default": "ssh -o BatchMode=yes -o ConnectTimeout=8 -o StrictHostKeyChecking=accept-new",
+      "zero_means": null,
+      "note": "Read by bin/cli-version-check.sh as ${CLI_CHECK_SSH:-ssh -o BatchMode=yes -o ConnectTimeout=8 -o StrictHostKeyChecking=accept-new}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "HARNESS_ALERTS",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it ($H/logs/ALERTS.log). Read by bin/cli-version-check.sh as ${HARNESS_ALERTS:-$H/logs/ALERTS.log}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "HARNESS_CHECKOUT",
+      "type": "string",
+      "default": "/root/harness-checkout",
+      "zero_means": null,
+      "note": "Read by bin/cli-version-check.sh as ${HARNESS_CHECKOUT:-/root/harness-checkout}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "JOBS_HTTP",
+      "type": "string",
+      "default": "none",
+      "zero_means": null,
+      "note": "Read by bin/cli-version-check.sh as ${JOBS_HTTP:-none}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "CLI_CHECK_SELF_REPORT_FRESH_S",
+      "type": "int",
+      "default": 7200,
+      "min": 0,
+      "zero_means": "off",
+      "settable": true,
+      "note": "BH-2626. Seconds a box's self-reported cli_checked_at (bin/box-self-report.sh, hourly) stays fresh enough to judge the box from its box_status row instead of ssh-ing it. Default 7200 = 2x the box-self-report lane's hourly period. 0 = self-reports ignored; every box is ssh'd, as before BH-2626. Non-numeric falls back to 7200. Read by bin/cli-version-check.sh as ${CLI_CHECK_SELF_REPORT_FRESH_S:-7200}."
+    },
+    {
+      "env": "CLI_CHECK_FULL_PROBE_S",
+      "type": "int",
+      "default": 604800,
+      "min": 0,
+      "zero_means": null,
+      "settable": true,
+      "note": "BH-2626. Maximum age in seconds of a box's last full ssh probe before a box judged from its self-report row is ssh'd anyway, so grok MISSING/floors, the per-box *_MODEL floors and the cron-vs-login PATH split, which the self-report row cannot answer, are still checked. Default 604800 = a week; stamped per box under state/. 0 = every box is ssh'd every run, as before BH-2626. Non-numeric falls back to 604800. Read by bin/cli-version-check.sh as ${CLI_CHECK_FULL_PROBE_S:-604800}."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/cli-version-check.log"
+  }
+}

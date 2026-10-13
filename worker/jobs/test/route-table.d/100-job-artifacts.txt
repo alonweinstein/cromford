@@ -1,0 +1,2 @@
+PUT re:/^\/api\/jobs\/([^/]+)\/artifacts$/
+GET re:/^\/api\/jobs\/([^/]+)\/artifacts$/

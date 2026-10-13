@@ -1,0 +1,1 @@
+{"name":"postmerge-qa-disabled","readers":["bin/postmerge-qa.sh"],"box_scoped":true,"what":"stops the post-merge QA lane driving any merged build"}

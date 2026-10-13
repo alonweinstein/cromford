@@ -1,0 +1,9 @@
+# <case> :: <class> — the lead review's conflict-shape answer for <case>.diff
+# applied on base/, with hotspots.json as the project's hotspot list.
+# NOTE = a [NOTE] that names the hotspot file and the verdict is not BLOCK;
+# BLOCK = VERDICT: BLOCK and a [BLOCK] line that names the header comment;
+# NONE = the verdict is not BLOCK.
+hotspot-append :: NOTE
+changelog-header :: BLOCK
+fragment-new-file :: NONE
+inline-rationale :: NONE

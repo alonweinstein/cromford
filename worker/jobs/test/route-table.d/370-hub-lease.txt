@@ -1,0 +1,3 @@
+GET any:/api/hub/lease|/api/hub-lease
+POST any:/api/hub/lease/renew|/api/hub-lease
+POST any:/api/hub/lease/promote|/api/hub-lease/promote

@@ -1,0 +1,2 @@
+PUT re:/^\/api\/jobs\/([^/]+)\/file-claim$/
+GET /api/file-claims

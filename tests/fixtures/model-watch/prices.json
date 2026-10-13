@@ -1,0 +1,5 @@
+{
+  "claude-sonnet-5-5": {"prompt": 0.000004, "completion": 0.00002, "cache_read": 4e-7, "cache_write": 0.000005},
+  "claude-sonnet-5": {"prompt": 0.000003, "completion": 0.000015, "cache_read": 3e-7, "cache_write": null},
+  "no-prompt": {"completion": 0.000015, "cache_read": 3e-7, "cache_write": 0.00000375}
+}

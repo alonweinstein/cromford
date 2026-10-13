@@ -1,0 +1,13 @@
+diff --git a/worker/jobs/src/routes/lead-protected-paths.js b/worker/jobs/src/routes/lead-protected-paths.js
+--- a/worker/jobs/src/routes/lead-protected-paths.js
++++ b/worker/jobs/src/routes/lead-protected-paths.js
+@@ -1,0 +1,9 @@
++import { d1Guarded, json } from "../lib/http.js";
++
++const COLS = "repo, glob, added_by, added_at, removed_at";
++
++export async function live(env, repo, glob) {
++  return env.DB.prepare(
++    `SELECT ${COLS} FROM lead_protected_paths WHERE repo=?1 AND glob=?2 AND removed_at IS NULL`
++  ).bind(repo, glob).first();
++}

@@ -1,0 +1,20 @@
+# @hub-lanes
+
+# blocked-resolver (operator line, outside managed blocks; the operator 2026-09-13
+# "the reality is I will never do a human review"). Every park that used to wait
+# on a person — conductor BLOCKED_HUMAN rows, pool rows parked failed, the
+# REVIEW_BLOCKED gates, review-rescue's give-ups — is drained here on an agent
+# ladder (rebuild fresh / fix round / adjudicate) and, when that is exhausted,
+# recorded as ABANDONED with ONE alert listing what was tried. */10 at minute
+# 4,14,... so it never shares a tick with the merge conductor (*/5) or the merge
+# sweep (6,16,...). Kill: flags/blocked-resolver-disabled; dry run:
+# flags/blocked-resolver-observe. docs/MERGE-CONDUCTOR.md section 11.
+# C2 (2026-09-24): a BACKSTOP now — bin/lib/cadence-backstop.sh lets a tick
+# through every lib.cadence-backstop.cadence_backstop_min_blocked_resolver
+# minutes (default 30; 0 = every tick, as before), or at once when the conductor
+# has written a new hand-off (state/merge-conductor/handoff). Fail-open: only the
+# gate's deliberate rc 3 skips; a missing, broken or aborted gate runs the lane.
+# BH-5913 (2026-10-10): --dispatch scans nothing. It starts one detached
+# `blocked-resolver.sh <project>` per project, each on its own lock and at a
+# stable offset inside BR_DISPATCH_SPREAD_SECS (bin/lib/project-lanes.sh).
+4,14,24,34,44,54 * * * * /root/harness/bin/hub-lease.sh check && { /root/harness/bin/lib/cadence-backstop.sh blocked-resolver --wake-dir /root/harness/state/merge-conductor/handoff; [ $? -ne 3 ]; } && /root/harness/bin/blocked-resolver.sh --dispatch >> /root/harness/logs/blocked-resolver-cron.log 2>&1

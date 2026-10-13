@@ -1,0 +1,9 @@
+diff --git a/worker/jobs/src/routes/r.js b/worker/jobs/src/routes/r.js
+--- a/worker/jobs/src/routes/r.js
++++ b/worker/jobs/src/routes/r.js
+@@ -1,0 +1,5 @@
++export async function h(env, x, body, req) {
++  const a = await env.DB.prepare(`SELECT * FROM ${x ? body.t : "t"}`).all();
++  const b = await env.DB.prepare(`SELECT * FROM t ORDER BY ${req.query.sort || "id"}`).all();
++  return [a, b];
++}

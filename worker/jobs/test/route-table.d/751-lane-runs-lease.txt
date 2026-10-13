@@ -1,0 +1,3 @@
+# LANE RUNS LEASE (BH-6125, BH-6047 part 2 of 5): the heartbeat of a claimed
+# lane run, the number 750-lane-runs.txt reserves for this family.
+POST re:/^\/api\/lane-runs\/(\d+)\/heartbeat$/

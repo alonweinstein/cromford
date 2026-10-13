@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/example-org/cromford/agent-core/schema/soul.schema.json",
+  "title": "Soul front matter",
+  "description": "The identity block at the top of a soul file. The MAY, NEVER and REPORT lists are read from the body by parseSoul.",
+  "type": "object",
+  "required": [
+    "name",
+    "role",
+    "accountable",
+    "version"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "role": {
+      "type": "string",
+      "minLength": 1
+    },
+    "accountable": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "additionalProperties": false
+}

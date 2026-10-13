@@ -1,0 +1,4 @@
+POST /api/decisions
+GET /api/decisions
+POST /api/findings
+GET /api/findings

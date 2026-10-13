@@ -1,0 +1,45 @@
+{
+  "id": "restore-lab",
+  "name": "Restore lab (scratch restore)",
+  "scope": "hub",
+  "script": "bin/restore-lab.sh",
+  "cadence": "*/5 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-restore-lab",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "RESTORE_LAB_TIMEOUT_S",
+      "type": "int",
+      "default": 1500,
+      "min": 60,
+      "max": null,
+      "unit": "s",
+      "zero_means": null,
+      "note": "timeout on the one bin/state-restore.sh dry run a restore-lab run makes; rc 124 records the run as fail 'timed out'. Keep it below the worker's restore_lab_claim_ttl_s settings row (fallback 1800), or a slow pull is re-offered to another claimer while it is still running. Read by bin/restore-lab.sh."
+    },
+    {
+      "env": "RESTORE_LAB_TMPDIR",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "note": "no static default — the script uses /tmp. Where bin/restore-lab.sh makes its scratch dir (mktemp -d <dir>/restore-lab.XXXXXX). A dir that resolves to /root/harness or under it is refused with exit 2 and one ALERTS line. A path and a test seam, so NOT settable from the control plane. Read by bin/restore-lab.sh as ${RESTORE_LAB_TMPDIR:-/tmp}.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/restore-lab.log"
+  }
+}

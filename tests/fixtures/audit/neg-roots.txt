@@ -1,0 +1,24 @@
+----
+time->Tue Sep 15 12:07:00 2026
+type=PROCTITLE msg=audit(09/15/2026 12:07:00.001:5400) : proctitle=rm /tmp/x
+type=PATH msg=audit(09/15/2026 12:07:00.001:5400) : item=1 name=/tmp/x inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:07:00.001:5400) : cwd=/tmp
+type=SYSCALL msg=audit(09/15/2026 12:07:00.001:5400) : arch=x86_64 syscall=unlinkat success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=4400 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:07:01 2026
+type=PROCTITLE msg=audit(09/15/2026 12:07:01.001:5401) : proctitle=rm /root/repos/x
+type=PATH msg=audit(09/15/2026 12:07:01.001:5401) : item=1 name=/root/repos/x inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:07:01.001:5401) : cwd=/root/repos
+type=SYSCALL msg=audit(09/15/2026 12:07:01.001:5401) : arch=x86_64 syscall=unlinkat success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=4401 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:07:02 2026
+type=PROCTITLE msg=audit(09/15/2026 12:07:02.001:5402) : proctitle=rm /root/harnessfoo/x
+type=PATH msg=audit(09/15/2026 12:07:02.001:5402) : item=1 name=/root/harnessfoo/x inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:07:02.001:5402) : cwd=/root
+type=SYSCALL msg=audit(09/15/2026 12:07:02.001:5402) : arch=x86_64 syscall=unlinkat success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=4402 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:07:03 2026
+type=PROCTITLE msg=audit(09/15/2026 12:07:03.001:5403) : proctitle=rm /root/.sshd/k
+type=PATH msg=audit(09/15/2026 12:07:03.001:5403) : item=1 name=/root/.sshd/k inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:07:03.001:5403) : cwd=/root
+type=SYSCALL msg=audit(09/15/2026 12:07:03.001:5403) : arch=x86_64 syscall=unlinkat success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=4403 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness

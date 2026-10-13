@@ -1,0 +1,1 @@
+1,11,21,31,41,51 * * * * /root/harness/bin/cost-rows-push.sh @BOX@ >/dev/null 2>&1 # every 10 min: mirror new logs/cost.csv rows into the harness-jobs cost_rows table (cursor-resumable; the CSV stays the source of truth)

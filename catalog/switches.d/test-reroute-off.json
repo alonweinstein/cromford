@@ -1,0 +1,1 @@
+{"name":"test-reroute-off","readers":["bin/lib/test-home-lib.sh"],"box_scoped":true,"what":"stops rerouting a ticket's tests into its own per-ticket test file"}

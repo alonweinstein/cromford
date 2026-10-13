@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "apps": {
+    "admin": ["apps/admin/**"],
+    "web": ["apps/web/**", "src/**"]
+  }
+}

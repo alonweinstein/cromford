@@ -1,0 +1,9 @@
+# tests/mc/expected-map.d/BH-3933.tsv — 2026-10-03: a keyed conductor run evaluates
+# a PR bin/pr-owner-sweep.sh enrolled (mc_enrolled_ok, mc_enrolled_rows) under
+# the pr_owner.enroll_external switch (mc_enroll_external_load), and pr_worker
+# accepts that PR (mc_enrolled_pr); origin=lib because all four are new module
+# functions.
+classify	mc_enrolled_ok	lib
+classify	mc_enrolled_rows	lib
+classify	mc_enroll_external_load	lib
+classify	mc_enrolled_pr	lib

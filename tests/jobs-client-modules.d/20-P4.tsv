@@ -1,0 +1,6 @@
+# tests/jobs-client-modules.d/20-P4.tsv — P4 route rules + shadow client verbs.
+routing	route_rules_list
+routing	route_rule_put
+routing	route_shadow_put
+routing	route_shadow_list
+routing	route_shadow_bounce

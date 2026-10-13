@@ -1,0 +1,20 @@
+{
+  "libs": [
+    {
+      "id": "endpoint-anthropic-oauth",
+      "file": "bin/lib/cred-probe.sh",
+      "note": "BH-2558 (BH-2549.0, canaries without inference). The base URL of the Anthropic OAuth console (token refresh), resolved by endpoint_url anthropic-oauth (bin/lib/endpoints.sh). bin/lib/cred-probe.sh maps the claude-oauth runner to it in _CRED_PROBE_ENDPOINTS; no consumer calls it yet, the #2549 sibling slices wire the probe.",
+      "knobs": [
+        {
+          "env": "ENDPOINT_ANTHROPIC_OAUTH",
+          "type": "string",
+          "default": "https://console.anthropic.com",
+          "zero_means": null,
+          "required": true,
+          "settable": false,
+          "note": "Base URL of the Anthropic OAuth console (token refresh); the API path stays in code. settable:false (BH-1165): a URL a root lane sends a credential to is set by the operator's env, never by a settings row; no row can override it."
+        }
+      ]
+    }
+  ]
+}

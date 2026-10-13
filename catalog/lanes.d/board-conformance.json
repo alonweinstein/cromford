@@ -1,0 +1,40 @@
+{
+  "id": "board-conformance",
+  "name": "Board API conformance probe",
+  "scope": "hub",
+  "script": "bin/board-conformance.sh",
+  "cadence": "35 7 * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-board-conformance",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "BC_TIMEOUT_S",
+      "type": "int",
+      "default": 20,
+      "zero_means": null,
+      "read_in": "bin/lib/board-conformance/common.sh",
+      "note": "Read by bin/lib/board-conformance/common.sh (bc_get): curl -m seconds per GET. A value curl refuses makes every GET answer 000."
+    },
+    {
+      "env": "BC_NOW",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "No static default: the script computes it ($(date -u +%Y-%m-%dT%H:%M:%SZ)). Read by bin/board-conformance.sh as its one clock read (probed_at and the log line); a test seam, so settable:false and only env/global.env on the box moves it.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/board-conformance.log"
+  }
+}

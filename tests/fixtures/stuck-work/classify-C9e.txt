@@ -1,0 +1,3 @@
+# C9e an unreadable resolver claim on a draft: the walk never reads it
+# want: excluded	-
+pr	o/r#12	https://github.com/o/r/pull/12	1	ai-build	-	-	-	-	-	abc	-	-	-	?	-	-	-	-	-	-	1799999940

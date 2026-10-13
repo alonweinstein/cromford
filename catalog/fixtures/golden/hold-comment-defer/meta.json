@@ -1,0 +1,6 @@
+{
+  "gate": "board-changed",
+  "project": "project-2",
+  "board_shape": "board-api",
+  "note": "A HOLD from the operator sits on an otherwise-ready thread. THREAD RECENCY IS LAW: the newest word wins over every earlier approval on the ticket."
+}

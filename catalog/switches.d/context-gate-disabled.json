@@ -1,0 +1,1 @@
+{"name":"context-gate-disabled","readers":["bin/context-gate.sh"],"box_scoped":true,"what":"turns off the whole context gate before a build"}

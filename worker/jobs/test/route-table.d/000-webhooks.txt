@@ -1,0 +1,3 @@
+* /webhooks/github
+* /webhooks/jira
+* /webhooks/linear

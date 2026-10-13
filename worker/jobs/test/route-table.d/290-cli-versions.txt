@@ -1,0 +1,2 @@
+POST /api/metrics/cli-versions
+GET /api/metrics/cli-versions

@@ -1,0 +1,1 @@
+{"name":"alert-quarantine-disabled","readers":["bin/beat.sh"],"box_scoped":true,"what":"turns off the alert quarantine in beat.sh, so alerts go straight out as before instead of queueing for the triage lane"}

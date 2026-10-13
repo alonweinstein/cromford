@@ -1,0 +1,4 @@
+# BH-2575 (BH-2544.3): the alert family→script registry, read and edited by an
+# operator with no deploy. Appended after route-rules, where src/index.js puts it.
+GET /api/alert-family-scripts
+PUT re:/^\/api\/alert-family-scripts\/([^/]+)$/

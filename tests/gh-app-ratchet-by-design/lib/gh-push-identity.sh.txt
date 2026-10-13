@@ -1,0 +1,1 @@
+Exempt by BH-800 (2026-09-18); moved here from tests/gh-app-ratchet-allowlist.txt by BH-1177. Its calls ARE the identity probe, so arming inside it would make it answer about a token the lane is not holding. Full reason: the gh-identity line at the top of bin/lib/gh-push-identity.sh.

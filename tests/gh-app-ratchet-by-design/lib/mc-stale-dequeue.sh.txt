@@ -1,0 +1,1 @@
+Exempt by BH-3480 (2026-09-29), proposed by that build and decided in its PR review. The same shape and the same reason as lib/block-gate.sh: its reads run on the identity the conductor (per project) or pipeline-health (per repo) already armed. Full reason: the gh-identity line at the top of bin/lib/mc-stale-dequeue.sh.

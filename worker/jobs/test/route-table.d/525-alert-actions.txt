@@ -1,0 +1,3 @@
+# BH-2368 (BH-2324 contract): the alert action log, directly under the alerts slice where src/index.js puts it. Both answer 501 until the sibling fills them in.
+POST /api/alerts/actions
+GET /api/alerts/actions

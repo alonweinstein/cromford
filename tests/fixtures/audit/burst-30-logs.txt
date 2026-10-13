@@ -1,0 +1,180 @@
+----
+time->Tue Sep 15 12:13:01 2026
+type=PROCTITLE msg=audit(09/15/2026 12:13:01.001:6001) : proctitle=rm /root/harness/logs/f1.log
+type=PATH msg=audit(09/15/2026 12:13:01.001:6001) : item=1 name=/root/harness/logs/f1.log inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:13:01.001:6001) : cwd=/root/harness/logs
+type=SYSCALL msg=audit(09/15/2026 12:13:01.001:6001) : arch=x86_64 syscall=unlink success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=7777 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:13:02 2026
+type=PROCTITLE msg=audit(09/15/2026 12:13:02.002:6002) : proctitle=rm /root/harness/logs/f2.log
+type=PATH msg=audit(09/15/2026 12:13:02.002:6002) : item=1 name=/root/harness/logs/f2.log inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:13:02.002:6002) : cwd=/root/harness/logs
+type=SYSCALL msg=audit(09/15/2026 12:13:02.002:6002) : arch=x86_64 syscall=unlink success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=7777 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:13:03 2026
+type=PROCTITLE msg=audit(09/15/2026 12:13:03.003:6003) : proctitle=rm /root/harness/logs/f3.log
+type=PATH msg=audit(09/15/2026 12:13:03.003:6003) : item=1 name=/root/harness/logs/f3.log inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:13:03.003:6003) : cwd=/root/harness/logs
+type=SYSCALL msg=audit(09/15/2026 12:13:03.003:6003) : arch=x86_64 syscall=unlink success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=7777 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:13:04 2026
+type=PROCTITLE msg=audit(09/15/2026 12:13:04.004:6004) : proctitle=rm /root/harness/logs/f4.log
+type=PATH msg=audit(09/15/2026 12:13:04.004:6004) : item=1 name=/root/harness/logs/f4.log inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:13:04.004:6004) : cwd=/root/harness/logs
+type=SYSCALL msg=audit(09/15/2026 12:13:04.004:6004) : arch=x86_64 syscall=unlink success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=7777 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:13:05 2026
+type=PROCTITLE msg=audit(09/15/2026 12:13:05.005:6005) : proctitle=rm /root/harness/logs/f5.log
+type=PATH msg=audit(09/15/2026 12:13:05.005:6005) : item=1 name=/root/harness/logs/f5.log inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:13:05.005:6005) : cwd=/root/harness/logs
+type=SYSCALL msg=audit(09/15/2026 12:13:05.005:6005) : arch=x86_64 syscall=unlink success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=7777 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:13:06 2026
+type=PROCTITLE msg=audit(09/15/2026 12:13:06.006:6006) : proctitle=rm /root/harness/logs/f6.log
+type=PATH msg=audit(09/15/2026 12:13:06.006:6006) : item=1 name=/root/harness/logs/f6.log inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:13:06.006:6006) : cwd=/root/harness/logs
+type=SYSCALL msg=audit(09/15/2026 12:13:06.006:6006) : arch=x86_64 syscall=unlink success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=7777 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:13:07 2026
+type=PROCTITLE msg=audit(09/15/2026 12:13:07.007:6007) : proctitle=rm /root/harness/logs/f7.log
+type=PATH msg=audit(09/15/2026 12:13:07.007:6007) : item=1 name=/root/harness/logs/f7.log inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:13:07.007:6007) : cwd=/root/harness/logs
+type=SYSCALL msg=audit(09/15/2026 12:13:07.007:6007) : arch=x86_64 syscall=unlink success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=7777 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:13:08 2026
+type=PROCTITLE msg=audit(09/15/2026 12:13:08.008:6008) : proctitle=rm /root/harness/logs/f8.log
+type=PATH msg=audit(09/15/2026 12:13:08.008:6008) : item=1 name=/root/harness/logs/f8.log inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:13:08.008:6008) : cwd=/root/harness/logs
+type=SYSCALL msg=audit(09/15/2026 12:13:08.008:6008) : arch=x86_64 syscall=unlink success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=7777 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:13:09 2026
+type=PROCTITLE msg=audit(09/15/2026 12:13:09.009:6009) : proctitle=rm /root/harness/logs/f9.log
+type=PATH msg=audit(09/15/2026 12:13:09.009:6009) : item=1 name=/root/harness/logs/f9.log inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:13:09.009:6009) : cwd=/root/harness/logs
+type=SYSCALL msg=audit(09/15/2026 12:13:09.009:6009) : arch=x86_64 syscall=unlink success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=7777 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:13:00 2026
+type=PROCTITLE msg=audit(09/15/2026 12:13:00.000:6010) : proctitle=rm /root/harness/logs/f10.log
+type=PATH msg=audit(09/15/2026 12:13:00.000:6010) : item=1 name=/root/harness/logs/f10.log inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:13:00.000:6010) : cwd=/root/harness/logs
+type=SYSCALL msg=audit(09/15/2026 12:13:00.000:6010) : arch=x86_64 syscall=unlink success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=7777 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:13:01 2026
+type=PROCTITLE msg=audit(09/15/2026 12:13:01.001:6011) : proctitle=rm /root/harness/logs/f11.log
+type=PATH msg=audit(09/15/2026 12:13:01.001:6011) : item=1 name=/root/harness/logs/f11.log inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:13:01.001:6011) : cwd=/root/harness/logs
+type=SYSCALL msg=audit(09/15/2026 12:13:01.001:6011) : arch=x86_64 syscall=unlink success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=7777 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:13:02 2026
+type=PROCTITLE msg=audit(09/15/2026 12:13:02.002:6012) : proctitle=rm /root/harness/logs/f12.log
+type=PATH msg=audit(09/15/2026 12:13:02.002:6012) : item=1 name=/root/harness/logs/f12.log inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:13:02.002:6012) : cwd=/root/harness/logs
+type=SYSCALL msg=audit(09/15/2026 12:13:02.002:6012) : arch=x86_64 syscall=unlink success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=7777 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:13:03 2026
+type=PROCTITLE msg=audit(09/15/2026 12:13:03.003:6013) : proctitle=rm /root/harness/logs/f13.log
+type=PATH msg=audit(09/15/2026 12:13:03.003:6013) : item=1 name=/root/harness/logs/f13.log inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:13:03.003:6013) : cwd=/root/harness/logs
+type=SYSCALL msg=audit(09/15/2026 12:13:03.003:6013) : arch=x86_64 syscall=unlink success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=7777 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:13:04 2026
+type=PROCTITLE msg=audit(09/15/2026 12:13:04.004:6014) : proctitle=rm /root/harness/logs/f14.log
+type=PATH msg=audit(09/15/2026 12:13:04.004:6014) : item=1 name=/root/harness/logs/f14.log inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:13:04.004:6014) : cwd=/root/harness/logs
+type=SYSCALL msg=audit(09/15/2026 12:13:04.004:6014) : arch=x86_64 syscall=unlink success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=7777 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:13:05 2026
+type=PROCTITLE msg=audit(09/15/2026 12:13:05.005:6015) : proctitle=rm /root/harness/logs/f15.log
+type=PATH msg=audit(09/15/2026 12:13:05.005:6015) : item=1 name=/root/harness/logs/f15.log inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:13:05.005:6015) : cwd=/root/harness/logs
+type=SYSCALL msg=audit(09/15/2026 12:13:05.005:6015) : arch=x86_64 syscall=unlink success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=7777 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:13:06 2026
+type=PROCTITLE msg=audit(09/15/2026 12:13:06.006:6016) : proctitle=rm /root/harness/logs/f16.log
+type=PATH msg=audit(09/15/2026 12:13:06.006:6016) : item=1 name=/root/harness/logs/f16.log inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:13:06.006:6016) : cwd=/root/harness/logs
+type=SYSCALL msg=audit(09/15/2026 12:13:06.006:6016) : arch=x86_64 syscall=unlink success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=7777 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:13:07 2026
+type=PROCTITLE msg=audit(09/15/2026 12:13:07.007:6017) : proctitle=rm /root/harness/logs/f17.log
+type=PATH msg=audit(09/15/2026 12:13:07.007:6017) : item=1 name=/root/harness/logs/f17.log inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:13:07.007:6017) : cwd=/root/harness/logs
+type=SYSCALL msg=audit(09/15/2026 12:13:07.007:6017) : arch=x86_64 syscall=unlink success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=7777 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:13:08 2026
+type=PROCTITLE msg=audit(09/15/2026 12:13:08.008:6018) : proctitle=rm /root/harness/logs/f18.log
+type=PATH msg=audit(09/15/2026 12:13:08.008:6018) : item=1 name=/root/harness/logs/f18.log inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:13:08.008:6018) : cwd=/root/harness/logs
+type=SYSCALL msg=audit(09/15/2026 12:13:08.008:6018) : arch=x86_64 syscall=unlink success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=7777 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:13:09 2026
+type=PROCTITLE msg=audit(09/15/2026 12:13:09.009:6019) : proctitle=rm /root/harness/logs/f19.log
+type=PATH msg=audit(09/15/2026 12:13:09.009:6019) : item=1 name=/root/harness/logs/f19.log inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:13:09.009:6019) : cwd=/root/harness/logs
+type=SYSCALL msg=audit(09/15/2026 12:13:09.009:6019) : arch=x86_64 syscall=unlink success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=7777 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:13:00 2026
+type=PROCTITLE msg=audit(09/15/2026 12:13:00.000:6020) : proctitle=rm /root/harness/logs/f20.log
+type=PATH msg=audit(09/15/2026 12:13:00.000:6020) : item=1 name=/root/harness/logs/f20.log inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:13:00.000:6020) : cwd=/root/harness/logs
+type=SYSCALL msg=audit(09/15/2026 12:13:00.000:6020) : arch=x86_64 syscall=unlink success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=7777 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:13:01 2026
+type=PROCTITLE msg=audit(09/15/2026 12:13:01.001:6021) : proctitle=rm /root/harness/logs/f21.log
+type=PATH msg=audit(09/15/2026 12:13:01.001:6021) : item=1 name=/root/harness/logs/f21.log inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:13:01.001:6021) : cwd=/root/harness/logs
+type=SYSCALL msg=audit(09/15/2026 12:13:01.001:6021) : arch=x86_64 syscall=unlink success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=7777 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:13:02 2026
+type=PROCTITLE msg=audit(09/15/2026 12:13:02.002:6022) : proctitle=rm /root/harness/logs/f22.log
+type=PATH msg=audit(09/15/2026 12:13:02.002:6022) : item=1 name=/root/harness/logs/f22.log inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:13:02.002:6022) : cwd=/root/harness/logs
+type=SYSCALL msg=audit(09/15/2026 12:13:02.002:6022) : arch=x86_64 syscall=unlink success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=7777 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:13:03 2026
+type=PROCTITLE msg=audit(09/15/2026 12:13:03.003:6023) : proctitle=rm /root/harness/logs/f23.log
+type=PATH msg=audit(09/15/2026 12:13:03.003:6023) : item=1 name=/root/harness/logs/f23.log inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:13:03.003:6023) : cwd=/root/harness/logs
+type=SYSCALL msg=audit(09/15/2026 12:13:03.003:6023) : arch=x86_64 syscall=unlink success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=7777 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:13:04 2026
+type=PROCTITLE msg=audit(09/15/2026 12:13:04.004:6024) : proctitle=rm /root/harness/logs/f24.log
+type=PATH msg=audit(09/15/2026 12:13:04.004:6024) : item=1 name=/root/harness/logs/f24.log inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:13:04.004:6024) : cwd=/root/harness/logs
+type=SYSCALL msg=audit(09/15/2026 12:13:04.004:6024) : arch=x86_64 syscall=unlink success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=7777 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:13:05 2026
+type=PROCTITLE msg=audit(09/15/2026 12:13:05.005:6025) : proctitle=rm /root/harness/logs/f25.log
+type=PATH msg=audit(09/15/2026 12:13:05.005:6025) : item=1 name=/root/harness/logs/f25.log inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:13:05.005:6025) : cwd=/root/harness/logs
+type=SYSCALL msg=audit(09/15/2026 12:13:05.005:6025) : arch=x86_64 syscall=unlink success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=7777 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:13:06 2026
+type=PROCTITLE msg=audit(09/15/2026 12:13:06.006:6026) : proctitle=rm /root/harness/logs/f26.log
+type=PATH msg=audit(09/15/2026 12:13:06.006:6026) : item=1 name=/root/harness/logs/f26.log inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:13:06.006:6026) : cwd=/root/harness/logs
+type=SYSCALL msg=audit(09/15/2026 12:13:06.006:6026) : arch=x86_64 syscall=unlink success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=7777 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:13:07 2026
+type=PROCTITLE msg=audit(09/15/2026 12:13:07.007:6027) : proctitle=rm /root/harness/logs/f27.log
+type=PATH msg=audit(09/15/2026 12:13:07.007:6027) : item=1 name=/root/harness/logs/f27.log inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:13:07.007:6027) : cwd=/root/harness/logs
+type=SYSCALL msg=audit(09/15/2026 12:13:07.007:6027) : arch=x86_64 syscall=unlink success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=7777 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:13:08 2026
+type=PROCTITLE msg=audit(09/15/2026 12:13:08.008:6028) : proctitle=rm /root/harness/logs/f28.log
+type=PATH msg=audit(09/15/2026 12:13:08.008:6028) : item=1 name=/root/harness/logs/f28.log inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:13:08.008:6028) : cwd=/root/harness/logs
+type=SYSCALL msg=audit(09/15/2026 12:13:08.008:6028) : arch=x86_64 syscall=unlink success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=7777 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:13:09 2026
+type=PROCTITLE msg=audit(09/15/2026 12:13:09.009:6029) : proctitle=rm /root/harness/logs/f29.log
+type=PATH msg=audit(09/15/2026 12:13:09.009:6029) : item=1 name=/root/harness/logs/f29.log inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:13:09.009:6029) : cwd=/root/harness/logs
+type=SYSCALL msg=audit(09/15/2026 12:13:09.009:6029) : arch=x86_64 syscall=unlink success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=7777 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:13:00 2026
+type=PROCTITLE msg=audit(09/15/2026 12:13:00.000:6030) : proctitle=rm /root/harness/logs/f30.log
+type=PATH msg=audit(09/15/2026 12:13:00.000:6030) : item=1 name=/root/harness/logs/f30.log inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:13:00.000:6030) : cwd=/root/harness/logs
+type=SYSCALL msg=audit(09/15/2026 12:13:00.000:6030) : arch=x86_64 syscall=unlink success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=7777 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness

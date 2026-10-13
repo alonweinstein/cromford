@@ -1,0 +1,1 @@
+{"name":"replan-check-off","readers":["bin/replan-check.sh"],"box_scoped":true,"what":"stops the replan check between waves, so every split child builds as written with no model call"}

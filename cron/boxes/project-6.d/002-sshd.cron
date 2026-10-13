@@ -1,0 +1,1 @@
+@reboot /usr/sbin/sshd; /usr/sbin/cron; setsid -f /usr/sbin/tailscaled --tun=userspace-networking --state=/var/lib/tailscale/tailscaled.state --socket=/var/run/tailscale/tailscaled.sock >/tmp/tailscaled.log 2>&1

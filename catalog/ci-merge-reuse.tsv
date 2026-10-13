@@ -1,0 +1,13 @@
+# catalog/ci-merge-reuse.tsv — BH-5357. The lint steps a merge-from-main push
+# may reuse from the previous head's green run, and the paths each one reads.
+# bin/ci-merge-reuse.sh reads it; .github/workflows/harness-ci.yml gates each
+# step on steps.reuse.outputs.run_<id> != '0'. A step with no row here is never
+# gated, so it always runs.
+#
+# <step-id> TAB <globs, space separated; * and ** both cross /> TAB <why>
+# A step runs when a conflict resolution matches a glob, or when main's incoming
+# change AND the PR's own patch each match one. Over-wide globs only run more.
+vmap	docs/** bin/verification-map-build.sh	entries under docs/verification-map, and every repo-local document an entry links
+derived	catalog/** bin/** tests/** console-ui/** worker/** fly/** guardrails/** checks/** skills/** prompts/**	llm-sites render and check, plus test-impact orphans, which reach every script and every suite
+renders	catalog/lanes.d/** cron/** rules/** env-templates/** fleet.conf bin/lanes-build.sh bin/render-cron.sh bin/render-env-example.sh bin/render-rules.sh bin/lib/lanes-registry.sh bin/lib/cron-lines.sh bin/lib/deployment.sh bin/lib/render-fragments.sh worker/*/schema.sql worker/*/schema.d/** bin/schema-build.sh bin/lib/d1-schema.sh	lane registry, crontabs, env template and rules render, and the D1 schema composed from worker/*/schema.d/: their fragments and the renderers' closure
+render-diff	catalog/lanes.d/** cron/** rules/** env-templates/** fleet.conf bin/lanes-build.sh bin/render-cron.sh bin/render-env-example.sh bin/render-rules.sh bin/lib/lanes-registry.sh bin/lib/cron-lines.sh bin/lib/deployment.sh bin/lib/render-fragments.sh bin/render-diff.sh	the same renders, at the base and here

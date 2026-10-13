@@ -1,0 +1,33 @@
+{
+  "libs": [
+    {
+      "id": "lane-caps",
+      "file": "bin/lib/lane-caps.sh",
+      "note": "BH-1940. The bounds on lane_day_usd's read of logs/cost.csv. Resolved by _lc_knobs through lib_env_apply in a subshell, then from this file's own default in the checkout. COST, LANE_CAPS_DAY and LANE_CAPS_CONF are a path, a test seam and a test hook, not config, and are not registered.",
+      "knobs": [
+        {
+          "env": "LANE_CAPS_SCAN",
+          "type": "int",
+          "default": 4000,
+          "min": 100,
+          "max": 100000,
+          "unit": "rows",
+          "zero_means": null,
+          "required": true,
+          "note": "How many rows at the end of cost.csv one lane_day_usd call reads. The lane log says so when the window may start inside the day. Read by bin/lib/lane-caps.sh with no literal since BH-1940; was ${LANE_CAPS_SCAN:-4000}."
+        },
+        {
+          "env": "LANE_CAPS_PRICE_MAX",
+          "type": "int",
+          "default": 500,
+          "min": 1,
+          "max": 5000,
+          "unit": "rows",
+          "zero_means": null,
+          "required": true,
+          "note": "How many rows with tokens and no dollars one call prices (one jq call each). Past it the lane log says the day total reads low. Read by bin/lib/lane-caps.sh with no literal since BH-1940; was ${LANE_CAPS_PRICE_MAX:-500}."
+        }
+      ]
+    }
+  ]
+}

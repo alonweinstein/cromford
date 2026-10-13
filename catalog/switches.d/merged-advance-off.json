@@ -1,0 +1,1 @@
+{"name":"merged-advance-off","readers":["bin/merged-ticket-advance.sh"],"box_scoped":true,"what":"stops merged and deploy-audited tickets being commented on and advanced on in-app boards"}

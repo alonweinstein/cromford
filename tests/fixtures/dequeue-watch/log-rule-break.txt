@@ -1,0 +1,6 @@
+Pure-logic gate fixtures	Run the pure-logic suites	2026-09-29T02:10:01.1000000Z --- tests/lib-root-resolve-test.sh rc=0 3s
+Pure-logic gate fixtures	Run the pure-logic suites	2026-09-29T02:10:05.2000000Z --- tests/lib-root-literal-ratchet.bh-2613-test.sh rc=1 4s
+Pure-logic gate fixtures	Run the pure-logic suites	2026-09-29T02:10:05.2100000Z PASS: the ratchet reads its base
+Pure-logic gate fixtures	Run the pure-logic suites	2026-09-29T02:10:05.2200000Z FAIL: bin/lib/root-resolve.sh raised its root-literal count 0 -> 1
+Pure-logic gate fixtures	Run the pure-logic suites	2026-09-29T02:10:05.2300000Z lib-root-literal-ratchet: 11 passed, 1 failed
+Pure-logic gate fixtures	Run the pure-logic suites	2026-09-29T02:10:09.3000000Z --- tests/queue-hold-test.sh rc=0 2s

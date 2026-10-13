@@ -1,0 +1,1 @@
+{"name":"responder-prefetch-off","readers":["bin/watchdog-responder.sh"],"box_scoped":true,"what":"turns off the watchdog-responder prefetch, so the lane goes back to one tooled call on its old prompt"}

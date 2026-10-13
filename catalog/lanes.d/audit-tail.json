@@ -1,0 +1,82 @@
+{
+  "id": "audit-tail",
+  "name": "Audit trail watcher",
+  "scope": "box",
+  "script": "bin/audit-tail.sh",
+  "cadence": "*/5 * * * *",
+  "boxes": [
+    "project-4",
+    "hub",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-audit-tail",
+    "aliases": [
+      {
+        "name": "audit-off",
+        "off_when": "present"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "AUDIT_MAX_BURSTS_PER_TICK",
+      "type": "int",
+      "default": 5,
+      "zero_means": null,
+      "note": "Read by bin/audit-tail.sh as ${AUDIT_MAX_BURSTS_PER_TICK:-5}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "AUDIT_PAGE_ALL",
+      "type": "int",
+      "default": 0,
+      "zero_means": null,
+      "note": "Read by bin/audit-tail.sh as ${AUDIT_PAGE_ALL:-0}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "AUDIT_PAGE_MIN",
+      "type": "int",
+      "default": 25,
+      "zero_means": null,
+      "note": "Read by bin/audit-tail.sh as ${AUDIT_PAGE_MIN:-25}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "AUDIT_ROOTS",
+      "type": "string",
+      "default": "/root/harness /root/orchestrator /etc/harness /root/.ssh",
+      "zero_means": null,
+      "note": "Read by bin/audit-tail.sh as ${AUDIT_ROOTS:-/root/harness /root/orchestrator /etc/harness /root/.ssh}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "AUDIT_TAIL",
+      "type": "int",
+      "default": 1,
+      "zero_means": null,
+      "note": "Read by bin/audit-tail.sh as ${AUDIT_TAIL:-1}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "WORKTREES",
+      "type": "string",
+      "default": "/root/worktrees",
+      "zero_means": null,
+      "note": "Read by bin/audit-tail.sh as ${WORKTREES:-/root/worktrees}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/audit-tail.log"
+  }
+}

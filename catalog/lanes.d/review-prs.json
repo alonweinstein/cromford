@@ -1,0 +1,271 @@
+{
+  "id": "review-prs",
+  "name": "Review PRs (LLM)",
+  "scope": "project",
+  "script": "bin/review-prs.sh",
+  "cadence": "7,37 * * * *",
+  "boxes": [
+    "project-4",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-review-prs",
+    "aliases": [
+      {
+        "name": "automerge-disabled",
+        "off_when": "present"
+      },
+      {
+        "name": "automerge-disabled-",
+        "off_when": "present"
+      },
+      {
+        "name": "conductor-owns-merges",
+        "off_when": "partial"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "REVIEW_CI_STALE_SECS",
+      "type": "int",
+      "default": 43200,
+      "min": 300,
+      "max": 604800,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "Age past which a CI answer is treated as stale."
+    },
+    {
+      "env": "REVIEW_MERGE_RETRY",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "Whether a refused merge is retried."
+    },
+    {
+      "env": "REVIEW_MERGE_RETRY_MAX",
+      "type": "int",
+      "default": 6,
+      "min": 1,
+      "max": 50,
+      "unit": "attempts",
+      "zero_means": null,
+      "note": "Merge retries before the PR is handed off."
+    },
+    {
+      "env": "REVIEW_BASE_HOLD_ALERT_TICKS",
+      "type": "int",
+      "default": 6,
+      "min": 0,
+      "max": 100,
+      "unit": "ticks",
+      "zero_means": "off",
+      "note": "Consecutive base holds on one head before one alert (BH-1646)."
+    },
+    {
+      "env": "MC_MAIN_RED_LABEL",
+      "type": "string",
+      "default": "fix-main-red",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "note": "Read by bin/review-prs.sh as ${MC_MAIN_RED_LABEL:-fix-main-red}, and registered only so that read is visible (section 7 of tests/lanes-registry-test.sh). NOT settable here (BH-1985): the label is set in ONE place, the lib row lib.main-red-label.mc_main_red_label (BH-1770), which every reader resolves first. A lane row would split the label for this lane alone, so lane-gate ignores one; MAIN_RED_LABEL is a deprecated alias.",
+      "settable": false
+    },
+    {
+      "env": "REVIEW_INFLIGHT_MAX",
+      "type": "int",
+      "default": 2,
+      "min": 1,
+      "max": 20,
+      "unit": "reviews",
+      "zero_means": null,
+      "note": "Reviews in flight for one project before a new one waits. A crashed review is owed exactly one retry."
+    },
+    {
+      "env": "LLM_LANE_ENABLED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "0 makes this lane call no model at all. bin/lib/llm-gate.sh refuses BEFORE the vendor call and writes a zero-cost row_source=refused row, so the stop is visible in the ledger rather than being a lane that went quiet."
+    },
+    {
+      "env": "LLM_RUNNER_ALLOWED",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Comma/space list of the ONLY ladder rungs this lane may reach. Empty is every rung, i.e. today's ladder unchanged. A rung outside the list is refused before the call, so a cliff or a failure on the standing lane cannot descend into one that costs ~100x (#1141, the $793 descent)."
+    },
+    {
+      "env": "LLM_USD_CAP_DAY",
+      "type": "float",
+      "default": 0,
+      "min": 0,
+      "max": 10000,
+      "unit": "usd",
+      "zero_means": "unlimited",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Dollars this lane may spend in the current UTC day, summed from D1 cost_rows through GET /api/metrics/llm-spend \u2014 never from the box's own logs/cost.csv. A second, project-scoped ceiling is the lane.<id>.<project>.llm_usd_cap_day row, which is read only when somebody wrote it."
+    },
+    {
+      "env": "RP_DISMISS_FAIL_ALERT",
+      "type": "int",
+      "default": 3,
+      "min": 1,
+      "max": 50,
+      "unit": "failures",
+      "zero_means": null,
+      "note": "Consecutive refused dismissals of one standing review before an ALERTS line."
+    },
+    {
+      "env": "BASE_BRANCH",
+      "type": "string",
+      "default": "main",
+      "zero_means": null,
+      "note": "Read by bin/review-prs.sh as ${BASE_BRANCH:-main}: the only base the direct merge lands on (BH-1285); a stacked PR is held. NOT settable from the control plane — it is a repo fact the box env carries, so only env/global.env on the box moves it; the same knob bin/rebase-train.sh registers.",
+      "settable": false
+    },
+    {
+      "env": "REVIEW_LIVE_CI",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "BH-1794: the reviewer prompt carries what GitHub reports for the head under review (each run's name, conclusion and URL, read on this lane's credential ladder; unreadable is said, never red), so a reviewer whose token cannot read check-runs is not left judging CI from a stale PR-body Evidence block. 0 = the prompt is what it was before."
+    },
+    {
+      "env": "REVIEW_REREVIEW_ON_REQUEST",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "BH-1794: a head this lane already answered REQUEST_CHANGES is reviewed ONCE more when its PR body carries `<!-- harness:rereview-requested <that sha> -->`, which bin/blocked-resolver.sh's fix-round preflight writes when the only blocker was stale evidence and CI is green. Once per head (rereq_sha); the body is read only for a blocked head. 0 = the marker is ignored."
+    },
+    {
+      "env": "REVIEW_D1_HOLD_MAX_H",
+      "type": "int",
+      "default": 6,
+      "min": 0,
+      "max": 168,
+      "unit": "hours",
+      "zero_means": "off",
+      "note": "BH-2457: hours one D1-unreadable outage holds paid reviews before the lane reviews on this box's subscription runners only (metered stays refused). 0 turns the fallback off: the lane holds until D1 answers. A value that is not a 0-168 hour count is read as the default."
+    },
+    {
+      "env": "REVIEW_CONCURRENCY",
+      "type": "int",
+      "default": 10,
+      "min": 0,
+      "max": 32,
+      "unit": "reviews",
+      "zero_means": "unlimited",
+      "note": "BH-5284: Builder reviews one tick runs at once (bin/lib/review-pool.sh), each in its own worker with its own claim, heartbeat and scratch dir. 0 = no cap: every eligible review starts, bounded only by the box guardrails, the spend cap and the start cap. Capped per box by REVIEW_BOX_MAX."
+    },
+    {
+      "env": "REVIEW_BOX_MAX",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 32,
+      "unit": "reviews",
+      "zero_means": null,
+      "note": "BH-5284, BH-5337: a hard cap on REVIEW_CONCURRENCY on this box; it overrides the derived cap. 0 derives one from three terms and the smallest wins: cpu (vCPUs / REVIEW_WORKER_CPUS), memory (MemAvailable / REVIEW_WORKER_MEM_MB; with a tmpfs /tmp, (MemAvailable - tmpfs used) / (REVIEW_WORKER_MEM_MB + REVIEW_WORKER_TMP_MB)) and tmp ((free /tmp - REVIEW_TMP_MIN_MB) / REVIEW_WORKER_TMP_MB, 256 a worker). The tick logs `concurrency capped at N by cpu|memory|tmp (...)`."
+    },
+    {
+      "env": "REVIEW_TMP_MIN_MB",
+      "type": "int",
+      "default": 1536,
+      "min": 256,
+      "max": 65536,
+      "unit": "MB",
+      "zero_means": null,
+      "note": "BH-5284: no new review worker starts while /tmp has less free space than this; one alert line per low episode. A full /tmp broke lead reviews on 2026-10-06."
+    },
+    {
+      "env": "REVIEW_WORKER_CPUS",
+      "type": "int",
+      "default": 1,
+      "min": 1,
+      "max": 16,
+      "unit": "vCPU",
+      "zero_means": null,
+      "read_in": "bin/lib/review-pool.sh",
+      "note": "BH-5337: vCPUs one builder review worker is given when the box cap is derived (REVIEW_BOX_MAX=0). The cpu term is vCPUs / this, so at 1 a 4 vCPU box runs at most 4 workers whatever its RAM. Ten workers on a 4 vCPU box froze box-small on 2026-10-08."
+    },
+    {
+      "env": "REVIEW_WORKER_MEM_MB",
+      "type": "int",
+      "default": 2048,
+      "min": 256,
+      "max": 65536,
+      "unit": "MB",
+      "zero_means": null,
+      "read_in": "bin/lib/review-pool.sh",
+      "note": "BH-5337: memory one builder review worker is given when the box cap is derived (REVIEW_BOX_MAX=0): the claude CLI, its checkout and its test run. The memory term is MemAvailable / this; with a tmpfs /tmp the tmpfs use comes off MemAvailable and REVIEW_WORKER_TMP_MB is added to this. Was 1024 in code before BH-5337."
+    },
+    {
+      "env": "REVIEW_WORKER_TMP_MB",
+      "type": "int",
+      "default": 256,
+      "min": 64,
+      "max": 16384,
+      "unit": "MB",
+      "zero_means": null,
+      "read_in": "bin/lib/review-prs-tmp.sh",
+      "note": "BH-6132: the /tmp space one review worker needs. rpool_init sizes the /tmp cap as (free - REVIEW_TMP_MIN_MB) / this; the review-prs-tmp-capped event reports it as worker_tmp_mb."
+    },
+    {
+      "env": "REVIEW_RATE_BACKOFF_S",
+      "type": "int",
+      "default": 60,
+      "min": 10,
+      "max": 900,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "BH-5284: after an agent call hits a rate or concurrency limit (429, overloaded, the account's concurrency cap) no new review starts for this long; it doubles on each repeat up to 900s and resets on the next review that ends normally. The limited review records no verdict and is not counted as failed."
+    },
+    {
+      "env": "REVIEW_TMP_CAPPED_REPORT_S",
+      "type": "int",
+      "default": 86400,
+      "min": 0,
+      "max": 604800,
+      "unit": "seconds",
+      "zero_means": "off",
+      "read_in": "bin/lib/review-prs-tmp.sh",
+      "note": "BH-6130, BH-6133: a review pool capped below 3 by /tmp sends its Sentry event (free space, threshold, the count of review-prs dirs, the three largest /tmp entries) once per cap episode, and again each window while the episode lasts, plus once when the cap drops below the last reported value (BH-6132). An episode ends when a tick measures free /tmp at or above TMP_MIN_MB + 3 x WORKER_TMP_MB. 0 turns the window off: every capped tick reports, under the Sentry lib's own per-hour cap. The marker state/review-prs-tmp-capped.last is shared by every project on the box."
+    }
+  ],
+  "stats": {
+    "cost_stage": "review",
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/review-prs.log"
+  }
+}

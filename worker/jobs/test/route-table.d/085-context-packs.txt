@@ -1,0 +1,3 @@
+# CONTEXT-PACKS (BH-3493): the split-child context pack wire, directly after preplans.
+POST /api/context-packs
+GET /api/context-packs

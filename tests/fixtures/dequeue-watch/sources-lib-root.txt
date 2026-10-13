@@ -1,0 +1,2 @@
+bin/lib/root-resolve.sh
+tests/lib-root-literal-ratchet.bh-2613-test.sh

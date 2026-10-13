@@ -1,0 +1,168 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
+  <style>
+    body { margin: 0; background: #070B08; font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace; color: #C9DCC9; }
+    a { color: #4AF37A; text-decoration: none; } a:hover { color: #8CFFB0; }
+  </style>
+</helmet>
+<div style="display: flex; flex-direction: column; width: 1440px; height: 900px; background: #070B08; overflow: hidden">
+
+  <!-- top bar (condensed) -->
+  <div style="display: flex; align-items: center; gap: 16px; padding: 0 24px; height: 56px; border-bottom: 1px solid #16241A; background: linear-gradient(180deg, #0A120C 0%, #070B08 100%); flex-shrink: 0">
+    <a style="font-size: 11px; color: #6E8F77; letter-spacing: 1px">← FLEET</a>
+    <span style="color: #1E3325">/</span>
+    <span style="font-size: 15px; font-weight: 700; color: #E8F5E8; letter-spacing: 1px; text-shadow: 0 0 12px rgba(74,243,122,0.3)">project-1</span>
+    <span style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border: 1px solid #1E3325; border-radius: 2px; background: #0B130D"><svg width="7" height="7" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" fill="#4AF37A"/></svg><span style="font-size: 10px; color: #8CFFB0; letter-spacing: 1px">HEALTHY</span></span>
+    <span style="font-size: 11px; color: #4E6B55">box: project-1 · offset :02 · example-org/project-1</span>
+    <div style="display: flex; gap: 8px; margin-left: auto">
+      <div style="padding: 6px 14px; font-size: 11px; letter-spacing: 1px; color: #C9DCC9; border: 1px solid #26402E; border-radius: 2px; background: #0C140E">FORCE TRIAGE</div>
+      <div style="padding: 6px 14px; font-size: 11px; letter-spacing: 1px; color: #C9DCC9; border: 1px solid #26402E; border-radius: 2px; background: #0C140E">FETCH LOGS</div>
+      <div style="padding: 6px 14px; font-size: 11px; letter-spacing: 1px; color: #FFB000; border: 1px solid #3A2B10; border-radius: 2px; background: #100D06">PAUSE</div>
+      <div style="display: flex; align-items: center; gap: 8px; padding: 6px 14px; font-size: 11px; letter-spacing: 1px; color: #8CFFB0; border: 1px solid #1E3325; border-radius: 2px; background: #0B130D">AUTOMERGE <span style="display: inline-block; width: 26px; height: 13px; border-radius: 7px; background: #1E3D26; position: relative"><span style="position: absolute; right: 2px; top: 2px; width: 9px; height: 9px; border-radius: 50%; background: #4AF37A; box-shadow: 0 0 6px rgba(74,243,122,0.7)"></span></span></div>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 420px; gap: 0; flex-grow: 1; min-height: 0">
+
+    <!-- left: runs + builds -->
+    <div style="display: flex; flex-direction: column; gap: 16px; padding: 18px 20px 20px 24px; min-width: 0; overflow: hidden">
+
+      <div style="display: flex; flex-direction: column; gap: 9px">
+        <span style="font-size: 11px; letter-spacing: 2px; color: #6E8F77; font-weight: 500">RECENT RUNS</span>
+        <div style="border: 1px solid #16241A; border-radius: 2px; background: #0A110B">
+          <div style="display: grid; grid-template-columns: 120px 80px 50px 1fr 80px; padding: 8px 14px; border-bottom: 1px solid #16241A; background: #0C140E">
+            <span style="font-size: 10px; letter-spacing: 1.5px; color: #6E8F77">TIME ▾</span>
+            <span style="font-size: 10px; letter-spacing: 1.5px; color: #4E6B55">KIND</span>
+            <span style="font-size: 10px; letter-spacing: 1.5px; color: #4E6B55">RC</span>
+            <span style="font-size: 10px; letter-spacing: 1.5px; color: #4E6B55">SUMMARY</span>
+            <span style="font-size: 10px; letter-spacing: 1.5px; color: #4E6B55">COST</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 120px 80px 50px 1fr 80px; padding: 9px 14px; border-bottom: 1px solid #101A12; align-items: center">
+            <a style="font-size: 11px">14:02:00Z</a>
+            <span style="font-size: 11px; color: #8FA996">triage</span>
+            <span style="font-size: 11px; color: #4AF37A">0</span>
+            <span style="font-size: 11px; color: #8FA996; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 12px">tickets=14 new=1 triaged=1 buildable=1 built=1 [gate=RUN scope=3]</span>
+            <span style="font-size: 11px; color: #C9DCC9">$0.42</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 120px 80px 50px 1fr 80px; padding: 9px 14px; border-bottom: 1px solid #101A12; align-items: center">
+            <a style="font-size: 11px">13:32:01Z</a>
+            <span style="font-size: 11px; color: #8FA996">triage</span>
+            <span style="font-size: 11px; color: #4AF37A">0</span>
+            <span style="font-size: 11px; color: #4E6B55; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 12px">skip :: gate no-change</span>
+            <span style="font-size: 11px; color: #4E6B55">$0.00</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 120px 80px 50px 1fr 80px; padding: 9px 14px; align-items: center">
+            <a style="font-size: 11px">13:02:00Z</a>
+            <span style="font-size: 11px; color: #8FA996">product</span>
+            <span style="font-size: 11px; color: #4AF37A">0</span>
+            <span style="font-size: 11px; color: #8FA996; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 12px">SIGNALS ok · 2 proposals drafted → cockpit</span>
+            <span style="font-size: 11px; color: #C9DCC9">$1.18</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 9px; flex-grow: 1; min-height: 0">
+        <span style="font-size: 11px; letter-spacing: 2px; color: #6E8F77; font-weight: 500">BUILDS</span>
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <div style="display: flex; flex-direction: column; gap: 10px; padding: 13px 16px; border: 1px solid #1E3325; border-radius: 2px; background: #0A110B">
+            <div style="display: flex; align-items: center; gap: 12px">
+              <span style="font-size: 12px; font-weight: 700; color: #E8F5E8">TK-212</span>
+              <span style="font-size: 11px; color: #8FA996; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1">Add CSV export to the GL ledger drill-down</span>
+              <span style="font-size: 9px; letter-spacing: 1px; padding: 2px 8px; color: #55D7E8; border: 1px solid #123A4A; border-radius: 2px">FLY POOL</span>
+              <span style="font-size: 9px; letter-spacing: 1px; padding: 2px 8px; color: #4AF37A; border: 1px solid #1E3325; border-radius: 2px; background: #0B130D">EXECUTE</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0; height: 4px; border-radius: 2px; overflow: hidden; background: #101A12">
+              <span style="width: 22%; height: 4px; background: #4AF37A"></span>
+              <span style="width: 22%; height: 4px; background: #4AF37A"></span>
+              <span style="width: 18%; height: 4px; background: #2E5A3A"></span>
+              <span style="width: 38%; height: 4px; background: transparent"></span>
+            </div>
+            <div style="display: flex; gap: 14px; font-size: 10px; color: #4E6B55">
+              <span>plan ✓</span><span>red ✓</span><span style="color: #8CFFB0">green — running 11m</span><span>review</span><span>PR</span><span>qa</span><span>merge</span>
+              <span style="margin-left: auto; color: #6E8F77">attempt 1 · $3.41 so far</span>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 10px; padding: 13px 16px; border: 1px solid #16241A; border-radius: 2px; background: #0A110B">
+            <div style="display: flex; align-items: center; gap: 12px">
+              <span style="font-size: 12px; font-weight: 700; color: #E8F5E8">TK-207</span>
+              <span style="font-size: 11px; color: #8FA996; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1">Vendor 1099 threshold report</span>
+              <span style="font-size: 9px; letter-spacing: 1px; padding: 2px 8px; color: #C9DCC9; border: 1px solid #26402E; border-radius: 2px">TIER 1</span>
+              <span style="font-size: 9px; letter-spacing: 1px; padding: 2px 8px; color: #070B08; background: #4AF37A; border-radius: 2px; font-weight: 700">PR OPEN</span>
+            </div>
+            <div style="display: flex; gap: 14px; font-size: 10px; color: #4E6B55">
+              <a style="font-size: 10px">PR #341 ↗</a>
+              <span>verdict: <span style="color: #8CFFB0">APPROVE</span></span>
+              <a style="font-size: 10px">plan.md</a><a style="font-size: 10px">review.md</a><a style="font-size: 10px">qa.md</a><a style="font-size: 10px">pipeline.log</a>
+              <span style="margin-left: auto; color: #6E8F77">in merge queue · $2.87</span>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 10px; padding: 13px 16px; border: 1px solid #3A1515; border-radius: 2px; background: #100808">
+            <div style="display: flex; align-items: center; gap: 12px">
+              <span style="font-size: 12px; font-weight: 700; color: #E8F5E8">TK-198</span>
+              <span style="font-size: 11px; color: #8FA996; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-grow: 1">Tipalti payment sync retry lane</span>
+              <span style="font-size: 9px; letter-spacing: 1px; padding: 2px 8px; color: #FF7B7B; border: 1px solid #3A1515; border-radius: 2px">BUILD_DEAD</span>
+            </div>
+            <div style="display: flex; gap: 14px; font-size: 10px; color: #4E6B55">
+              <span style="color: #C97B7B">2 attempts · died in EXECUTE · heartbeat lost 23m</span>
+              <a style="font-size: 10px; color: #FF9B9B">gh-stderr.log</a>
+              <span style="margin-left: auto"><span style="font-size: 9px; letter-spacing: 1px; padding: 2px 8px; color: #C9DCC9; border: 1px solid #26402E; border-radius: 2px">RETRY</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- right: log tail + costs -->
+    <div style="display: flex; flex-direction: column; gap: 16px; padding: 18px 24px 20px 0; min-width: 0">
+      <div style="display: flex; flex-direction: column; gap: 9px; flex-grow: 1; min-height: 0">
+        <div style="display: flex; align-items: center; gap: 10px">
+          <span style="font-size: 11px; letter-spacing: 2px; color: #6E8F77; font-weight: 500">LIVE TAIL</span>
+          <span style="font-size: 9px; letter-spacing: 1px; padding: 2px 8px; color: #4AF37A; border: 1px solid #1E3325; border-radius: 2px">triage.log</span>
+          <span style="font-size: 9px; letter-spacing: 1px; padding: 2px 8px; color: #4E6B55; border: 1px solid #16241A; border-radius: 2px">ALERTS</span>
+          <span style="font-size: 9px; letter-spacing: 1px; padding: 2px 8px; color: #4E6B55; border: 1px solid #16241A; border-radius: 2px">decisions</span>
+          <span style="margin-left: auto; font-size: 9px; color: #4E6B55">fetched 40s ago</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border: 1px solid #16241A; border-radius: 2px; background: #060906; font-size: 10.5px; line-height: 1.7; color: #7BA184; flex-grow: 1; overflow: hidden; box-shadow: inset 0 0 40px rgba(74,243,122,0.03)">
+          <span><span style="color: #3D5744">14:02:00Z</span> [project-1] tick start · gate=RUN scope=3</span>
+          <span><span style="color: #3D5744">14:02:31Z</span> board diff: TK-212 client replied → buildable</span>
+          <span><span style="color: #3D5744">14:03:11Z</span> DECISION: TK-212 :: build_launched :: client confirmed mechanism</span>
+          <span><span style="color: #3D5744">14:03:14Z</span> fly-pool spawn d891f04ae21b98 · performance-8x</span>
+          <span><span style="color: #3D5744">14:05:58Z</span> TK-207 tier-1 verdict APPROVE → merge-queue</span>
+          <span><span style="color: #3D5744">14:07:31Z</span> rc=0 :: tickets=14 new=1 triaged=1 built=1 <span style="color: #8CFFB0">[$0.42]</span></span>
+          <span style="color: #2B3D30">─ ─ ─ end of tail · 16KB window ─ ─ ─</span>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 9px">
+        <span style="font-size: 11px; letter-spacing: 2px; color: #6E8F77; font-weight: 500">COST · 7D</span>
+        <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border: 1px solid #16241A; border-radius: 2px; background: #0A110B">
+          <div style="display: flex; align-items: flex-end; gap: 6px; height: 52px">
+            <span style="width: 32px; height: 30%; background: #1E3D26; border-radius: 1px"></span>
+            <span style="width: 32px; height: 45%; background: #1E3D26; border-radius: 1px"></span>
+            <span style="width: 32px; height: 22%; background: #1E3D26; border-radius: 1px"></span>
+            <span style="width: 32px; height: 70%; background: #2E5A3A; border-radius: 1px"></span>
+            <span style="width: 32px; height: 38%; background: #1E3D26; border-radius: 1px"></span>
+            <span style="width: 32px; height: 55%; background: #2E5A3A; border-radius: 1px"></span>
+            <span style="width: 32px; height: 88%; background: #4AF37A; border-radius: 1px; box-shadow: 0 0 10px rgba(74,243,122,0.35)"></span>
+          </div>
+          <div style="display: flex; gap: 16px; font-size: 10px; color: #4E6B55">
+            <span>today <span style="color: #E8F5E8; font-weight: 700">$12.40</span></span>
+            <span>cost/PR <span style="color: #C9DCC9">$4.10</span></span>
+            <span>reopens 14d <span style="color: #C9DCC9">1</span></span>
+            <span style="margin-left: auto">opus 61% · grok 27% · ds 12%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

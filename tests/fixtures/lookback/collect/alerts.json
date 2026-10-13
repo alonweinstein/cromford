@@ -1,0 +1,5 @@
+{"alerts":[
+ {"id":"a1","family":"rebase:conflict","box":"project-3-box","project":"project-3","state":"notified","count":2,"first_seen":"@AT_IN@","last_seen":"@AT_IN@","claimed_by":null,"claimed_at":null,"notified_at":"@AT_IN@","severity":"warn","line":"@STAMP_IN@ [project-3] rebase of project-3-3 conflicted on src/a.ts"},
+ {"id":"a2","family":"rebase:conflict","box":"hub","project":"project-3","state":"new","count":1,"first_seen":"@AT_IN@","last_seen":"@AT_IN@","claimed_by":null,"claimed_at":null,"notified_at":null,"severity":"warn","line":"@STAMP_IN@ [project-3] rebase of project-3-2 conflicted on src/a.ts"},
+ {"id":"a3","family":"deploy:slow","box":"hub","project":"project-3","state":"new","count":2,"first_seen":"@AT_IN@","last_seen":"@AT_IN@","claimed_by":null,"claimed_at":null,"notified_at":null,"severity":"info","line":"@STAMP_IN@ [project-3] deploy took 14 minutes"}
+],"truncated":false,"as_of":"@AT_NOW@"}

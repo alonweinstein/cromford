@@ -1,0 +1,4 @@
+# tests/jobs-client-modules.d/20-TRIAGE-STATE.tsv — the per-ticket triage state verbs (TRIAGE-STATE).
+queue	triage_state_get
+queue	triage_state_list
+queue	triage_state_put

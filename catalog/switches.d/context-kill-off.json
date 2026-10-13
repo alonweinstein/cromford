@@ -1,0 +1,1 @@
+{"name":"context-kill-off","readers":["bin/agent-call.sh"],"box_scoped":true,"what":"turns off the context kill in agent-call.sh, so a call runs in the old foreground way with no token ceiling"}

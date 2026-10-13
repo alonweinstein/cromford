@@ -1,0 +1,40 @@
+{
+  "id": "data-lane",
+  "name": "Data lane (pre-merge migration apply)",
+  "scope": "hub",
+  "script": "bin/data-lane-apply.sh",
+  "cadence": "on demand (via bin/archie-fm.sh, the archie-fm */10 tick, which runs bin/data-lane-apply.sh <project> <pr> <build-dir> once per candidate PR head, BH-4927; no cron line of its own)",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-data-lane",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "DATA_LANE_APP_BASE",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "The app base the pre-merge apply POSTs to (<base>/api/internal/migrations/apply) with MIGRATION_TOKEN. Read by bin/data-lane-apply.sh as ${DATA_LANE_APP_BASE:-} from env/<project>.env. Empty is the fail-closed answer no-path (rc 5): no POST. NOT settable from the control plane — it is the host a credential is sent to, so a settings row must never re-aim it; only the sealed env file on the box moves it.",
+      "settable": false
+    },
+    {
+      "env": "DATA_LANE_REPO_DIR",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it (/root/repos/$PROJECT). Read by bin/data-lane-apply.sh as ${DATA_LANE_REPO_DIR:-/root/repos/$PROJECT}; the checkout the PR head and its diff are read from. NOT settable from the control plane — it is a path a root lane uses, so only the env file on the box moves it.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/<project>.log"
+  }
+}

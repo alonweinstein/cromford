@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mission Control · The Line</title>
+<style>
+@font-face { font-family: "Archivo"; src: url("fonts/archivo-latin-wdth-normal.woff2") format("woff2"); font-weight: 100 900; font-stretch: 62% 125%; font-display: swap; }
+@font-face { font-family: "Geist"; src: url("fonts/geist-latin-wght-normal.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+@font-face { font-family: "Geist Mono"; src: url("fonts/geist-mono-latin-wght-normal.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+
+:root {
+  --ink: #0d0d0c; --stage: #151513; --stage-2: #1b1a18; --rule: #2b2a26; --rule-soft: #201f1c;
+  --chalk: #f2f0eb; --stone: #e7e5df; --dim: #8d8a82; --faint: #5d5a54;
+  --brick: #c8572f; --brick-soft: rgba(200,87,47,.14); --green: #6fae7b; --amber: #d9a441; --red: #e0675c;
+  --grid: #1a1917;
+  --display: "Archivo", "Arial Narrow", Helvetica, sans-serif;
+  --body: "Geist", -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  --mono: "Geist Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+}
+:root[data-theme="paper"] {
+  --ink: #f1efe9; --stage: #fbfaf7; --stage-2: #f5f3ee; --rule: #d9d5cb; --rule-soft: #e6e2d9;
+  --chalk: #161513; --stone: #2b2a26; --dim: #6b675f; --faint: #a19c92;
+  --brick-soft: rgba(200,87,47,.10); --green: #3f8a4e; --amber: #a87412;
+  --grid: #e5e1d7;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--ink); color: var(--chalk); font-family: var(--body); font-size: 15px; line-height: 1.5; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-decoration: none; }
+.mono { font-family: var(--mono); font-size: 11.5px; letter-spacing: .09em; text-transform: uppercase; }
+.dim { color: var(--dim); }
+.wrap { max-width: 1600px; margin: 0 auto; padding: 0 28px; }
+
+/* top bar */
+.top { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--ink) 88%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--rule); }
+.top .wrap { display: flex; align-items: center; gap: 28px; height: 58px; }
+.brand { display: flex; align-items: center; gap: 10px; font-family: var(--display); font-weight: 800; font-size: 15px; letter-spacing: .04em; white-space: nowrap; }
+.brand svg { width: 20px; height: 20px; }
+.brand small { font-family: var(--mono); font-weight: 400; font-size: 11px; color: var(--dim); letter-spacing: .09em; }
+.nav { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; flex: 1; min-width: 0; }
+.nav::-webkit-scrollbar { display: none; }
+.nav a { font-family: var(--mono); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); padding: 7px 10px; border-radius: 999px; white-space: nowrap; }
+.nav a:hover { color: var(--chalk); }
+.nav a.on { color: var(--chalk); background: var(--stage-2); box-shadow: inset 0 0 0 1px var(--rule); }
+.nav .count { color: var(--brick); margin-left: 4px; }
+.pill { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; border-radius: 999px; padding: 8px 14px; border: 1px solid var(--rule); color: var(--chalk); background: transparent; cursor: pointer; white-space: nowrap; }
+.pill.solid { background: var(--chalk); color: var(--ink); border-color: var(--chalk); }
+.right { display: flex; gap: 10px; align-items: center; }
+
+/* hero */
+.hero { position: relative; border-bottom: 1px solid var(--rule); overflow: hidden; }
+.hero::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 24px 24px; mask-image: linear-gradient(180deg, #000 0%, transparent 95%); pointer-events: none; }
+.hero .wrap { position: relative; padding-top: 44px; padding-bottom: 36px; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 48px; align-items: end; }
+.crumb { display: flex; gap: 10px; align-items: center; margin-bottom: 18px; }
+.chip { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--rule); border-radius: 999px; padding: 5px 11px; background: var(--stage); }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--brick); box-shadow: 0 0 0 3px var(--brick-soft); animation: pulse 2.4s ease-in-out infinite; }
+@keyframes pulse { 50% { box-shadow: 0 0 0 6px transparent; } }
+h1 { font-family: var(--display); font-weight: 850; font-stretch: 100%; text-transform: uppercase; font-size: clamp(38px, 5.4vw, 76px); line-height: .95; letter-spacing: -.01em; margin: 0; }
+h1 .stone { color: var(--faint); }
+.lede { font-size: 18px; color: var(--dim); margin: 18px 0 0; max-width: 620px; }
+.lede b { color: var(--chalk); font-weight: 500; }
+
+/* stat strip: numbers separated by hairlines, not boxes */
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--rule); border-left: 1px solid var(--rule); }
+.stat { border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 14px 16px 16px; background: color-mix(in srgb, var(--ink) 70%, transparent); }
+.stat .n { font-family: var(--display); font-weight: 800; font-size: 34px; line-height: 1; margin-top: 8px; }
+.stat.warn .n { color: var(--amber); }
+.stat.live .n { color: var(--brick); }
+.stat .sub { font-size: 12.5px; color: var(--dim); margin-top: 4px; }
+
+/* sections */
+section { padding: 36px 0 8px; }
+.sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 16px; flex-wrap: wrap; }
+.sec-head .num { color: var(--brick); }
+.sec-head h2 { font-family: var(--display); font-weight: 800; text-transform: uppercase; font-size: 22px; letter-spacing: .01em; margin: 0; }
+.sec-head p { margin: 0; color: var(--dim); font-size: 14px; }
+.sec-head .spacer { flex: 1; }
+
+/* the line board */
+.board { display: grid; grid-template-columns: minmax(0, 1fr) 380px; border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; background: var(--stage); }
+.tickets { min-width: 0; }
+.ticket { display: grid; grid-template-columns: minmax(220px, 300px) minmax(0, 1fr) 90px; gap: 20px; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--rule-soft); }
+.ticket:last-child { border-bottom: 0; }
+.ticket:hover { background: var(--stage-2); }
+.t-key { color: var(--dim); }
+.t-title { font-weight: 500; font-size: 14.5px; margin-top: 2px; line-height: 1.35; }
+.t-meta { font-size: 12.5px; color: var(--dim); margin-top: 3px; }
+.track { position: relative; display: grid; grid-template-columns: repeat(8, 1fr); align-items: start; min-width: 380px; }
+.track::before { content: ""; position: absolute; left: 14px; right: 14px; top: 13px; height: 1px; background: var(--rule); }
+.track .fill { position: absolute; left: 14px; top: 13px; height: 2px; background: var(--green); }
+.st { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.node { width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--rule); background: var(--stage); display: grid; place-items: center; font-family: var(--mono); font-size: 10.5px; color: var(--faint); position: relative; }
+.st.done .node { color: var(--chalk); border-color: color-mix(in srgb, var(--green) 50%, var(--rule)); }
+.st.done .node::after { content: ""; position: absolute; top: -3px; right: -3px; width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+.st.now .node { color: var(--chalk); border-color: var(--brick); box-shadow: 0 0 0 4px var(--brick-soft); }
+.st.held .node { color: var(--amber); border-color: var(--amber); }
+.st.fail .node { color: var(--red); border-color: var(--red); }
+.st .lbl { font-family: var(--mono); font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); white-space: nowrap; }
+.st.now .lbl { color: var(--brick); }
+.st.held .lbl { color: var(--amber); }
+.st.fail .lbl { color: var(--red); }
+.t-cost { text-align: right; font-family: var(--mono); font-size: 12.5px; }
+.t-cost small { display: block; color: var(--dim); font-size: 10.5px; letter-spacing: .06em; }
+.log { border-left: 1px solid var(--rule); background: var(--ink); display: flex; flex-direction: column; min-width: 0; }
+.log-head { display: flex; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--rule); }
+.log ol { list-style: none; margin: 0; padding: 10px 16px 16px; font-family: var(--mono); font-size: 12px; line-height: 1.85; overflow: auto; }
+.log li { display: grid; grid-template-columns: 44px 62px 1fr; gap: 8px; }
+.log .ts { color: var(--faint); }
+.log .stg { color: var(--dim); }
+.log .ok { color: var(--green); }
+.log .live { color: var(--brick); }
+.log .warn { color: var(--amber); }
+.log .bad { color: var(--red); }
+
+/* lanes table */
+.tbl-wrap { border: 1px solid var(--rule); border-radius: 14px; overflow-x: auto; background: var(--stage); }
+table { width: 100%; border-collapse: collapse; min-width: 820px; }
+th { text-align: left; font-family: var(--mono); font-size: 10.5px; letter-spacing: .09em; text-transform: uppercase; color: var(--dim); font-weight: 400; padding: 12px 16px; border-bottom: 1px solid var(--rule); cursor: pointer; user-select: none; white-space: nowrap; }
+th[aria-sort] { color: var(--chalk); }
+th[aria-sort="ascending"]::after { content: " ↑"; color: var(--brick); }
+th[aria-sort="descending"]::after { content: " ↓"; color: var(--brick); }
+th.r, td.r { text-align: right; }
+td { padding: 12px 16px; border-bottom: 1px solid var(--rule-soft); font-size: 14px; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+tbody tr:hover td { background: var(--stage-2); }
+td a.lane { font-weight: 500; }
+td a.lane:hover, td a.proj:hover { color: var(--brick); }
+td .tag { font-family: var(--mono); font-size: 10.5px; color: var(--faint); margin-left: 6px; letter-spacing: .06em; }
+.state { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; border: 1px solid currentColor; }
+.state.ok { color: var(--green); } .state.warn { color: var(--amber); } .state.off { color: var(--faint); }
+.mono-cell { font-family: var(--mono); font-size: 12.5px; color: var(--dim); }
+
+.tabs { display: flex; gap: 0; border: 1px solid var(--rule); border-radius: 999px; padding: 3px; background: var(--stage); }
+.tabs button { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; background: none; border: 0; color: var(--dim); padding: 6px 12px; border-radius: 999px; cursor: pointer; }
+.tabs button.on { background: var(--chalk); color: var(--ink); }
+
+footer { border-top: 1px solid var(--rule); margin-top: 48px; padding: 22px 0 40px; }
+footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+
+/* clickable tickets + detail view */
+a.tk { color: inherit; border-bottom: 1px dashed var(--faint); }
+a.tk:hover { color: var(--brick); border-bottom-color: var(--brick); }
+.ticket { cursor: pointer; }
+.ticket:hover .t-title { color: var(--brick); }
+.back { display: inline-flex; gap: 8px; align-items: center; margin: 28px 0 18px; color: var(--dim); }
+.back:hover { color: var(--chalk); }
+.d-hero { border: 1px solid var(--rule); border-radius: 14px; background: var(--stage); padding: 26px 24px 22px; position: relative; overflow: hidden; }
+.d-hero::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 24px 24px; mask-image: linear-gradient(180deg, #000, transparent 90%); pointer-events: none; }
+.d-hero > * { position: relative; }
+.d-hero h1 { font-size: clamp(28px, 3.6vw, 48px); margin: 12px 0 6px; }
+.d-meta { display: flex; flex-wrap: wrap; gap: 8px 18px; color: var(--dim); font-size: 13.5px; }
+.d-meta a { color: var(--chalk); border-bottom: 1px dashed var(--faint); }
+.d-meta a:hover { color: var(--brick); }
+.d-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.d-hero .track { margin-top: 24px; max-width: 760px; }
+.d-hero .st { cursor: pointer; }
+.d-hero .st .when { font-family: var(--mono); font-size: 9.5px; color: var(--faint); }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 20px; }
+.card { border: 1px solid var(--rule); border-radius: 14px; background: var(--stage); overflow: hidden; }
+.card h3 { margin: 0; padding: 14px 16px; border-bottom: 1px solid var(--rule); font-family: var(--mono); font-weight: 400; font-size: 11.5px; letter-spacing: .09em; text-transform: uppercase; display: flex; justify-content: space-between; }
+.card .body { padding: 14px 16px; }
+.tl { list-style: none; margin: 0; padding: 0; }
+.tl li { display: grid; grid-template-columns: 56px 1fr; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--rule-soft); scroll-margin-top: 80px; }
+.tl li:last-child { border-bottom: 0; }
+.tl li.flash { background: var(--brick-soft); transition: background .6s; }
+.tl .ts { font-family: var(--mono); font-size: 12px; color: var(--faint); padding-top: 2px; }
+.tl .what { font-size: 14px; }
+.tl .what b { font-weight: 500; }
+.tl .what .mono { margin-right: 8px; }
+.tl details { margin-top: 6px; }
+.tl summary { cursor: pointer; color: var(--dim); font-size: 12.5px; }
+.tl pre { margin: 8px 0 0; padding: 10px 12px; background: var(--ink); border: 1px solid var(--rule); border-radius: 8px; font-family: var(--mono); font-size: 11.5px; line-height: 1.6; overflow-x: auto; color: var(--dim); white-space: pre; }
+.kv { display: grid; grid-template-columns: 120px 1fr; gap: 8px 12px; font-size: 13.5px; }
+.kv dt { color: var(--dim); font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; padding-top: 2px; }
+.kv dd { margin: 0; }
+.kv a { border-bottom: 1px dashed var(--faint); }
+.kv a:hover { color: var(--brick); }
+.mini { width: 100%; min-width: 0; }
+.mini td, .mini th { padding: 9px 16px; }
+.files li { font-family: var(--mono); font-size: 12px; padding: 7px 16px; border-bottom: 1px solid var(--rule-soft); display: flex; justify-content: space-between; gap: 12px; }
+.files li:last-child { border-bottom: 0; }
+.files { list-style: none; margin: 0; padding: 0; }
+.add { color: var(--green); } .del { color: var(--red); }
+.verdict { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; padding: 3px 9px; border-radius: 999px; border: 1px solid currentColor; }
+@media (max-width: 900px) { .grid2 { grid-template-columns: 1fr; } .d-hero .track-scroll { overflow-x: auto; } }
+
+
+/* agent session + intervene */
+.agent { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
+.agent .feed { max-height: 460px; overflow-y: auto; padding: 6px 0; border-right: 1px solid var(--rule); }
+.msg { padding: 10px 16px; display: grid; grid-template-columns: 70px 1fr; gap: 12px; font-size: 13.5px; }
+.msg .who { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); padding-top: 2px; }
+.msg.tool .txt { font-family: var(--mono); font-size: 12px; color: var(--dim); background: var(--ink); border: 1px solid var(--rule-soft); border-radius: 8px; padding: 7px 10px; overflow-x: auto; white-space: pre; }
+.msg.you .who { color: var(--brick); }
+.msg.you .txt { border-left: 2px solid var(--brick); padding-left: 10px; }
+.msg .stamp { display: block; font-family: var(--mono); font-size: 10px; color: var(--faint); margin-top: 3px; }
+.typing { padding: 6px 16px 12px 98px; font-family: var(--mono); font-size: 11px; color: var(--brick); }
+.typing i { animation: blink 1.2s infinite; font-style: normal; }
+@keyframes blink { 50% { opacity: .2; } }
+.compose { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.compose textarea { width: 100%; min-height: 110px; resize: vertical; background: var(--ink); color: var(--chalk); border: 1px solid var(--rule); border-radius: 10px; padding: 10px 12px; font: inherit; font-size: 14px; }
+.compose textarea:focus { outline: none; border-color: var(--brick); }
+.mode { display: grid; gap: 8px; }
+.mode label { display: grid; grid-template-columns: 18px 1fr; gap: 8px; font-size: 13.5px; cursor: pointer; }
+.mode small { display: block; color: var(--dim); font-size: 12px; }
+.compose .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.compose .note { font-size: 12px; color: var(--dim); }
+.agent-card { margin-top: 20px; }
+@media (max-width: 900px) { .agent { grid-template-columns: 1fr; } .agent .feed { border-right: 0; border-bottom: 1px solid var(--rule); max-height: 360px; } .msg { grid-template-columns: 1fr; gap: 2px; } .typing { padding-left: 16px; } }
+
+@media (max-width: 1100px) {
+  .board { grid-template-columns: 1fr; }
+  .log { border-left: 0; border-top: 1px solid var(--rule); }
+  .log ol { max-height: 260px; }
+}
+@media (max-width: 900px) {
+  .hero .wrap { grid-template-columns: 1fr; gap: 28px; }
+  .ticket { grid-template-columns: 1fr auto; }
+  .ticket .track { grid-column: 1 / -1; grid-row: 2; }
+  .track-scroll { grid-column: 1 / -1; overflow-x: auto; }
+}
+@media (max-width: 600px) {
+  .wrap { padding: 0 16px; }
+  .top .wrap { gap: 12px; }
+  .brand small, .right .hide-sm { display: none; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .lede { font-size: 16px; }
+  .log li { grid-template-columns: 40px 1fr; }
+  .log .stg { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .dot { animation: none; } }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 8 L10 3 L18 8"/><rect x="3.5" y="8" width="13" height="9"/><rect x="6" y="10.5" width="2.4" height="3" fill="#c8572f" stroke="none"/><rect x="11.6" y="10.5" width="2.4" height="3"/></svg>
+      CROMFORD <small>MISSION CONTROL</small>
+    </a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#">World</a><a href="#">Fleet</a><a href="#">Now</a><a href="#">Kanban</a><a href="#">Chat</a>
+      <a href="#">Alerts<span class="count">700</span></a><a href="#">Needs you</a><a href="#">Costs</a><a href="#">Outcomes</a>
+      <a href="#">DORA</a><a class="on" href="#" aria-current="page">Jobs</a><a href="#">Ideas</a><a href="#">Models</a><a href="#">CI</a><a href="#">Hub</a><a href="#">Settings</a>
+    </nav>
+    <div class="right">
+      <span class="mono dim hide-sm">Snapshot 2m ago</span>
+      <div class="tabs" role="group" aria-label="Theme">
+        <button class="on" data-t="mill">Mill</button><button data-t="paper">Paper</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="hero" id="jobs-hero">
+  <div class="wrap">
+    <div>
+      <div class="crumb">
+        <span class="chip mono"><span class="dot"></span>Jobs · live</span>
+        <span class="mono dim">Coordination DB · as of 21:54Z</span>
+      </div>
+      <h1>9 tickets on the line.<br><span class="stone">1 parked. 0 lost.</span></h1>
+      <p class="lede">Every claimed job is still beating. <b>Nothing is orphaned or waiting on a retry.</b> One build is parked for a person, and 20 lanes are ticking that fleet.conf doesn't declare.</p>
+    </div>
+    <div class="stats">
+      <div class="stat live"><div class="mono dim">Claimed now</div><div class="n">9</div><div class="sub">across 4 boxes</div></div>
+      <div class="stat"><div class="mono dim">Stopped beating</div><div class="n">0</div><div class="sub">heartbeat floor 90s</div></div>
+      <div class="stat"><div class="mono dim">Orphaned</div><div class="n">0</div><div class="sub">no stale claims</div></div>
+      <div class="stat warn"><div class="mono dim">Parked</div><div class="n">1</div><div class="sub">BH-4680, needs review</div></div>
+      <div class="stat"><div class="mono dim">Queued for retry</div><div class="n">0</div><div class="sub">cap 3 attempts</div></div>
+      <div class="stat"><div class="mono dim">Spend on these rows</div><div class="n">$N</div><div class="sub">API-equivalent</div></div>
+    </div>
+  </div>
+</div>
+
+<main class="wrap" id="list">
+
+  <section>
+    <div class="sec-head">
+      <span class="mono num">01</span><h2>The line</h2><p>Each claimed job, where it is right now, and what it has cost so far.</p>
+    </div>
+    <div class="board">
+      <div class="tickets">
+
+        <div class="ticket" data-key="BH-4943">
+          <div><div class="mono t-key"><a class="tk" href="#t/BH-4943">BH-4943</a> · cromford</div><div class="t-title">Custom themes on /settings/appearance</div><div class="t-meta">Mission Control wave 4 · pool-802e</div></div>
+          <div class="track-scroll"><div class="track"><div class="fill" style="width:44%"></div>
+            <div class="st done"><span class="node">01</span><span class="lbl">Triage</span></div>
+            <div class="st done"><span class="node">02</span><span class="lbl">Plan</span></div>
+            <div class="st done"><span class="node">03</span><span class="lbl">Build</span></div>
+            <div class="st now"><span class="node">04</span><span class="lbl">Review</span></div>
+            <div class="st"><span class="node">05</span><span class="lbl">Merge</span></div>
+            <div class="st"><span class="node">06</span><span class="lbl">Deploy</span></div>
+            <div class="st"><span class="node">07</span><span class="lbl">Prod QA</span></div>
+            <div class="st"><span class="node">08</span><span class="lbl">Close</span></div>
+          </div></div>
+          <div class="t-cost">$38.20<small>12 min</small></div>
+        </div>
+
+        <div class="ticket" data-key="BH-4918">
+          <div><div class="mono t-key"><a class="tk" href="#t/BH-4918">BH-4918</a> · cromford</div><div class="t-title">Hotfix: merge conductor fan-in dies, dequeued PRs wedge</div><div class="t-meta">hotfix · head of the line</div></div>
+          <div class="track-scroll"><div class="track"><div class="fill" style="width:30%"></div>
+            <div class="st done"><span class="node">01</span><span class="lbl">Triage</span></div>
+            <div class="st done"><span class="node">02</span><span class="lbl">Plan</span></div>
+            <div class="st now"><span class="node">03</span><span class="lbl">Build</span></div>
+            <div class="st"><span class="node">04</span><span class="lbl">Review</span></div>
+            <div class="st"><span class="node">05</span><span class="lbl">Merge</span></div>
+            <div class="st"><span class="node">06</span><span class="lbl">Deploy</span></div>
+            <div class="st"><span class="node">07</span><span class="lbl">Prod QA</span></div>
+            <div class="st"><span class="node">08</span><span class="lbl">Close</span></div>
+          </div></div>
+          <div class="t-cost">$24.05<small>31 min</small></div>
+        </div>
+
+        <div class="ticket" data-key="BH-4680">
+          <div><div class="mono t-key"><a class="tk" href="#t/BH-4680">BH-4680</a> · cromford</div><div class="t-title">Webhook mirror feed: no event since last tick means quiet</div><div class="t-meta">dequeued · test copies libs by hand</div></div>
+          <div class="track-scroll"><div class="track"><div class="fill" style="width:58%"></div>
+            <div class="st done"><span class="node">01</span><span class="lbl">Triage</span></div>
+            <div class="st done"><span class="node">02</span><span class="lbl">Plan</span></div>
+            <div class="st done"><span class="node">03</span><span class="lbl">Build</span></div>
+            <div class="st done"><span class="node">04</span><span class="lbl">Review</span></div>
+            <div class="st held"><span class="node">05</span><span class="lbl">Parked</span></div>
+            <div class="st"><span class="node">06</span><span class="lbl">Deploy</span></div>
+            <div class="st"><span class="node">07</span><span class="lbl">Prod QA</span></div>
+            <div class="st"><span class="node">08</span><span class="lbl">Close</span></div>
+          </div></div>
+          <div class="t-cost">$41.90<small>2 h</small></div>
+        </div>
+
+        <div class="ticket" data-key="TK-12">
+          <div><div class="mono t-key"><a class="tk" href="#t/TK-12">TK-12</a> · cromford-web</div><div class="t-title">Pricing page reads lane packages from plan rows</div><div class="t-meta">box-small</div></div>
+          <div class="track-scroll"><div class="track"><div class="fill" style="width:16%"></div>
+            <div class="st done"><span class="node">01</span><span class="lbl">Triage</span></div>
+            <div class="st now"><span class="node">02</span><span class="lbl">Plan</span></div>
+            <div class="st"><span class="node">03</span><span class="lbl">Build</span></div>
+            <div class="st"><span class="node">04</span><span class="lbl">Review</span></div>
+            <div class="st"><span class="node">05</span><span class="lbl">Merge</span></div>
+            <div class="st"><span class="node">06</span><span class="lbl">Deploy</span></div>
+            <div class="st"><span class="node">07</span><span class="lbl">Prod QA</span></div>
+            <div class="st"><span class="node">08</span><span class="lbl">Close</span></div>
+          </div></div>
+          <div class="t-cost">$3.12<small>4 min</small></div>
+        </div>
+
+        <div class="ticket" data-key="TK-421">
+          <div><div class="mono t-key"><a class="tk" href="#t/TK-421">TK-421</a> · project-3</div><div class="t-title">Bulk-approve spec: stable selectors for shard 1</div><div class="t-meta">box-hub</div></div>
+          <div class="track-scroll"><div class="track"><div class="fill" style="width:86%"></div>
+            <div class="st done"><span class="node">01</span><span class="lbl">Triage</span></div>
+            <div class="st done"><span class="node">02</span><span class="lbl">Plan</span></div>
+            <div class="st done"><span class="node">03</span><span class="lbl">Build</span></div>
+            <div class="st done"><span class="node">04</span><span class="lbl">Review</span></div>
+            <div class="st done"><span class="node">05</span><span class="lbl">Merge</span></div>
+            <div class="st done"><span class="node">06</span><span class="lbl">Deploy</span></div>
+            <div class="st now"><span class="node">07</span><span class="lbl">Prod QA</span></div>
+            <div class="st"><span class="node">08</span><span class="lbl">Close</span></div>
+          </div></div>
+          <div class="t-cost">$24.40<small>58 min</small></div>
+        </div>
+
+      </div>
+      <aside class="log" aria-label="Line log">
+        <div class="log-head"><span class="mono">Log</span><span class="mono dim">21:54Z</span></div>
+        <ol>
+          <li><span class="ts">21:54</span><span class="stg">qa</span><span><a class="tk" href="#t/TK-421">TK-421</a> <span class="live">signing in as member</span></span></li>
+          <li><span class="ts">21:52</span><span class="stg">review</span><span><a class="tk" href="#t/BH-4943">BH-4943</a> <span class="live">reading diff, 14 files</span></span></li>
+          <li><span class="ts">21:49</span><span class="stg">deploy</span><span><a class="tk" href="#t/TK-421">TK-421</a> <span class="ok">served sha matches</span></span></li>
+          <li><span class="ts">21:45</span><span class="stg">build</span><span><a class="tk" href="#t/BH-4680">BH-4680</a> <span class="warn">fix run started</span></span></li>
+          <li><span class="ts">21:41</span><span class="stg">build</span><span><a class="tk" href="#t/BH-4918">BH-4918</a> tests: 3 failing (expected)</span></li>
+          <li><span class="ts">21:36</span><span class="stg">pr</span><span><a class="tk" href="#t/BH-4943">BH-4943</a> <span class="ok">opened #4943</span></span></li>
+          <li><span class="ts">21:34</span><span class="stg">lead</span><span><span class="ok">stuck request cleared</span></span></li>
+          <li><span class="ts">21:30</span><span class="stg">plan</span><span><a class="tk" href="#t/TK-12">TK-12</a> scope: pricing, plan rows</span></li>
+          <li><span class="ts">20:22</span><span class="stg">merge</span><span><a class="tk" href="#t/BH-4680">BH-4680</a> <span class="bad">dequeued, gate fixtures</span></span></li>
+          <li><span class="ts">20:02</span><span class="stg">merge</span><span><a class="tk" href="#t/BH-4844">BH-4844</a> <span class="ok">merged</span></span></li>
+        </ol>
+      </aside>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="mono num">02</span><h2>Lanes</h2><p>What fleet.conf says should be ticking. Silent lanes first, every column sorts.</p>
+      <span class="spacer"></span>
+      <div class="tabs" role="group" aria-label="Lane filter"><button class="on">All 32</button><button>Expected 12</button><button>Undeclared 20</button></div>
+    </div>
+    <div class="tbl-wrap">
+      <table id="lanes">
+        <thead><tr>
+          <th>Lane</th><th>Project</th><th>Box</th><th aria-sort="ascending">State</th><th class="r" data-num>Last tick</th><th>Kind</th><th class="r">Threshold</th>
+        </tr></thead>
+        <tbody>
+          <tr><td><a class="lane" href="#">project-5@alerts-triage-probe</a><span class="tag">jobs</span></td><td><a class="proj" href="#">project-5</a></td><td class="mono-cell">alerts-triage-probe</td><td><span class="state warn">Undeclared</span></td><td class="r mono-cell" data-v="50400">35d ago</td><td class="dim">ran</td><td class="r mono-cell">30m</td></tr>
+          <tr><td><a class="lane" href="#">project-4@box-hub</a><span class="tag">jobs</span></td><td><a class="proj" href="#">project-4</a></td><td class="mono-cell">box-hub</td><td><span class="state warn">Undeclared</span></td><td class="r mono-cell" data-v="50400">35d ago</td><td class="dim">ran</td><td class="r mono-cell">30m</td></tr>
+          <tr><td><a class="lane" href="#">project-8@alert-triage-probe</a><span class="tag">jobs</span></td><td><a class="proj" href="#">project-8</a></td><td class="mono-cell">alert-triage-probe</td><td><span class="state warn">Undeclared</span></td><td class="r mono-cell" data-v="48960">34d ago</td><td class="dim">ran</td><td class="r mono-cell">30m</td></tr>
+          <tr><td><a class="lane" href="#">project-9@box-hub</a><span class="tag">jobs</span></td><td><a class="proj" href="#">project-9</a></td><td class="mono-cell">box-hub</td><td><span class="state warn">Undeclared</span></td><td class="r mono-cell" data-v="47520">33d ago</td><td class="dim">ran</td><td class="r mono-cell">30m</td></tr>
+          <tr><td><a class="lane" href="#">project-1@box-hub</a><span class="tag">jobs</span></td><td><a class="proj" href="#">project-1</a></td><td class="mono-cell">box-hub</td><td><span class="state warn">Undeclared</span></td><td class="r mono-cell" data-v="41760">29d ago</td><td class="dim">ran</td><td class="r mono-cell">30m</td></tr>
+          <tr><td><a class="lane" href="#">cromford@hub</a><span class="tag">jobs</span></td><td><a class="proj" href="#">cromford</a></td><td class="mono-cell">hub</td><td><span class="state ok">Ticking</span></td><td class="r mono-cell" data-v="3">3m ago</td><td class="dim">ran</td><td class="r mono-cell">15m</td></tr>
+          <tr><td><a class="lane" href="#">cromford@box-small</a><span class="tag">jobs</span></td><td><a class="proj" href="#">cromford</a></td><td class="mono-cell">box-small</td><td><span class="state ok">Ticking</span></td><td class="r mono-cell" data-v="7">7m ago</td><td class="dim">skipped, nothing new</td><td class="r mono-cell">30m</td></tr>
+          <tr><td><a class="lane" href="#">project-5@pool-cromford-802e</a><span class="tag">jobs</span></td><td><a class="proj" href="#">project-5</a></td><td class="mono-cell">pool-802e79b6</td><td><span class="state off">Retired</span></td><td class="r mono-cell" data-v="27360">19d ago</td><td class="dim">skipped, nothing new</td><td class="r mono-cell">30m</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<main class="wrap" id="detail" hidden></main>
+
+<footer><div class="wrap mono dim"><span>Cromford · Mission Control</span><span>Access off · writes as console</span></div></footer>
+
+<script>
+  // theme toggle (prototype only)
+  document.querySelectorAll('[data-t]').forEach(b => b.addEventListener('click', () => {
+    document.documentElement.setAttribute('data-theme', b.dataset.t);
+    document.querySelectorAll('[data-t]').forEach(x => x.classList.toggle('on', x === b));
+  }));
+  // the green fill ends at the station the ticket is on
+  const fit = () => document.querySelectorAll('.track').forEach(t => {
+    const cur = t.querySelector('.st.now .node, .st.held .node, .st.fail .node'), f = t.querySelector('.fill');
+    if (cur && f) f.style.width = (cur.getBoundingClientRect().left - t.getBoundingClientRect().left - 14) + 'px';
+  });
+  fit(); addEventListener('resize', fit);
+
+  // ---------- ticket detail (prototype data) ----------
+  const STN = ['Triage','Plan','Build','Review','Merge','Deploy','Prod QA','Close'];
+  const T = {
+    'BH-4943': { repo:'example-org/cromford', project:'cromford', issue:4846, pr:4943, title:'Custom themes on /settings/appearance', at:3, state:'now', box:'pool-802e79b6', model:'claude-opus-5-5', cost:38.20, age:'12 min', branch:'ticket/bh-4846',
+      times:['20:58','21:04','21:12','21:36'], verdict:['Pending','warn'],
+      ev:[[0,'20:58','Triage','Ready to build. Thread read: 4 comments, last from the team.'],[1,'21:04','Plan','Scope: theme editor, saved custom themes, 375px drive. 6 acceptance tests.','tests/appearance-editor.bh-4846.test.js  red  (6 failing, expected)'],[2,'21:12','Build','Red, then green. 6 of 6 pass, full console suite green.','npm test  ✓ 412 passed  (38.4s)'],[2,'21:31','Build','Headless drive at 375px with the editor open: no sideways scroll.'],[3,'21:36','PR','Opened #4943, 14 files.'],[3,'21:52','Review','Lead review reading the diff against the ticket.']],
+      costs:[['Triage','claude-haiku-4-5',0.21],['Plan','claude-opus-5-5',6.40],['Build','claude-opus-5-5',27.10],['Review','claude-opus-5-5',4.49]],
+      files:[['console-ui/src/screens/Appearance.js',212,18],['console-ui/src/theme/custom.js',148,0],['console-ui/src/theme/themes.js',34,6],['console-ui/tests/appearance-editor.bh-4846.test.js',190,0],['console-ui/styles.css',41,9]] },
+    'BH-4918': { repo:'example-org/cromford', project:'cromford', issue:4918, pr:null, title:'Hotfix: merge conductor fan-in dies, dequeued PRs wedge', at:2, state:'now', box:'pool-830d10c7', model:'claude-opus-5-5', cost:24.05, age:'31 min', branch:'ticket/bh-4918', hotfix:true,
+      times:['21:15','21:23','21:41'], verdict:['Not yet','off'],
+      ev:[[0,'21:15','Triage','Hotfix label: planned first, takes the next machine.'],[1,'21:23','Plan','Three faults: fan-in exit, dequeued label never cleared, close-out wedge. 5 tests.'],[2,'21:41','Build','Tests: 3 failing (expected), fixing fan-in first.','bin/merge-conductor.sh  fan-in: child 3 of 7 exited 141 (SIGPIPE)']],
+      costs:[['Triage','claude-haiku-4-5',0.18],['Plan','claude-opus-5-5',5.92],['Build','claude-opus-5-5',17.95]],
+      files:[] },
+    'BH-4680': { repo:'example-org/cromford', project:'cromford', issue:4661, pr:4680, title:'Webhook mirror feed: no event since last tick means quiet', at:4, state:'held', box:'box-small', model:'claude-opus-5-5', cost:41.90, age:'2 h', branch:'ticket/bh-4661',
+      times:['19:02','19:10','19:24','19:41','20:22'], verdict:['Merge','ok'],
+      ev:[[3,'19:41','Review','Lead: MERGE at 862c8e1.'],[4,'19:50','Merge','Entered the queue (rule: default).'],[4,'20:22','Merge','Dequeued: Pure-logic gate fixtures failed on draft #4922, alone on main. Real failure.','tests/pr-snapshot-wakes.bh-4661-test.sh:30\n  cp lib/*.sh "$SCRATCH"   # hand-copied libs, breaks scratch-closure rule'],[2,'21:45','Fix run','Switching the test to the approved setup helper, then lint and the affected tests.']],
+      costs:[['Plan','claude-opus-5-5',6.10],['Build','claude-opus-5-5',22.40],['Review','claude-opus-5-5',5.20],['Fix run','claude-opus-5-5',8.20]],
+      files:[['bin/lib/pr-snapshot.sh',96,12],['tests/pr-snapshot-wakes.bh-4661-test.sh',120,0]] },
+    'TK-12': { repo:'example-org/cromford-web', project:'cromford', issue:12, pr:null, title:'Pricing page reads lane packages from plan rows', at:1, state:'now', box:'box-small', model:'claude-opus-5-5', cost:3.12, age:'4 min', branch:'ticket/TK-12',
+      times:['21:27','21:30'], verdict:['Not yet','off'],
+      ev:[[0,'21:27','Triage','Ready. Prices come from plan rows, never constants.'],[1,'21:30','Plan','Scope: pricing page, plan rows API, fallback. Writing acceptance tests.']],
+      costs:[['Triage','claude-haiku-4-5',0.14],['Plan','claude-opus-5-5',2.98]], files:[] },
+    'TK-421': { repo:'example-org/project-3', project:'project-3', issue:421, pr:422, title:'Bulk-approve spec: stable selectors for shard 1', at:6, state:'now', box:'box-hub', model:'claude-opus-5-5', cost:24.40, age:'58 min', branch:'ticket/TK-421',
+      times:['20:56','21:01','21:09','21:22','21:38','21:49','21:54'], verdict:['Merge','ok'],
+      ev:[[4,'21:38','Merge','Merged #422 through the queue.'],[5,'21:49','Deploy','Served sha matches the merge (Vercel).'],[6,'21:54','Prod QA','Signing in as a member, opening bulk approve.']],
+      costs:[['Plan','claude-opus-5-5',4.80],['Build','claude-opus-5-5',14.10],['Review','claude-opus-5-5',3.90],['Prod QA','claude-sonnet-5-5',1.60]],
+      files:[['e2e/bulk-approve.spec.ts',22,14]] },
+  };
+  const gh = (t, kind, n) => `https://github.com/${t.repo}/${kind}/${n}`;
+  const esc = x => String(x).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  function track(t) {
+    return `<div class="track-scroll"><div class="track"><div class="fill"></div>${STN.map((n, i) => {
+      const cls = i < t.at ? 'done' : i === t.at ? t.state : '';
+      const lbl = i === t.at && t.state === 'held' ? 'Parked' : n;
+      return `<div class="st ${cls}" data-stage="${i}"><span class="node">0${i+1}</span><span class="lbl">${lbl}</span><span class="when">${t.times[i] || ''}</span></div>`; }).join('')}</div></div>`;
+  }
+  function detail(key) {
+    const t = T[key];
+    if (!t) return `<a class="back mono" href="#">← Jobs</a><p class="dim">No ticket ${esc(key)} in this snapshot.</p>`;
+    const total = t.costs.reduce((a, c) => a + c[2], 0);
+    return `<a class="back mono" href="#">← Jobs</a>
+    <div class="d-hero">
+      <div class="crumb"><span class="chip mono">${t.state === 'held' ? '<span class="dot" style="background:var(--amber)"></span>Parked' : '<span class="dot"></span>On the line'}</span>${t.hotfix ? '<span class="chip mono" style="color:var(--brick)">Hotfix</span>' : ''}<span class="mono dim">${key}</span></div>
+      <h1>${esc(t.title)}</h1>
+      <div class="d-meta"><span>Project <a href="#p/${t.project}">${t.project}</a></span><span>Issue <a href="${gh(t,'issues',t.issue)}" target="_blank" rel="noopener">#${t.issue}</a></span>${t.pr ? `<span>PR <a href="${gh(t,'pull',t.pr)}" target="_blank" rel="noopener">#${t.pr}</a></span>` : ''}<span>Box <a href="#b/${t.box}">${t.box}</a></span><span>${t.age} on the line</span><span>$${t.cost.toFixed(2)} so far</span></div>
+      ${track(t)}
+      <div class="d-actions"><a class="pill solid" href="${gh(t,'issues',t.issue)}" target="_blank" rel="noopener">Open on GitHub ↗</a>${t.pr ? `<a class="pill" href="${gh(t,'pull',t.pr)}/files" target="_blank" rel="noopener">See the diff ↗</a>` : ''}<button class="pill">Hold</button><button class="pill">Comment</button><a class="pill" href="#agent" onclick="document.getElementById('agent').scrollIntoView({behavior:'smooth'});return false">Agent session</a></div>
+    </div>
+    ${agentPanel(key, t)}
+    <section class="grid2">
+      <div class="card"><h3><span>What happened</span><span class="dim">click a station to jump</span></h3><ul class="tl">${t.ev.map(e => `<li data-stage="${e[0]}"><span class="ts">${e[1]}</span><div class="what"><span class="mono dim">${e[2]}</span>${esc(e[3])}${e[4] ? `<details><summary>Output</summary><pre>${esc(e[4])}</pre></details>` : ''}</div></li>`).join('')}</ul></div>
+      <div style="display:grid;gap:20px;align-content:start">
+        <div class="card"><h3><span>Details</span></h3><div class="body"><dl class="kv">
+          <dt>Review</dt><dd><span class="verdict" style="color:var(--${t.verdict[1]==='ok'?'green':t.verdict[1]==='warn'?'amber':'faint'})">${t.verdict[0]}</span></dd>
+          <dt>Branch</dt><dd class="mono-cell">${t.branch}</dd>
+          <dt>Model</dt><dd><a href="#m/${t.model}">${t.model}</a></dd>
+          <dt>Box</dt><dd><a href="#b/${t.box}">${t.box}</a></dd>
+          <dt>Repo</dt><dd><a href="https://github.com/${t.repo}" target="_blank" rel="noopener">${t.repo}</a></dd>
+        </dl></div></div>
+        <div class="card"><h3><span>Cost by stage</span><span>$${total.toFixed(2)}</span></h3><table class="mini sortable"><thead><tr><th>Stage</th><th>Model</th><th class="r">Cost</th></tr></thead><tbody>${t.costs.map(c => `<tr><td><a class="tk" href="#t/${key}/${STN.indexOf(c[0])}">${c[0]}</a></td><td class="mono-cell">${c[1]}</td><td class="r mono-cell" data-v="${c[2]}">$${c[2].toFixed(2)}</td></tr>`).join('')}</tbody></table></div>
+        ${t.files.length ? `<div class="card"><h3><span>Files changed</span><span>${t.files.length}</span></h3><ul class="files">${t.files.map(f => `<li><a class="tk" href="${gh(t,'pull',t.pr)}/files" target="_blank" rel="noopener">${f[0]}</a><span><span class="add">+${f[1]}</span> <span class="del">−${f[2]}</span></span></li>`).join('')}</ul></div>` : ''}
+      </div>
+    </section>`;
+  }
+
+  const CHAT = {
+    'BH-4943': [['agent','21:52','Reading the diff against BH-4846. 14 files, the editor and the saved-theme store.'],['tool','21:52','gh api repos/example-org/cromford/pulls/4943/files --jq ".[].filename"'],['agent','21:53','Custom themes save to the settings row, not localStorage. Good. Checking the contrast guard runs on a custom theme too.'],['tool','21:53','rg -n "contrastOk" console-ui/src/theme'],['agent','21:54','The guard runs on built-in themes only. A custom theme with white text on stone would pass. Writing that up as a finding.']],
+    'BH-4918': [['agent','21:41','Three tests red as planned. Starting with fan-in: the parent reads children through a pipe that closes early.'],['tool','21:42','bash tests/merge-conductor-fanin.bh-4918-test.sh\n✗ child 3 of 7 exits 141 (SIGPIPE)'],['agent','21:44','Switching the fan-in to per-child result files so no child writes into a closed pipe.']],
+    'BH-4680': [['agent','21:45','Fix run. The test copies lib/*.sh by hand, which the scratch-closure rule forbids. Using the setup helper instead.'],['tool','21:46','sed -n 25,35p tests/pr-snapshot-wakes.bh-4661-test.sh'],['agent','21:47','Replaced with scratch_install_closure. Running lint and the affected tests next.']],
+    'TK-12': [['agent','21:30','Planning. Prices come from GET /api/public/plans; the page keeps a documented fallback for when the API is down.']],
+    'TK-421': [['agent','21:54','Signed in as the QA member. Opening /admin/approvals and selecting three pending items.'],['tool','21:54','browser: click [data-testid="bulk-approve"]']],
+  };
+  function agentPanel(key, t) {
+    const live = t.state === 'now';
+    const feed = (CHAT[key] || []).map(m => `<div class="msg ${m[0]}"><span class="who">${m[0] === 'agent' ? 'Agent' : m[0] === 'tool' ? 'Tool' : 'You'}</span><div><div class="txt">${esc(m[2])}</div><span class="stamp">${m[1]}</span></div></div>`).join('');
+    return `<div class="card agent-card" id="agent"><h3><span>Agent session · ${STN[t.at]}</span><span style="color:${live ? 'var(--brick)' : 'var(--dim)'}">${live ? '● live' : 'idle'}</span></h3>
+      <div class="agent"><div class="feed" id="feed">${feed}${live ? '<div class="typing">working<i>…</i></div>' : ''}</div>
+      <form class="compose" id="compose">
+        <span class="mono dim">Step in</span>
+        <textarea id="say" placeholder="Tell the agent what to change, check or stop doing" maxlength="4000"></textarea>
+        <div class="mode">
+          <label><input type="radio" name="mode" value="now" checked><span>Tell the agent now<small>Goes into this session. It reads it before its next step.</small></span></label>
+          <label><input type="radio" name="mode" value="ticket"><span>Add to the ticket<small>Comments on #${t.issue}. Every later stage reads it; a newer comment overrides the plan.</small></span></label>
+          <label><input type="radio" name="mode" value="hold"><span>Hold, then tell it<small>Pauses this ticket after the current step, posts your note, waits for Resume.</small></span></label>
+        </div>
+        <div class="row"><button class="pill solid" type="submit">Send</button><span class="note" id="sent"></span></div>
+      </form></div></div>`;
+  }
+  function bindAgent() {
+    const f = document.getElementById('compose'); if (!f) return;
+    f.addEventListener('submit', e => {
+      e.preventDefault();
+      const ta = document.getElementById('say'), txt = ta.value.trim(); if (!txt) { ta.focus(); return; }
+      const mode = f.querySelector('input[name=mode]:checked').value;
+      const feed = document.getElementById('feed'), typing = feed.querySelector('.typing');
+      const label = { now: 'sent to the session', ticket: 'posted on the ticket', hold: 'held, note posted' }[mode];
+      const el = document.createElement('div'); el.className = 'msg you';
+      el.innerHTML = `<span class="who">You</span><div><div class="txt">${esc(txt)}</div><span class="stamp">now · ${label}</span></div>`;
+      feed.insertBefore(el, typing); feed.scrollTop = feed.scrollHeight; ta.value = '';
+      document.getElementById('sent').textContent = mode === 'hold' ? 'Held. Resume from the ticket actions.' : 'Delivered. The agent picks it up on its next step.';
+      if (mode === 'now') setTimeout(() => { const r = document.createElement('div'); r.className = 'msg agent'; r.innerHTML = `<span class="who">Agent</span><div><div class="txt">Got it. Folding that in before I continue.</div><span class="stamp">now</span></div>`; feed.insertBefore(r, typing); feed.scrollTop = feed.scrollHeight; }, 1400);
+    });
+  }
+  function jump(stage) {
+    const li = [...document.querySelectorAll('#detail .tl li')].find(l => +l.dataset.stage === +stage);
+    if (!li) return;
+    li.scrollIntoView({ behavior: 'smooth', block: 'center' }); li.classList.add('flash'); setTimeout(() => li.classList.remove('flash'), 900);
+  }
+  function route() {
+    const m = location.hash.match(/^#t\/([A-Z]+-\d+)(?:\/(\d))?/);
+    const d = document.getElementById('detail');
+    document.getElementById('list').hidden = !!m; document.getElementById('jobs-hero').hidden = !!m; d.hidden = !m;
+    if (m) { d.innerHTML = detail(m[1]); scrollTo(0, 0); fit(); bindSort(d); d.querySelectorAll('.d-hero .st').forEach(s => s.addEventListener('click', () => jump(s.dataset.stage))); bindAgent(); const fd = document.getElementById('feed'); if (fd) fd.scrollTop = fd.scrollHeight; if (m[2]) setTimeout(() => jump(m[2]), 150); }
+    else fit();
+  }
+  document.querySelectorAll('.ticket[data-key]').forEach(r => r.addEventListener('click', e => { if (!e.target.closest('a')) location.hash = 't/' + r.dataset.key; }));
+  addEventListener('hashchange', route);
+  // sortable headers
+  function bindSort(root) { root.querySelectorAll('table').forEach(tbl => tbl.querySelectorAll('th').forEach((th, i) => th.addEventListener('click', () => {
+    const dir = th.getAttribute('aria-sort') === 'ascending' ? 'descending' : 'ascending';
+    tbl.querySelectorAll('th').forEach(x => x.removeAttribute('aria-sort'));
+    th.setAttribute('aria-sort', dir);
+    const rows = [...tbl.tBodies[0].rows];
+    const val = r => { const c = r.cells[i]; return c.dataset.v ? +c.dataset.v : c.textContent.trim().toLowerCase(); };
+    rows.sort((a, b) => { const x = val(a), y = val(b); return (x > y ? 1 : x < y ? -1 : 0) * (dir === 'ascending' ? 1 : -1); });
+    rows.forEach(r => tbl.tBodies[0].appendChild(r));
+  }))); }
+  bindSort(document.getElementById('list'));
+  route();
+</script>
+</body>
+</html>

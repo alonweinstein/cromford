@@ -1,0 +1,4 @@
+# BH-2434: audit-off (audit-install x2, audit-tail), clock-sync-off, fleet-slo-off,
+# alert-state-off and fixpr-suppress-off now read through lane_switch. The
+# beat.sh `[ ! -f` alert-quarantine-disabled read never matched bare_count.
+7

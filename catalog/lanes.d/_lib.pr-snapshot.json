@@ -1,0 +1,55 @@
+{
+  "libs": [
+    {
+      "id": "pr-snapshot",
+      "file": "bin/lib/pr-snapshot.sh",
+      "note": "BH-4658 (BH-4656 part 1). The shared on-disk PR snapshot under state/pr-snapshot/<owner_repo>/: the open-PR list, the base tip and per-PR bodies keyed on (number, head, updated_at, base tip). Applied by pr-snapshot.sh itself at file scope, in a subshell, the same way gh-budget.sh does, so a fail-closed exit never stops the lane that sourced it. First consumer: bin/lead-review-enqueue.sh.",
+      "knobs": [
+        {
+          "env": "PR_SNAPSHOT",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 1,
+          "unit": null,
+          "zero_means": "off",
+          "required": true,
+          "note": "The kill switch. 0 (or empty, or not a number) = every prs_* function calls GitHub straight through and nothing under state/pr-snapshot is read or written."
+        },
+        {
+          "env": "PR_SNAPSHOT_TTL_S",
+          "type": "int",
+          "default": 60,
+          "min": 0,
+          "max": 600,
+          "unit": "seconds",
+          "zero_means": "no cache",
+          "required": true,
+          "note": "How long the cached open-PR list and base tip are trusted. 0 = no cache at all: the open list, the base tip and the per-PR store are all read live and nothing is stored."
+        },
+        {
+          "env": "PR_SNAPSHOT_QUIET_TTL_S",
+          "type": "int",
+          "default": 300,
+          "min": 0,
+          "max": 1800,
+          "unit": "seconds",
+          "zero_means": null,
+          "required": true,
+          "note": "The open-list TTL used instead of PR_SNAPSHOT_TTL_S when prs_wake_seen says no wake arrived for the repo since the list was cached (rc 1). Until the BH-4656 wakes sibling lands, prs_wake_seen answers 2 and this is never used."
+        },
+        {
+          "env": "PR_SNAPSHOT_FEED_STALE_S",
+          "type": "int",
+          "default": 900,
+          "min": 60,
+          "max": 3600,
+          "unit": "seconds",
+          "zero_means": null,
+          "required": true,
+          "note": "Read by the BH-4656 wakes sibling (bin/lib/pr-snapshot-wakes.sh) through this lib's resolution: how old the wake feed may be before it is not trusted. Resolved here, acted on by nothing in BH-4658."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+GET /api/settings
+# Review round 2 of #1565: the seed's dry-run plan. ABOVE the prefix, or the
+# key lookup would answer it as a (malformed) key.
+GET /api/settings/seed-registry/plan
+# BH-2521.2: the console apply and its run history, ABOVE the prefix for the
+# same reason as the plan.
+POST /api/settings/seed-registry/apply
+GET /api/settings/seed-registry/runs
+# BH-2376 (BH-2330.1): the setting audit read, ABOVE the prefix.
+GET /api/settings-changes
+GET prefix:/api/settings/
+# BH-1511.1: the registry seed, where the table puts it — between the
+# settings reads and the settings write.
+POST /api/settings/seed-registry
+PUT /api/settings
+# BH-4846: the one settings DELETE, for console custom themes only.
+DELETE prefix:/api/settings/

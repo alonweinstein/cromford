@@ -1,0 +1,32 @@
+{
+  "id": "mergify-sync",
+  "name": "Mergify sync check",
+  "scope": "hub",
+  "script": "bin/mergify-sync.sh",
+  "cadence": "47 6 * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-mergify-sync",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "MERGIFY_TEMPLATE_BIN",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it ($HARNESS_ROOT/bin/mergify-template.sh, the BH-1697 comparator CLI). Read by bin/mergify-sync.sh as ${MERGIFY_TEMPLATE_BIN:-$HARNESS_ROOT/bin/mergify-template.sh}. A test seam, registered by BH-1699 so it is visible; NOT settable from the control plane, so only env/global.env on the box moves it; no reviewed min/max, so nothing is clamped.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/mergify-sync.log"
+  }
+}

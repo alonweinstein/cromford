@@ -1,0 +1,9 @@
+# @hub-lanes
+
+# ── CI BATCH LEDGER (BH-4971, BH-4964.3) ────────────────────────────────────
+# The batch ledger lane: one worker ci_batches row per merge-queue batch run
+# of Harness CI: what the ci-plan notice says it tested (mode, selected/total,
+# escalation) and what it billed (sum of ceil(job seconds / 60) on MonkCI).
+# Twice an hour, off the :00/:30 pile-up; at most PAGES + 2 x MAX GitHub reads,
+# skipped while the bucket is low. Kill: bin/harness-ctl.sh off ci-batch-ledger.
+11,41 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/ci-batch-ledger.sh >/dev/null 2>&1

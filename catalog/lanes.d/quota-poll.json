@@ -1,0 +1,100 @@
+{
+  "id": "quota-poll",
+  "name": "Quota poll",
+  "scope": "box",
+  "script": "bin/quota-poll.sh",
+  "cadence": "*/10 * * * *; 23 * * * *",
+  "boxes": [
+    "project-4",
+    "hub",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-quota-poll",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "ACCOUNT_COOLDOWN_SECS",
+      "type": "string",
+      "default": "21600",
+      "zero_means": null,
+      "note": "Read by bin/quota-poll.sh as ${ACCOUNT_COOLDOWN_SECS:-${MODEL_COOLDOWN_SECS:-21600}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "ACCOUNT_DEFAULT_LABEL",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Which extra-usage-track LOGIN LABEL the implicit `default` account's meter comes from. Read by bin/quota-poll.sh as ${ACCOUNT_DEFAULT_LABEL:-} to pick state/extra-usage-last-<label>.json instead of the box login's plain snapshot; unset = today's derivation. Registered by BH-1456 so it is visible; NOT settable from the control plane — it is an IDENTITY (which Anthropic account the default token bills), so only env/global.env on the box moves it. Hub value: project-6-account.",
+      "settable": false
+    },
+    {
+      "env": "ACCOUNT_PIN_TTL_SECS",
+      "type": "int",
+      "default": 604800,
+      "zero_means": null,
+      "note": "Read by bin/quota-poll.sh as ${ACCOUNT_PIN_TTL_SECS:-604800}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "ACCOUNT_POLL_MIN_SECS",
+      "type": "int",
+      "default": 3000,
+      "zero_means": null,
+      "note": "Read by bin/quota-poll.sh as ${ACCOUNT_POLL_MIN_SECS:-3000}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "ACCOUNT_POLL_STAGGER_SECS",
+      "type": "int",
+      "default": 90,
+      "zero_means": null,
+      "note": "Read by bin/quota-poll.sh as ${ACCOUNT_POLL_STAGGER_SECS:-90}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "EXTRA_USAGE_SNAPSHOT",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it ($H/state/extra-usage-last.json). Read by bin/quota-poll.sh as ${EXTRA_USAGE_SNAPSHOT:-$H/state/extra-usage-last.json}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "MODEL_COOLDOWN_SECS",
+      "type": "int",
+      "default": 21600,
+      "zero_means": null,
+      "note": "Read by bin/quota-poll.sh as ${MODEL_COOLDOWN_SECS:-21600}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "OAUTH_USAGE_FETCH",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it ($HERE/lib/oauth-usage-fetch.py). Read by bin/quota-poll.sh as ${OAUTH_USAGE_FETCH:-$HERE/lib/oauth-usage-fetch.py}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "QUOTA_POLL_LOG",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it ($H/logs/quota-poll.log). Read by bin/quota-poll.sh as ${QUOTA_POLL_LOG:-$H/logs/quota-poll.log}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/quota-poll.log"
+  }
+}

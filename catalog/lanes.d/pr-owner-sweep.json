@@ -1,0 +1,181 @@
+{
+  "id": "pr-owner-sweep",
+  "name": "PR-owner sweep (every open PR is owned, parked or closed)",
+  "scope": "hub",
+  "script": "bin/pr-owner-sweep.sh",
+  "cadence": "*/30 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-pr-owner-sweep",
+    "aliases": [
+      {
+        "name": "pr-owner-sweep-off",
+        "off_when": "present"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "PR_OWNER_SWEEP",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "Read by bin/pr-owner-sweep.sh as ${PR_OWNER_SWEEP:-1}; 0 stops the sweep before it reads anything."
+    },
+    {
+      "env": "PR_OWNER_STALE_DAYS",
+      "type": "int",
+      "default": 14,
+      "min": null,
+      "max": null,
+      "unit": "d",
+      "zero_means": null,
+      "note": "Days an ORPHAN's head may stay CONFLICTING before it is labelled stale-conflict. Read by bin/pr-owner-sweep.sh as ${PR_OWNER_STALE_DAYS:-}, default 14."
+    },
+    {
+      "env": "PR_OWNER_GRACE_MIN",
+      "type": "int",
+      "default": 30,
+      "min": null,
+      "max": null,
+      "unit": "min",
+      "zero_means": null,
+      "note": "Minutes a PR that just moved belongs to the event path, not to this backstop. Read by bin/pr-owner-sweep.sh as ${PR_OWNER_GRACE_MIN:-}, default 30."
+    },
+    {
+      "env": "PR_OWNER_MAX_ACTIONS",
+      "type": "int",
+      "default": 5,
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": "off",
+      "note": "Writes per repo per run on ORPHAN PRs. Read by bin/pr-owner-sweep.sh as ${PR_OWNER_MAX_ACTIONS:-}, default 5."
+    },
+    {
+      "env": "PR_OWNER_PR_LIMIT",
+      "type": "int",
+      "default": 200,
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "note": "gh pr list --limit for the open and merged lists. Read by bin/pr-owner-sweep.sh as ${PR_OWNER_PR_LIMIT:-}, default 200."
+    },
+    {
+      "env": "PR_OWNER_DRY_RUN",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": null,
+      "note": "1 = every decision logged, nothing written to GitHub. Read by bin/pr-owner-sweep.sh as ${PR_OWNER_DRY_RUN:-}, default 0."
+    },
+    {
+      "env": "PR_OWNERS_ROWS_RECORD",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": null,
+      "note": "1 = the D1 pr_owners rows decide which PRs are owned: a state/pr-owners file entry with no open D1 row is dropped (BH-5003). 0 = the older file + fresh-rows merge. Read by bin/pr-owner-sweep.sh as ${PR_OWNERS_ROWS_RECORD:-1}; any other value is the default 1, logged once."
+    },
+    {
+      "env": "PR_OWNER_EXTRA_REPOS",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "note": "no static default. Space-separated owner/repo slugs this fleet owns PRs on that fleet.conf does not list. Read by bin/pr-owner-sweep.sh as ${PR_OWNER_EXTRA_REPOS:-}. NOT settable from the control plane: it is a repo list a root lane acts on, so only env/global.env on the box moves it.",
+      "settable": false
+    },
+    {
+      "env": "PR_STALE_REBASE_HOURS",
+      "type": "int",
+      "default": 24,
+      "min": null,
+      "max": null,
+      "unit": "h",
+      "zero_means": "off",
+      "note": "Hours an untouched conflicting PR waits before the age ladder rebases it. The D1 settings row pr_stale.rebase_hours wins; this env is the fallback (ph_knob, bin/lib/pr-health.sh), then the default 24. 0 = rung off. Read by bin/pr-owner-sweep.sh as the arg to ph_knob; today its hook declines (arrives with #3935)."
+    },
+    {
+      "env": "PR_STALE_REPLAN_DAYS",
+      "type": "int",
+      "default": 5,
+      "min": null,
+      "max": null,
+      "unit": "d",
+      "zero_means": "off",
+      "note": "Days an untouched PR waits before the age ladder hands it to a re-plan. The D1 settings row pr_stale.replan_days wins; this env is the fallback (ph_knob, bin/lib/pr-health.sh), then the default 5. 0 = rung off. Read by bin/pr-owner-sweep.sh as the arg to ph_knob; today its hook declines (arrives with #3935)."
+    },
+    {
+      "env": "PR_STALE_CLOSE_DAYS",
+      "type": "int",
+      "default": 10,
+      "min": null,
+      "max": null,
+      "unit": "d",
+      "zero_means": "off",
+      "note": "Days an untouched PR waits before the age ladder closes it. The D1 settings row pr_stale.close_days wins; this env is the fallback (ph_knob, bin/lib/pr-health.sh), then the default 10. 0 = rung off. Read by bin/pr-owner-sweep.sh as the arg to ph_knob; today its hook declines (arrives with #3935)."
+    },
+    {
+      "env": "PR_OWNER_ENROLL_EXTERNAL",
+      "type": "int",
+      "default": 1,
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": "off",
+      "note": "1 = EXTERNAL PRs are enrolled into the merge conductor too (po_enroll, bin/lib/pr-owner/enroll.sh); 0 = recorded only, bin/review-prs.sh keeps them, the sweep withdraws an EXTERNAL READY row to WAIT_CI enroll-withdrawn, and the conductor's keyed run stops injecting an outside author's enrolled PR (mc_enrolled_rows, bin/lib/mc/classify.sh; a settings outage reads 0 there). Outside authors only: an enrolled ORPHAN of ours is driven either way. The D1 settings row pr_owner.enroll_external wins; this env is the fallback (ph_knob, bin/lib/pr-health.sh), then the default 1."
+    },
+    {
+      "env": "PR_OWNER_OWNERLESS_ALERT_HOURS",
+      "type": "int",
+      "default": 24,
+      "min": null,
+      "max": null,
+      "unit": "h",
+      "zero_means": "off",
+      "note": "Hours a repo may keep an ownerless open PR before the sweep sends ONE alert (ph_streak, bin/lib/pr-owner/enroll.sh). The D1 settings row pr_owner.ownerless_alert_hours wins; this env is the fallback (ph_knob, bin/lib/pr-health.sh), then the default 24. 0 = rung off."
+    },
+    {
+      "env": "PR_OWNER_NOW",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "note": "Test seam: epoch seconds bin/pr-owner-sweep.sh uses as its one clock read (classifier and the ownerless clock), honoured when it is all digits (like HUB_LEASE_NOW), otherwise date -u +%s. Never set on a box. NOT settable from the control plane.",
+      "settable": false
+    },
+    {
+      "env": "PR_OWNER_MC_MAX_AGE_S",
+      "type": "int",
+      "default": 900,
+      "min": 0,
+      "max": null,
+      "unit": "s",
+      "zero_means": "off",
+      "note": "Seconds state/merge-conductor/pr-state.tsv may be old before the sweep refuses it (BH-5124; 900 = two conductor ticks). Only read on the conductor's box, and only when the pr_state view is not in use. The D1 settings row pr_owner.mc_max_age_s wins; this env is the fallback (ph_knob, bin/lib/pr-health.sh), then the default 900. 0 = the file is never trusted. A refused read classifies ownerless PRs UNREAD and takes no orphan action."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/pr-owner-sweep.log"
+  }
+}

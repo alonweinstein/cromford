@@ -1,0 +1,11 @@
+# @hub-lanes
+
+# ── LEAD REVIEW PROMOTION (BH-1951) ─────────────────────────────────────────
+# bin/lead-review-land.sh — every 15 min (a backstop: a finished lead review
+# rings this lane through the wakes doorbell, BH-5317), promote each `done` lead review
+# request (bin/lead-review.sh on the boxes wrote it) into a source=lead row in
+# /api/verdicts, then stamp the request promoted. The same tick writes ONE
+# ALERTS line per overdue (LEAD_REVIEW_OVERDUE_MIN) or failed request. No agent
+# call, no SSH. Off via flags/lane-off-lead-review-land. Log:
+# logs/lead-review-land.log.
+*/15 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/lead-review-land.sh >/dev/null 2>&1

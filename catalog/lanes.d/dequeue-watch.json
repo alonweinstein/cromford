@@ -1,0 +1,210 @@
+{
+  "id": "dequeue-watch",
+  "name": "Dequeue watch",
+  "scope": "hub",
+  "script": "bin/dequeue-watch.sh",
+  "cadence": "*/5 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-dequeue-watch",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "DEQUEUE_WATCH",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "zero_means": "off",
+      "note": "BH-3719: read by bin/dequeue-watch.sh as ${DEQUEUE_WATCH:-1}: 0 writes ` disabled` and stops before any read.",
+      "settable": true
+    },
+    {
+      "env": "DEQUEUE_WATCH_ACT",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "read_in": "bin/lib/dequeue-watch/act.sh",
+      "note": "BH-3719: 0 is observe mode. Each dequeue is still classified and claimed as action `observe`, and the would-be action is logged as WOULD_<ACTION> in logs/dequeue-watch.log with no side effect. Flipping to 1 takes over the observe rows. BH-3859: the lane ships at 0 (registry, code fallback and the schema seed row), posts one observe report after DEQUEUE_WATCH_OBSERVE_TICKS ticks, and never flips itself. To let it act: bin/harness-ctl.sh set dequeue-watch DEQUEUE_WATCH_ACT 1."
+    },
+    {
+      "env": "DEQUEUE_WATCH_OBSERVE_TICKS",
+      "type": "int",
+      "default": 12,
+      "min": 1,
+      "max": 2016,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/dequeue-watch.sh",
+      "note": "BH-3859: observe ticks before the one observe report (12 = 1h at */5). The report is a warn with id observe-report:dequeue-watch, sent once, carrying the WOULD_ summary and the flip command. Counter in state/observe-report/dequeue-watch.json on the hub."
+    },
+    {
+      "env": "DEQUEUE_WATCH_FIX_ROUNDS",
+      "type": "int",
+      "default": 2,
+      "min": 1,
+      "max": 5,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/dequeue-watch/act.sh",
+      "note": "Fix rounds per (PR, class) across heads before dequeue-watch holds the PR for a person."
+    },
+    {
+      "env": "DEQUEUE_WATCH_UNOWNED_MIN",
+      "type": "int",
+      "default": 30,
+      "min": 5,
+      "max": 1440,
+      "unit": "minutes",
+      "zero_means": null,
+      "read_in": "bin/lib/dequeue-watch/act.sh",
+      "note": "Minutes a dequeued head may go with no dequeue-watch action owning it before the watchdog pages critical (dqw-unowned:)."
+    },
+    {
+      "env": "DEQUEUE_WATCH_PR_CAP",
+      "type": "int",
+      "default": 20,
+      "min": 1,
+      "max": 100,
+      "unit": null,
+      "zero_means": null,
+      "note": "Dequeued PRs per project per tick. Past it the rest wait for the next tick and one dqw-page-cut: warn says how many."
+    },
+    {
+      "env": "DEQUEUE_WATCH_LOG_BYTES",
+      "type": "int",
+      "default": 200000,
+      "min": 10000,
+      "max": 5000000,
+      "unit": "bytes",
+      "zero_means": null,
+      "read_in": "bin/lib/dequeue-watch/gather.sh",
+      "note": "Bytes of the failed batch's `gh run view --log-failed` output read per PR."
+    },
+    {
+      "env": "DEQUEUE_WATCH_FAIL_LINES",
+      "type": "int",
+      "default": 40,
+      "min": 1,
+      "max": 500,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/dequeue-watch/classify.sh",
+      "note": "FAIL lines kept per dequeue for the classifier, the event row and the fix-round brief."
+    },
+    {
+      "env": "DEQUEUE_WATCH_HOLD_CLASSES",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/dequeue-watch/act.sh",
+      "note": "Comma/space list of classes that always hold for a person instead of getting a fix round. Empty holds only past DEQUEUE_WATCH_FIX_ROUNDS."
+    },
+    {
+      "env": "DEQUEUE_WATCH_LLM",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "1 asks the dequeue.classify model about a dequeue the rules leave unclassified with FAIL lines. 0 sends it straight to a hold."
+    },
+    {
+      "env": "DEQUEUE_WATCH_LLM_USD",
+      "type": "float",
+      "default": 0.05,
+      "min": 0,
+      "max": 1,
+      "unit": "usd",
+      "zero_means": null,
+      "read_in": "bin/lib/dequeue-watch/llm.sh",
+      "note": "Budget in dollars for one dequeue.classify call."
+    },
+    {
+      "env": "DEQUEUE_WATCH_MODEL",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/dequeue-watch/llm.sh",
+      "note": "Overrides the dequeue.classify route's model for this lane. Empty uses the route."
+    },
+    {
+      "env": "LLM_LANE_ENABLED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "0 makes this lane call no model at all. bin/lib/llm-gate.sh refuses BEFORE the vendor call and writes a zero-cost row_source=refused row, so the stop is visible in the ledger rather than being a lane that went quiet."
+    },
+    {
+      "env": "LLM_RUNNER_ALLOWED",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Comma/space list of the ONLY ladder rungs this lane may reach. Empty is every rung, i.e. today's ladder unchanged. A rung outside the list is refused before the call, so a cliff or a failure on the standing lane cannot descend into one that costs ~100x (#1141, the $793 descent)."
+    },
+    {
+      "env": "LLM_USD_CAP_DAY",
+      "type": "float",
+      "default": 0,
+      "min": 0,
+      "max": 10000,
+      "unit": "usd",
+      "zero_means": "unlimited",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Dollars this lane may spend in the current UTC day, summed from D1 cost_rows through GET /api/metrics/llm-spend — never from the box's own logs/cost.csv. A second, project-scoped ceiling is the lane.<id>.<project>.llm_usd_cap_day row, which is read only when somebody wrote it. Registry default 0 like every LLM lane (tests/llm-lane-knobs.bh-2533); this lane calls dequeue.classify only for a dequeue the rules leave unclassified with FAIL lines, at most once per failure fingerprint. Set lane.dequeue-watch.llm_usd_cap_day for a daily ceiling."
+    },
+    {
+      "env": "DEQUEUE_WATCH_FIXTURE",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Test seam: a file bin/dequeue-watch.sh sources after its libs, only when HARNESS_TEST_SANDBOX=1. NOT settable from the control plane: it names a file a root lane sources.",
+      "settable": false
+    },
+    {
+      "env": "DEQUEUE_WATCH_TICK_TIMEOUT_S",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "BH-3859 test seam: the tick timeout in seconds, read by bin/dequeue-watch.sh only when HARNESS_TEST_SANDBOX=1. Prod is always 240. NOT settable from the control plane.",
+      "settable": false
+    },
+    {
+      "env": "HARNESS_TEST_SANDBOX",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Test seam gate: bin/dequeue-watch.sh sources DEQUEUE_WATCH_FIXTURE only when this is 1 (the test harness sets it). Never set on a box, and NOT settable from the control plane.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": "dequeue-classify",
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/dequeue-watch.log"
+  }
+}

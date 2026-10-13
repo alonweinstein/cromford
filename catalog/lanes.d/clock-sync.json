@@ -1,0 +1,68 @@
+{
+  "id": "clock-sync",
+  "name": "Clock sync",
+  "scope": "box",
+  "script": "bin/clock-sync.sh",
+  "cadence": "*/30 * * * *",
+  "boxes": [
+    "project-4",
+    "hub",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-10",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-clock-sync",
+    "aliases": [
+      {
+        "name": "clock-sync-off",
+        "off_when": "present"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "CLOCK_SYNC",
+      "type": "int",
+      "default": 1,
+      "zero_means": null,
+      "note": "Read by bin/clock-sync.sh as ${CLOCK_SYNC:-1}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "CLOCK_SYNC_SOURCES",
+      "type": "string",
+      "default": "https://api.github.com https://www.cloudflare.com",
+      "zero_means": null,
+      "note": "Read by bin/clock-sync.sh as ${CLOCK_SYNC_SOURCES:-https://api.github.com https://www.cloudflare.com}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "CLOCK_SYNC_TIMEOUT",
+      "type": "int",
+      "default": 10,
+      "zero_means": null,
+      "note": "Read by bin/clock-sync.sh as ${CLOCK_SYNC_TIMEOUT:-10}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "CLOCK_SYNC_TOLERANCE",
+      "type": "int",
+      "default": 30,
+      "zero_means": null,
+      "note": "Read by bin/clock-sync.sh as ${CLOCK_SYNC_TOLERANCE:-30}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/clock-sync.log"
+  }
+}

@@ -1,0 +1,1 @@
+{"name":"main-red-detector-off","readers":["bin/main-red-detector.sh"],"box_scoped":true,"what":"stops the main-red detector: it exits before looking at any repo's main"}

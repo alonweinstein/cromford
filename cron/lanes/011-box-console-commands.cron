@@ -1,0 +1,2 @@
+# every minute on each project box: claim the console commands the hub forwarded to this box, run them here, post each outcome back (BH-2655)
+* * * * * /root/harness/bin/box-console-commands.sh >/dev/null 2>&1

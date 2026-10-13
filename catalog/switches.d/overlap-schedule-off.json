@@ -1,0 +1,1 @@
+{"name":"overlap-schedule-off","readers":["bin/lib/preplan-lib.sh"],"box_scoped":true,"what":"turns the overlap schedule off, so the launch-time defer in run-build.sh is the sole overlap gate again"}

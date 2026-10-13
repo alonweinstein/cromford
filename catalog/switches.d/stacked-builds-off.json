@@ -1,0 +1,1 @@
+{"name":"stacked-builds-off","readers":["bin/launch-fastpath.sh","bin/overlap-guard.sh","bin/stack-launch.sh"],"box_scoped":true,"what":"stops stacked builds: a child builds on the project base, and overlap-guard no longer exempts its parent PR"}

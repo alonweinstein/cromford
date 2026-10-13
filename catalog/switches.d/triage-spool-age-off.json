@@ -1,0 +1,1 @@
+{"name":"triage-spool-age-off","readers":["bin/triage-spool-retire.sh"],"box_scoped":true,"what":"stops retiring stale lines from the alert-triage spool, so every line is kept"}

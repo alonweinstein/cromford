@@ -1,0 +1,4 @@
+# tests/jobs-client-modules.d/20-BH-5652.tsv — the price-version clients (BH-5652).
+cost	price_fly_put
+cost	model_slugs_put
+cost	model_prices_versions_merge

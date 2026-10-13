@@ -1,0 +1,1 @@
+{"name":"cost-row-at-source-off","readers":["bin/lib/cost-row.sh"],"box_scoped":true,"what":"stops the at-source cost row write (the */10 mirror still carries every line)"}

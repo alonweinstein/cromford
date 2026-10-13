@@ -1,0 +1,14 @@
+# tests/known-container-failures.txt — suites that fail under
+# bin/run-tests-in-docker.sh and nowhere else.
+#
+# The runner prints `expected` next to these in its failing list, so a NEW
+# failure stands out in a wall of red. They STILL COUNT toward the exit status:
+# this list changes how a failure is printed, never whether it counts. None of
+# them is root-caused; they pass in CI on ubuntu-latest, so the difference is
+# the image or the read-only-mount-then-copy setup, not the code.
+#
+# One path per line, relative to the repo root, matched exactly. `#` comments
+# and blank lines are ignored.
+tests/fly-lane-db-test.sh
+tests/rule-miner-findings-test.sh
+tests/skills-sync-test.sh

@@ -1,0 +1,21 @@
+{
+  "libs": [
+    {
+      "id": "build-note-db",
+      "file": "bin/lib/build-note-db.sh",
+      "note": "BH-5003. A build note (the resolver's carried test-tamper ruling, or a ci-replan brief) is also the ledger row build_note/\"<project> <KEY>\" (pending -> consumed|relayed), so a build on a watcher box sees it and reads it once across boxes. The hub file state/build-notes/<p>/<KEY>.md stays as its mirror. Fails open.",
+      "knobs": [
+        {
+          "env": "BUILD_NOTE_DB",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 1,
+          "zero_means": "off",
+          "required": false,
+          "note": "1 = the resolver writes build notes to the ledger and the plan stage, the pool relay and the re-plan floor read it. 0 = main's behaviour: the hub file and the pool relay only, no row written, read or marked. Read by bn__on through lib_env_apply build-note-db, then ${BUILD_NOTE_DB:-1}."
+        }
+      ]
+    }
+  ]
+}

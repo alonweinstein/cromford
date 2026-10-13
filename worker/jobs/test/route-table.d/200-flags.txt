@@ -1,0 +1,8 @@
+GET /api/flags
+GET prefix:/api/flags/
+PUT /api/flags
+DELETE /api/flags
+GET /api/flag-changes
+GET /api/main-red
+PUT /api/main-red
+POST /api/main-red/clear

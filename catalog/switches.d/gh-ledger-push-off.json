@@ -1,0 +1,1 @@
+{"name":"gh-ledger-push-off","readers":["bin/gh-ledger-push.sh"],"box_scoped":true,"what":"stops gh-ledger-push.sh sending this box's gh quota-ledger rows to the jobs worker"}

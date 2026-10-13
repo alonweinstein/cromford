@@ -1,0 +1,1 @@
+{"name":"review-rescue-disabled","readers":["bin/review-rescue.sh","bin/blocked-resolver.sh"],"box_scoped":true,"what":"stops the review-rescue lane: it does nothing on this box"}

@@ -1,0 +1,5 @@
+# C13p twin of C13 with the resolver 61 minutes ago: one page, then quiet
+# want: blocked	fix round
+# decide: - page
+# decide: paged quiet 1800000300
+pr	o/r#12	https://github.com/o/r/pull/12	0	ai-build	success	1799980000	BLOCK	abc	1799982000	abc	-	-	-	1799996340	-	-	-	-	-	-	1799980000

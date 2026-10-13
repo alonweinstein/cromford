@@ -1,0 +1,31 @@
+{
+  "libs": [
+    {
+      "id": "suite-reuse",
+      "file": "bin/suite-reuse.sh",
+      "note": "BH-5354.0 (BH-5366). The suite ledger: bin/suite-reuse.sh plan asks the harness-jobs worker (POST /api/suite-results/lookup) which suites already went green at the same input fingerprint, and record writes each result back (PUT /api/suite-results). The SERVER reads both settings rows (worker/jobs/src/lib/suite-results.js readReuseKnobs); a bad value turns reuse off, never back to the default. No runner calls the helper yet. Doc: docs/notes/2026-10-08-BH-5354-suite-reuse.md.",
+      "knobs": [
+        {
+          "env": "SUITE_REUSE",
+          "type": "string",
+          "default": "on",
+          "zero_means": null,
+          "required": false,
+          "note": "on|off; off = every suite runs. The settings row lib.suite-reuse.suite_reuse is read by the worker on every lookup; the env SUITE_REUSE=off makes bin/suite-reuse.sh plan skip the lookup on this runner alone. Any other value of either is off. Recording is not affected, so turning reuse back on finds a warm ledger."
+        },
+        {
+          "env": "SUITE_REUSE_MAX_AGE_H",
+          "type": "int",
+          "default": 72,
+          "min": 1,
+          "max": 720,
+          "unit": "hours",
+          "zero_means": null,
+          "required": false,
+          "read_in": "worker/jobs/src/lib/suite-results.js",
+          "note": "The oldest green a lookup will reuse, measured on the worker's clock from the latest ok write. Read by the worker from the settings row lib.suite-reuse.suite_reuse_max_age_h; a value outside 1..720 or not an integer turns reuse off."
+        }
+      ]
+    }
+  ]
+}

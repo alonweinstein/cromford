@@ -1,0 +1,1 @@
+{"name":"extra-usage-track-off","readers":["bin/extra-usage-track.sh"],"box_scoped":true,"what":"stops extra-usage-track.sh polling the subscription accounts' usage on this box"}

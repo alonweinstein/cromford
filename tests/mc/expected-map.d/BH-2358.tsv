@@ -1,0 +1,4 @@
+# tests/mc/expected-map.d/BH-2358.tsv — BH-2358 (BH-2311.2): the pr-state-rows
+# gate every marker row in classify.sh and rebase.sh sits behind; origin=lib
+# because it is a new module function.
+classify	mc_rows_twin_on	lib

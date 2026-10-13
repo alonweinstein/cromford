@@ -1,0 +1,4 @@
+# BH-1525: the reviewed-head verdict rows, directly under the build ledger's
+# verdict routes, which is where the table puts them (...verdict, ...verdicts).
+POST /api/verdicts
+GET /api/verdicts

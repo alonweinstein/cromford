@@ -1,0 +1,54 @@
+{
+  "expand": "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations",
+  "id": "10001",
+  "self": "https://api.atlassian.com/ex/jira/33333333-3333-3333-3333-333333333333/rest/api/3/issue/10001",
+  "key": "CROM-1",
+  "fields": {
+    "summary": "Ledger export",
+    "description": {
+      "type": "doc",
+      "version": 1,
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            {
+              "type": "text",
+              "text": "Ship the export."
+            }
+          ]
+        }
+      ]
+    },
+    "status": {
+      "name": "To Do",
+      "id": "1",
+      "statusCategory": {
+        "id": 2,
+        "key": "new",
+        "name": "To Do"
+      }
+    },
+    "labels": [
+      "ai-build"
+    ],
+    "project": {
+      "self": "https://api.atlassian.com/ex/jira/33333333-3333-3333-3333-333333333333/rest/api/3/project/10000",
+      "id": "10000",
+      "key": "CROM",
+      "name": "Sandbox CROM",
+      "projectTypeKey": "software"
+    },
+    "issuetype": {
+      "name": "Task"
+    },
+    "customfield_10050": {
+      "value": "Team",
+      "id": "10100"
+    },
+    "customfield_10051": {
+      "value": "ready",
+      "id": "10110"
+    }
+  }
+}

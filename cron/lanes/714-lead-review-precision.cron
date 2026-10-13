@@ -1,0 +1,10 @@
+# @hub-lanes
+
+# ── LEAD REVIEW PRECISION (BH-3479.4) ─────────────────────────────────────
+# bin/lead-review-precision.sh — daily 05:40Z, score every PR merged in the last
+# LEAD_REVIEW_PRECISION_WINDOW_DAYS whose merged head carries a lead MERGE:
+# reverted on main, or a failed/cancelled `Queue:` check run on the head.
+# Writes state/lead-review-precision/<day>.json; one warn beat a day under
+# LEAD_REVIEW_PRECISION_WARN. No model call, no SSH. Off via
+# flags/lane-off-lead-review-precision. Log: logs/lead-review-precision.log.
+40 5 * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/lead-review-precision.sh >/dev/null 2>&1

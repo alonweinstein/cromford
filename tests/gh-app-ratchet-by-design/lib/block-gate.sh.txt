@@ -1,0 +1,1 @@
+Exempt by BH-825; moved here from tests/gh-app-ratchet-allowlist.txt by BH-1177. It reads on the identity its calling lane already armed, and a second mint would override the tier-2 sweep's admin-PAT fallback. Full reason: the gh-identity line at the top of bin/lib/block-gate.sh.

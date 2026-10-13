@@ -1,0 +1,125 @@
+{
+  "id": "extra-usage-track",
+  "name": "Extra usage tracker",
+  "scope": "box",
+  "script": "bin/extra-usage-track.sh",
+  "cadence": "13,28,43,58 * * * *",
+  "boxes": [
+    "project-4",
+    "hub",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-extra-usage-track",
+    "aliases": [
+      {
+        "name": "extra-usage-track-off",
+        "off_when": "present"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "CLAUDE_CONFIG_DIR",
+      "type": "string",
+      "default": "/root/.claude",
+      "zero_means": null,
+      "note": "Read by bin/extra-usage-track.sh as ${CLAUDE_CONFIG_DIR:-/root/.claude}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "COST_ACCOUNTS_FILE",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it ($H/catalog/cost-accounts.json). Read by bin/extra-usage-track.sh as ${COST_ACCOUNTS_FILE:-$H/catalog/cost-accounts.json}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "EXTRA_USAGE_CAP_ALERT_DEDUPE_S",
+      "type": "int",
+      "default": 21600,
+      "zero_means": null,
+      "note": "Read by bin/extra-usage-track.sh as ${EXTRA_USAGE_CAP_ALERT_DEDUPE_S:-21600}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "EXTRA_USAGE_CAP_ALERT_PCT",
+      "type": "int",
+      "default": 98,
+      "zero_means": null,
+      "note": "Read by bin/extra-usage-track.sh as ${EXTRA_USAGE_CAP_ALERT_PCT:-98}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "EXTRA_USAGE_DAY_ALERT",
+      "type": "int",
+      "default": 1300,
+      "zero_means": null,
+      "note": "Read by bin/extra-usage-track.sh as ${EXTRA_USAGE_DAY_ALERT:-1300}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "EXTRA_USAGE_ERROR_STREAK",
+      "type": "int",
+      "default": 3,
+      "zero_means": null,
+      "note": "Read by bin/extra-usage-track.sh (error_streak_alert) as ${EXTRA_USAGE_ERROR_STREAK:-}, default 3: this many status=error polls in a row raise extra-usage-errors-<label> once per UTC day. 0 or a non-integer falls back to 3 and the rejected value is logged. BH-3985."
+    },
+    {
+      "env": "EXTRA_USAGE_FLAT_MIN_USD",
+      "type": "int",
+      "default": 5,
+      "zero_means": null,
+      "note": "Read by bin/extra-usage-track.sh (flat_accounts) as ${EXTRA_USAGE_FLAT_MIN_USD:-}, default 5: a meter flat for 12h while in overage the whole time (in_overage=1; inside the weekly credits a still meter is normal) alerts (extra-usage-flat-<label>, once per UTC day) only when the account's priced cost rows over those 12h are more than this many dollars (strict >). A non-integer falls back to 5 and the rejected value is logged. BH-3985."
+    },
+    {
+      "env": "EXTRA_USAGE_LOGINS",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/extra-usage-track.sh as ${EXTRA_USAGE_LOGINS:-}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "EXTRA_USAGE_STALE_HOURS",
+      "type": "int",
+      "default": 6,
+      "zero_means": null,
+      "note": "Read by bin/extra-usage-track.sh as ${EXTRA_USAGE_STALE_HOURS:-6}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "EXTRA_USAGE_TRACK",
+      "type": "int",
+      "default": 1,
+      "zero_means": null,
+      "note": "Read by bin/extra-usage-track.sh as ${EXTRA_USAGE_TRACK:-1}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "EXTRA_USAGE_XCHECK_GAP_PCT",
+      "type": "int",
+      "default": 10,
+      "zero_means": null,
+      "note": "Read by bin/extra-usage-track.sh (xcheck_accounts) as ${EXTRA_USAGE_XCHECK_GAP_PCT:-}, default 10: percent gap between the vendor meter delta and cost_rows dollars above which account-usage-gap-<label> fires (strict >). A non-integer falls back to 10 and the rejected value is logged. BH-1915 (BH-167.2)."
+    },
+    {
+      "env": "EXTRA_USAGE_XCHECK_MIN_USD",
+      "type": "int",
+      "default": 1,
+      "zero_means": null,
+      "note": "Read by bin/extra-usage-track.sh (xcheck_accounts) as ${EXTRA_USAGE_XCHECK_MIN_USD:-}, default 1: a window whose meter delta is under this many dollars is neither fired nor cleared. A non-integer falls back to 1 and the rejected value is logged. BH-1915 (BH-167.2)."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/extra-usage.log"
+  }
+}

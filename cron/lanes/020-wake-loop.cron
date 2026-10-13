@@ -1,0 +1,14 @@
+# EVENTS, NOT CLOCKS (docs/EVENTS.md, 2026-09-12). Every box claims the
+# harness-jobs `wakes` rows for the repos it owns every 15s (four internal cycles
+# per cron minute, like poll-commands) and runs the lane that owns each GitHub
+# event immediately — deploy train on a push to main, post-merge QA on a
+# successful deployment, triage on an issue/comment — and the hub also claims
+# every repo's PR/check rows for the fleet-wide merge conductor (BH-2525.2).
+# INERT until an operator creates the org webhook and sets
+# GITHUB_WEBHOOK_SECRET: with no rows it launches nothing and every lane still
+# fires on its own clock. flags/wake-loop-off stops it without a deploy.
+* * * * * /root/harness/bin/wake-loop.sh
+# @box hub
+# @hub-lanes
+# The hub's copy is lease-gated, so a standby hub never drains beside the live one.
+* * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/wake-loop.sh

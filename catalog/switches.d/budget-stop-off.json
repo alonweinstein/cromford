@@ -1,0 +1,1 @@
+{"name":"budget-stop-off","readers":["bin/lib/budget-stop.sh"],"box_scoped":true,"what":"turns off the hard budget caps (bin/lib/budget-stop.sh): every build-stage, stage-day and project-day check before a model call, and the budget launch gate; a build already holding BUDGET_STOP stays stopped"}

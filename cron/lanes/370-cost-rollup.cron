@@ -1,0 +1,3 @@
+# @hub-lanes
+45 4 * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/cost-rollup.sh >/dev/null 2>&1
+50 0-3,5-23 * * * /root/harness/bin/hub-lease.sh check && WINDOWS_ONLY=1 /root/harness/bin/cost-rollup.sh >/dev/null 2>&1 # hourly 24h-window refresh; hour 04 skipped, the full 04:45 rollup covers it

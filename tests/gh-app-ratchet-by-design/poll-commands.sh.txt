@@ -1,0 +1,1 @@
+Exempt since the #425 census; moved here from tests/gh-app-ratchet-allowlist.txt by BH-1177. A merge the operator sent from the console is meant to land as the operator. Full reason: the gh-identity line at the top of bin/poll-commands.sh.

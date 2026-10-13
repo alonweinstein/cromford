@@ -1,0 +1,60 @@
+----
+time->Tue Sep 15 12:00:02 2026
+type=PROCTITLE msg=audit(09/15/2026 12:00:02.101:5001) : proctitle=rm /root/harness/state/scratch/x1
+type=PATH msg=audit(09/15/2026 12:00:02.101:5001) : item=1 name=/root/harness/state/scratch/x1 inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:00:02.101:5001) : cwd=/root/worktrees/cromford-bh-405
+type=SYSCALL msg=audit(09/15/2026 12:00:02.101:5001) : arch=x86_64 syscall=unlinkat success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=4242 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:00:02 2026
+type=PROCTITLE msg=audit(09/15/2026 12:00:02.102:5002) : proctitle=rm /root/harness/state/scratch/x2
+type=PATH msg=audit(09/15/2026 12:00:02.102:5002) : item=1 name=/root/harness/state/scratch/x2 inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:00:02.102:5002) : cwd=/root/worktrees/cromford-bh-405
+type=SYSCALL msg=audit(09/15/2026 12:00:02.102:5002) : arch=x86_64 syscall=unlinkat success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=4242 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:00:02 2026
+type=PROCTITLE msg=audit(09/15/2026 12:00:02.103:5003) : proctitle=rm /root/harness/state/scratch/x3
+type=PATH msg=audit(09/15/2026 12:00:02.103:5003) : item=1 name=/root/harness/state/scratch/x3 inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:00:02.103:5003) : cwd=/root/worktrees/cromford-bh-405
+type=SYSCALL msg=audit(09/15/2026 12:00:02.103:5003) : arch=x86_64 syscall=unlinkat success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=4242 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:00:02 2026
+type=PROCTITLE msg=audit(09/15/2026 12:00:02.104:5004) : proctitle=rm /root/harness/state/scratch/x4
+type=PATH msg=audit(09/15/2026 12:00:02.104:5004) : item=1 name=/root/harness/state/scratch/x4 inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:00:02.104:5004) : cwd=/root/worktrees/cromford-bh-405
+type=SYSCALL msg=audit(09/15/2026 12:00:02.104:5004) : arch=x86_64 syscall=unlinkat success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=4242 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:00:02 2026
+type=PROCTITLE msg=audit(09/15/2026 12:00:02.105:5005) : proctitle=rm /root/harness/state/scratch/x5
+type=PATH msg=audit(09/15/2026 12:00:02.105:5005) : item=1 name=/root/harness/state/scratch/x5 inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:00:02.105:5005) : cwd=/root/worktrees/cromford-bh-405
+type=SYSCALL msg=audit(09/15/2026 12:00:02.105:5005) : arch=x86_64 syscall=unlinkat success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=4242 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:00:02 2026
+type=PROCTITLE msg=audit(09/15/2026 12:00:02.106:5006) : proctitle=rm /root/harness/state/scratch/x6
+type=PATH msg=audit(09/15/2026 12:00:02.106:5006) : item=1 name=/root/harness/state/scratch/x6 inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:00:02.106:5006) : cwd=/root/worktrees/cromford-bh-405
+type=SYSCALL msg=audit(09/15/2026 12:00:02.106:5006) : arch=x86_64 syscall=unlinkat success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=4242 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:00:02 2026
+type=PROCTITLE msg=audit(09/15/2026 12:00:02.107:5007) : proctitle=rm /root/harness/state/scratch/x7
+type=PATH msg=audit(09/15/2026 12:00:02.107:5007) : item=1 name=/root/harness/state/scratch/x7 inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:00:02.107:5007) : cwd=/root/worktrees/cromford-bh-405
+type=SYSCALL msg=audit(09/15/2026 12:00:02.107:5007) : arch=x86_64 syscall=unlinkat success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=4242 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:00:02 2026
+type=PROCTITLE msg=audit(09/15/2026 12:00:02.108:5008) : proctitle=rm /root/harness/state/scratch/x8
+type=PATH msg=audit(09/15/2026 12:00:02.108:5008) : item=1 name=/root/harness/state/scratch/x8 inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:00:02.108:5008) : cwd=/root/worktrees/cromford-bh-405
+type=SYSCALL msg=audit(09/15/2026 12:00:02.108:5008) : arch=x86_64 syscall=unlinkat success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=4242 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:00:02 2026
+type=PROCTITLE msg=audit(09/15/2026 12:00:02.109:5009) : proctitle=rm /root/harness/state/scratch/x9
+type=PATH msg=audit(09/15/2026 12:00:02.109:5009) : item=1 name=/root/harness/state/scratch/x9 inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:00:02.109:5009) : cwd=/root/worktrees/cromford-bh-405
+type=SYSCALL msg=audit(09/15/2026 12:00:02.109:5009) : arch=x86_64 syscall=unlinkat success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=4242 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness
+----
+time->Tue Sep 15 12:00:02 2026
+type=PROCTITLE msg=audit(09/15/2026 12:00:02.110:5010) : proctitle=rm /root/harness/state/scratch/x10
+type=PATH msg=audit(09/15/2026 12:00:02.110:5010) : item=1 name=/root/harness/state/scratch/x10 inode=131 dev=fd:01 mode=file,644 ouid=root ogid=root rdev=00:00 nametype=DELETE cap_fp=none cap_fi=none cap_fe=0 cap_fver=0 cap_frootid=0
+type=CWD msg=audit(09/15/2026 12:00:02.110:5010) : cwd=/root/worktrees/cromford-bh-405
+type=SYSCALL msg=audit(09/15/2026 12:00:02.110:5010) : arch=x86_64 syscall=unlinkat success=yes exit=0 a0=0xffffff9c a1=0x55d0c0a2 a2=0x0 a3=0x0 items=2 ppid=4100 pid=4242 auid=root uid=root gid=root euid=root suid=root fsuid=root egid=root sgid=root fsgid=root tty=(none) ses=3 comm=rm exe=/usr/bin/rm subj=unconfined key=harness

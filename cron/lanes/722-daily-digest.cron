@@ -1,0 +1,12 @@
+# @hub-lanes
+
+# ── DAILY-DIGEST LANE (BH-3688) ─────────────────────────────────────────────
+# Every 15 minutes; from DAILY_DIGEST_SEND_HOUR_UTC (default 07Z) it reads
+# GET /api/metrics/daily-digest for yesterday (UTC), renders it, and sends ONE
+# triaged fleet_alert beat per day. The jobs ledger row daily_digest/<day> plus
+# state/daily-digest/sent-<day> dedupe it, so the other ticks of the day do
+# nothing. It never calls Telegram itself. One summary line per tick that does
+# work in logs/daily-digest.log; flock -n dedupes. Off: the daily-digest-off
+# switch, DAILY_DIGEST_ENABLED=0, flags/lane-off-daily-digest, or
+# bin/harness-ctl.sh off daily-digest.
+*/15 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/daily-digest.sh >/dev/null 2>&1

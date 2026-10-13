@@ -1,0 +1,21 @@
+{
+  "libs": [
+    {
+      "id": "hold-comment",
+      "file": "bin/lib/mc-hold-comment.sh",
+      "note": "BH-3436.0 (BH-3452). The merge conductor's hold-comment interface: mc_hold_comment and mc_hold_comment_clears. Inert: no comment is posted yet, mc_hold_comment only writes the MC_HOLD_COMMENT_TRACE test seam.",
+      "knobs": [
+        {
+          "env": "MC_HOLD_COMMENT",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 1,
+          "zero_means": "off",
+          "required": true,
+          "note": "1 on, 0 off: 0 turns every mc_hold_comment call into a no-op. Read once when bin/lib/mc-hold-comment.sh is sourced."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+{"name":"dep-verify-off","readers":["bin/lib/dep-verify-lib.sh"],"box_scoped":true,"what":"turns off dependency verification, so a Blocked-by line is obeyed as before"}

@@ -1,0 +1,5 @@
+# BH-2563: the cost-caps stubs, directly after routing where src/index.js puts
+# them. 225, not the ticket's 545: 545 is fly-images (BH-2523).
+PUT /api/cost-caps
+GET /api/cost-cap-changes
+POST /api/cost-caps/seed

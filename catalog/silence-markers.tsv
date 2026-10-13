@@ -1,0 +1,20 @@
+# catalog/silence-markers.tsv — what the silence check (bin/lib/silence-scan.sh,
+# BH-5797) calls an allow-list entry or a lint-silencing marker. One rule a line,
+# tab-separated: id, route, path ERE, hunk ERE, added-line ERE, reason.
+# route human = a public-leak allow-list: the PR is labelled needs-human and no
+# lead review is asked until a person clears it. route lead = the line goes into
+# the lead review request notes for the Opus lead to judge, and a lead marker
+# (a rule with a line ERE) must carry its reason on the same line
+# (bin/marker-reason-lint.sh, in the rules pack). "-" matches anything; a path ERE
+# that starts with "!" must NOT match. The hunk ERE is read against the hunk
+# header (the enclosing definition). Each marker is written with one bracketed
+# letter so this file is no hit for its own rules.
+known-fakes	human	^bin/share/	KNOWN_(FAKE|PUBLIC)_[A-Z_]+ *= *[{[(]	^[[:space:]]*["'][^"']+["'],?[[:space:]]*(#.*)?$	an entry added to a KNOWN_FAKE_* or KNOWN_PUBLIC_* set (the public-mirror leak check)
+known-fakes-set	human	^bin/share/	-	KNOWN_(FAKE|PUBLIC)_[A-Z_]+ *[=|]	a KNOWN_FAKE_* or KNOWN_PUBLIC_* set defined or widened
+gitleaks	human	!\.md$	-	gitleaks:allo[w]	a gitleaks marker
+gitleaks-config	human	(^|/)\.gitleaks(ignore|\.toml)$	-	-	a line added to the gitleaks allow-list or ignore file
+leak-list	human	((leak|identif|known-?fake|gitleaks|secret)[^/]*(allow-?list|baseline)|(allow-?list|baseline)[^/]*(leak|identif|known-?fake|gitleaks|secret))[^/]*(/|\.(txt|tsv|json|example|conf)$)	-	-	a line added to a leak or identifier allow-list
+allow-list	lead	(allow-?list|baseline)[^/]*(/|\.(txt|tsv|json|example|conf)$)	-	-	a line added to an allow-list or ratchet baseline file
+scratch-closure	lead	!\.md$	-	scratch-closure-allo[w]	a scratch-closure lint marker
+gh-guard	lead	!\.md$	-	gh-guard-allo[w]	a gh guard marker
+determinism	lead	!\.md$	-	#[[:space:]]*determinism:[[:space:]]*o[k]	a determinism lint marker

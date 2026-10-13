@@ -1,0 +1,2 @@
+# @hub-lanes
+55 4 * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/sweep-stale-builds.sh >/dev/null 2>&1

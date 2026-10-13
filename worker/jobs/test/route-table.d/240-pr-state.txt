@@ -1,0 +1,15 @@
+# BH-1386 (BH-1025.1): the PR state / attempt family, added to BOTH lists in
+# the position the table puts it — directly after the ledger pair, which is
+# the import it sits next to in src/index.js. Six routes, not five: the
+# DELETE is the row half of `mc_attempt_clear` and ships in the same deploy
+# as the PUT (docs/verification-map/pr-rows-contract.md:83-88).
+POST /api/pr-state-events
+GET /api/pr-state-events
+GET /api/pr-state
+# BH-4953: the gate-fact fold and the lead-review worklist, exact paths
+# directly after the current-state read.
+GET /api/pr-state/gate
+GET /api/pr-state/needs-review
+PUT /api/pr-attempts
+GET /api/pr-attempts
+DELETE /api/pr-attempts

@@ -1,0 +1,100 @@
+{
+  "id": "reconcile-prs",
+  "name": "Reconcile PRs",
+  "scope": "box",
+  "script": "bin/reconcile-prs.sh",
+  "cadence": "*/10 * * * *",
+  "boxes": [
+    "project-4",
+    "hub",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-reconcile-prs",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "MC_CLOSED_SETTLE",
+      "type": "int",
+      "default": 180,
+      "zero_means": null,
+      "note": "Read by bin/reconcile-prs.sh as ${MC_CLOSED_SETTLE:-180}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "RECONCILE_PRS_OWNER",
+      "read_in": "bin/lib/reconcile-read.sh",
+      "type": "string",
+      "default": "hub",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "required": true,
+      "note": "BH-1583: the ONE box that runs this lane. `hub` = whichever box bin/lib/hub-box.sh calls the hub; any other value is one fleet box name (bin/box-name.sh). Every other box exits before any console or GitHub read and says so once per value in logs/reconcile.log. The value is only compared with this box's own fleet name — it names nothing to run, contact or write — so the worst row is the wrong box (or none) reconciling, which that log line and the console's stale Merge buttons show. Read by bin/lib/reconcile-read.sh with no literal. BH-1609: checked at write time (PUT /api/settings) against box_status; `hub` is always allowed, and an empty fleet list is accepted with a warning."
+    },
+    {
+      "env": "RECONCILE_PRS_PAGE",
+      "read_in": "bin/lib/reconcile-read.sh",
+      "type": "int",
+      "default": 30,
+      "min": 1,
+      "max": 100,
+      "unit": "PRs",
+      "zero_means": null,
+      "required": true,
+      "note": "BH-1583: per_page of the one pulls?state=closed&sort=updated&direction=desc read per repo per tick. 30 keeps the page under gh-rest-etag.sh's 1 MiB body cap (GH_ETAG_MAX_BYTES), so an unchanged page answers 304 and is not counted; a bigger page answers more PRs per read but may lose the ETag. Read by bin/lib/reconcile-read.sh with no literal."
+    },
+    {
+      "env": "RECONCILE_PRS_FALLBACK_CAP",
+      "read_in": "bin/lib/reconcile-read.sh",
+      "type": "int",
+      "default": 5,
+      "min": 0,
+      "max": 100,
+      "unit": "reads per tick",
+      "zero_means": "off",
+      "required": true,
+      "note": "BH-1583: at most this many single GET pulls/<n> reads per tick, for tracked PRs the repo's recent-closed page cannot answer (closed long ago, or open with no proved watermark yet). The rest wait for the next tick, and the tick logs how many. 0 = never read a single PR. Read by bin/lib/reconcile-read.sh with no literal."
+    },
+    {
+      "env": "RECONCILE_PRS_GONE_BACKOFF_S",
+      "read_in": "bin/lib/reconcile-read.sh",
+      "type": "int",
+      "default": 21600,
+      "min": 600,
+      "max": 604800,
+      "unit": "s",
+      "zero_means": null,
+      "required": true,
+      "note": "BH-1583: a repo whose list read answered 404 (renamed, deleted, or not visible to this identity) is recorded once and not read again — list or single PR — until this many seconds have passed. Read by bin/lib/reconcile-read.sh with no literal."
+    },
+    {
+      "env": "RECONCILE_PRS_READ_FAIL_BACKOFF_S",
+      "read_in": "bin/lib/reconcile-read.sh",
+      "type": "int",
+      "default": 1800,
+      "min": 0,
+      "max": 86400,
+      "unit": "s",
+      "zero_means": "off",
+      "required": true,
+      "note": "BH-1583 (review of #1593): a PR whose single GET pulls/<n> read FAILED is not read again for this many seconds, so a PR that keeps failing cannot take one of the RECONCILE_PRS_FALLBACK_CAP slots every tick and starve the PRs behind it. 0 = retry every tick. Read by bin/lib/reconcile-read.sh with no literal."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/reconcile-prs.log"
+  }
+}

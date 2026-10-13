@@ -1,0 +1,64 @@
+# catalog/test-impact-always.txt — suites that run on EVERY diff (BH-1203).
+#
+# bin/test-impact.sh already DERIVES this set from each suite's own text: a
+# suite whose executable lines (not comments, case-arm patterns or quoted
+# messages) run an unscoped `git … ls-files` (no pathspec, or `.`),
+# `find "$DIR"`, `--tree` or `"$DIR"/tests/*` reads the whole tree, so no map
+# of it is worth anything and it runs always. That detection is the primary
+# mechanism. This file holds two kinds of line: the escape hatch for a suite
+# whose whole-tree reach no signal can see, and the BH-4551 stability pins
+# below, which keep main's classification from moving when the detector was
+# narrowed (some of those suites never read the tree at all).
+#
+# One suite path per line, then a reason. A line naming a file that does not
+# exist is ignored, so a rename cannot silently add a phantom to every run.
+#
+# An escape-hatch line is an admission that the detection missed something —
+# say what it missed, so the next person can fix the detector instead of
+# growing the list.
+#
+# BH-1485 (review C2): tests/gh-rest-no-subshell-lint.sh walks bin/ inside a
+# Python heredoc (os.walk), so none of the four text signals above see it —
+# the walk is data to bin/test-impact.sh's own grep, not a `git ls-files` /
+# `find "$DIR"` / `--tree` / `"$DIR"/tests/*` line in the suite's own shell
+# text. Without this line a diff touching only bin/ (never tests/) does not
+# select it, so a regression that reintroduces `st=$(gh_rest …)` in most of
+# the 15 converted files passes CI and the pin first fires on the push-to-main
+# run, as a red main.
+tests/gh-rest-no-subshell-lint.sh
+#
+# BH-3860 / BH-3864: tests/gh-app-ratchet-test.sh walks bin/ with os.walk
+# inside a Python heredoc (line ~394), the same blind spot BH-1485 documented.
+# None of the four text signals see it, so a bin/-only diff did not select it,
+# and a stale `raw-by-design` marker ejected #3809 / batch #3836.
+tests/gh-app-ratchet-test.sh
+#
+# BH-5684: tests/pr-scoped-test-lint.bh-5684-test.sh runs bin/pr-scoped-test-lint.sh
+# on the real tree, and the lint does the `git ls-files tests` itself. The suite's
+# own text names no whole-tree read, so no signal sees it, and a tests/-only diff
+# that adds an unguarded own-range read would not select it.
+tests/pr-scoped-test-lint.bh-5684-test.sh
+#
+# BH-4551: the detector now reads only text that runs, and only an unscoped
+# `git … ls-files` (no pathspec, or `.`). The suites below were in the set at
+# c84de0d and the narrowed detector no longer sees them. They are pinned here so
+# main's classification does not move with the fix (only
+# tests/rb-prepr-gate.bh-1706-test.sh left, because it matched in a comment
+# alone). Each line names what the old whole-file grep matched. A pin whose
+# suite never reads the tree can be deleted on its own.
+tests/ci-shard-split-test.sh  case pattern *"bin/checks-run.sh --tree"*)
+tests/config-literal-lint.sh  scoped git ls-files -- "$d" over bin fly cron
+tests/fixround-lead-reviews.bh-2200-test.sh  git stub case arm "ls-files")
+tests/fixround-unaddressed-report.bh-2276-test.sh  git stub case arm "ls-files")
+tests/generated-files-train-test.sh  scoped git -C "$DIR" ls-files -- "$p"
+tests/hold-push-guard.bh-2504-test.sh  git stub case arm "ls-files")
+tests/lead-review-rules-pack.bh-3546-test.sh  quoted grep pattern "^--tree $H/…"
+tests/llm-call-ratchet-test.sh  scoped git -C "$DIR" ls-files -- docs/LLM_CALL_SITES.md
+tests/model-literal-lint.sh  scoped git ls-files -- "$d" over its SCAN_DIRS
+tests/ratchet-markers-test.sh  G ls-files -u, through a git wrapper
+tests/readiness-report-test.sh  scoped git -C "$DIR" ls-files tests/fixtures/readiness
+tests/registry-no-commit-test.sh  scoped git -C "$DIR" ls-files -- "$P"
+tests/remote-gate.bh-1597-test.sh  quoted message "… ls-files lists it …"
+tests/share-publish-clean.bh-795-test.sh  scoped git ls-files -- docs/verification-map/README.md
+tests/spec-artifact-test.sh  scoped git -C "$T/repo" ls-files "$1"
+tests/verification-map-no-commit-test.sh  scoped git -C "$DIR" ls-files -- docs/verification-map/README.md

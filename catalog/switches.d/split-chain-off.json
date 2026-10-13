@@ -1,0 +1,1 @@
+{"name":"split-chain-off","readers":["bin/lib/split-chain.sh"],"box_scoped":true,"what":"stops a merged split child from making the next sibling launchable on a polling board"}

@@ -1,0 +1,3 @@
+# NO model-prices-sync line, deliberately: the line above WRITES
+# state/model-prices.json and pushes it to the model_prices table, so a pull
+# here would be the lane reading back its own output (BH-1032).

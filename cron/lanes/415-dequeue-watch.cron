@@ -1,0 +1,12 @@
+# @hub-lanes
+
+# ── DEQUEUE-WATCH LANE (BH-3719) ────────────────────────────────────────────
+# Every 5 minutes: each PR Mergify dequeued is attributed (culprit or
+# bystander), classified and acted on ONCE per (pr, head, class): a requeue, a
+# lead-verdict request, a main-red wait, a bounded fix round or a hold. A
+# dequeued head nobody owns past DEQUEUE_WATCH_UNOWNED_MIN pages critical.
+# One summary line per tick in logs/dequeue-watch.log; flock -n dedupes.
+# Observe only: DEQUEUE_WATCH_ACT=0 (logs WOULD_<ACTION>, does nothing).
+# Off: the dequeue-watch-off switch (flags/dequeue-watch-off), DEQUEUE_WATCH=0,
+# flags/lane-off-dequeue-watch, or bin/harness-ctl.sh off dequeue-watch.
+*/5 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/dequeue-watch.sh >/dev/null 2>&1

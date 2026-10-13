@@ -1,0 +1,1 @@
+{"name":"bin-self-heal-off","readers":["bin/context-gate.sh"],"box_scoped":true,"what":"stops context-gate.sh healing a drifted harness bin, so the drift refuses the build instead"}

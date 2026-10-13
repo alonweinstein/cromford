@@ -1,0 +1,31 @@
+{
+  "libs": [
+    {
+      "id": "harness-self",
+      "file": "bin/lib/harness-self.sh",
+      "note": "BH-2133. WHO the harness is when it comments on a GitHub issue: the App slugs whose comments the GitHub-Issues triage gate (bin/lib/gate-self-comments.sh) and the repro gate's thread_fp (bin/lib/prebuild-repro.sh pr_ledger_key) treat as the harness's own voice rather than the board moving. Applied by harness-self.sh at file scope, in a subshell. With nothing resolved the list is empty and nothing is absorbed, which is the behaviour before BH-2133.",
+      "knobs": [
+        {
+          "env": "HARNESS_SELF_APPS",
+          "type": "string",
+          "default": "cromford cromford-board cromford-builders",
+          "zero_means": null,
+          "required": true,
+          "settable": false,
+          "note": "Space-separated GitHub App slugs. A comment is the harness's own when its author is `<slug>[bot]` (or a Bot user named <slug>) or it was performed_via_github_app <slug>. ANY other bot (intercom[bot], a CRM relay carrying a client's words) is NOT ours and still wakes the tick, and the PAT login is never in this list: it is also the operator's hand. A trust list, so NOT settable from the control plane: only env/global.env on the box moves it."
+        },
+        {
+          "env": "GATE_SELF_FAILOPEN_ALERT",
+          "type": "int",
+          "default": 6,
+          "min": 0,
+          "max": 1000,
+          "unit": "ticks",
+          "zero_means": "never alert",
+          "required": true,
+          "note": "Consecutive triage-gate ticks on one project on which gate-self-comments could not read a thread it needed (rate limit, 5xx) and so failed OPEN (the tick ran). At this count ONE ALERTS.log line is written for the streak, so a fail-open loop that is quietly buying sessions is visible. A tick whose reads succeed resets the count."
+        }
+      ]
+    }
+  ]
+}

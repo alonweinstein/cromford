@@ -1,0 +1,2 @@
+# @ungated the console's command channel. It must answer on the box an operator is talking to, not only on the lease holder; tests/hub-cron-gated-test.sh S9c pins it as box-local.
+* * * * * /root/harness/bin/poll-commands.sh

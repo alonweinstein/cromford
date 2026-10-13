@@ -1,0 +1,6 @@
+{
+  "gate": "board-changed",
+  "project": "project-5",
+  "board_shape": "gh-issues",
+  "note": "Two guards in one GH tick: issue 61 is Blocked-by an issue that is still OPEN, and issue 62 already has an open PR covering it. Both look ready on the surface."
+}

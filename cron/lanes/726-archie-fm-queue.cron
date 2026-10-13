@@ -1,0 +1,12 @@
+# @hub-lanes
+
+# ── ARCHIE QUEUE DOCTOR LANE (BH-4584) ──────────────────────────────────────
+# Every 10 minutes Archie reads each project's merge queue and the conductor's
+# rows: a PR merged on GitHub but logged ejected is settled MERGED, a stale
+# dependency hold or WAIT_CI row is corrected, a failed Mergify batch's members
+# are solo-run on the CI pool and only a reproducing one is BLOCKed, and an
+# approved, green, clean PR nobody enqueued is enqueued once. Every action is an
+# archie_actions row claimed before any write; flock -n dedupes. Off:
+# ARCHIE_FMQ_ENABLED=0, flags/lane-off-archie-fm-queue,
+# bin/harness-ctl.sh off archie-fm-queue, or the settings row archie.manage=off.
+*/10 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/archie-fm-queue.sh >/dev/null 2>&1

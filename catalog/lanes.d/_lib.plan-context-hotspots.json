@@ -1,0 +1,21 @@
+{
+  "libs": [
+    {
+      "id": "plan-context-hotspots",
+      "file": "bin/lib/hotspot-context.sh",
+      "note": "BH-5269. The CONFLICT HOTSPOTS section of the project primer (bin/verification-map.sh render) and the hotlist bin/plan-gate.sh reads for its Shared-files report. Reads GET /api/conflict-hotspots (the conflict_hotspots rows the weekly conflict-hotspots-fleet lane writes) once per render, only when JOBS_URL is set. Doc: docs/notes/2026-10-08-BH-5269-conflict-discipline-prompts.md.",
+      "knobs": [
+        {
+          "env": "PLAN_CONTEXT_HOTSPOT_TOP",
+          "type": "int",
+          "default": 10,
+          "min": 0,
+          "max": 50,
+          "zero_means": "off",
+          "required": false,
+          "note": "How many hotspot rows reach the primer and the hotlist (the route's limit). 0 = the section reads ABSENT (off) and no request is made. A value that is not a whole number in 0..50 is not clamped: one PLAN_CONTEXT_HOTSPOTS_BADKNOB stderr line and the section is off. Read per project through lib_env_apply plan-context-hotspots <project>; code default 10."
+        }
+      ]
+    }
+  ]
+}

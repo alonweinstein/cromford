@@ -1,0 +1,6 @@
+# tests/mc/expected-map.d/CI-COST-0924.tsv — #2220 review round 3 (the ci cost
+# lanes): the per-PR `@mergifyio` ask ledger (queue, beside mc_mergify_command,
+# which mc_enqueue_mergify posts through and whose success is the only thing
+# the ledger records); origin=lib because they are new module functions.
+queue	mc_mergify_ask_file	lib
+queue	mc_mergify_ask_due	lib

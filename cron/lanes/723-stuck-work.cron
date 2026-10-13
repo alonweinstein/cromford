@@ -1,0 +1,14 @@
+# @hub-lanes
+
+# ── STUCK-WORK LANE (BH-3781) ───────────────────────────────────────────────
+# Every 5 minutes it reads the open PRs and ai-build tickets over GitHub REST
+# and pages items past their SLA. CI status/check-runs and comment threads are
+# re-read only on change (state/stuck-work/{ci,thread}/, BH-4660). Off: the
+# stuck-work-off switch, STUCK_WORK_ENABLED=0, flags/lane-off-stuck-work, or
+# bin/harness-ctl.sh off stuck-work.
+# BH-5943 (2026-10-11): --dispatch reads nothing. It starts one detached
+# `stuck-work.sh <project>` per fleet project, each on its own lock and at a
+# stable offset inside STUCK_WORK_DISPATCH_SPREAD_S (bin/lib/project-lanes.sh).
+# A project STUCK_WORK_PROJECTS does not watch (default: only the home one)
+# exits before any read.
+*/5 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/stuck-work.sh --dispatch >> /root/harness/logs/stuck-work-cron.log 2>&1

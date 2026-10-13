@@ -1,0 +1,3 @@
+# tests/jobs-client-modules.d/20-BH-5639.tsv — flag_sync's row reconciler, split out so flag-on.sh can apply a row it already read (BH-5639).
+flags	_flag_apply_row
+flags	_flag_parse_row

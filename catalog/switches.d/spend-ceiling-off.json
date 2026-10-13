@@ -1,0 +1,1 @@
+{"name":"spend-ceiling-off","readers":["bin/lib/llm-gate.sh"],"box_scoped":true,"what":"turns off the runaway spend ceiling (bin/lib/llm-gate.sh, settings spend.ceiling.<lane>.day_usd, BH-5526 C3): no ceiling row is read and no call or build start is refused by it"}

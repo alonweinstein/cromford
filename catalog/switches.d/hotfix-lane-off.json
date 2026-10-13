@@ -1,0 +1,1 @@
+{"name":"hotfix-lane-off","readers":["bin/lib/hotfix-lib.sh"],"box_scoped":true,"what":"turns off the hotfix lane, so no ticket is treated as a hotfix: no reordering, no cap exemption, no PR label, no announcements"}

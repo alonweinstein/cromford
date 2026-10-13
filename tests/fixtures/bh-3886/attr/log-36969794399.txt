@@ -1,0 +1,59 @@
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:04.9965666Z --- tests/fly-pool-reap-result-row.bh-2643-test.sh rc=0 1s
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:05.1809366Z --- tests/fly-pool-result-gate.bh-540-test.sh rc=0 0s
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:05.4508294Z --- tests/fly-pool-rollout-probe-test.sh rc=0 0s
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:07.7350938Z --- tests/gate-prs-fingerprint-test.sh rc=0 2s
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:08.6846568Z --- tests/generated-no-commit.bh-1680-test.sh rc=0 0s
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:13.3215630Z --- tests/gh-app-ratchet-owner.bh-1984-test.sh rc=1 5s
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:13.3219426Z FAIL: case 4: the ratchet suite was rc 1 with the owner answering open
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:13.3219891Z       bin/lib/mc-foreign-red.sh:270 raw gh call, no App token armed and no gh-identity marker
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:13.3220338Z     FAIL: 1 script(s) make raw gh calls and declare no identity.
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:13.3220855Z          Fix: source bin/lib/gh-app-auth.sh, arm before the first gh call and reset at
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:13.3221898Z          the end — 'gh_auth_for "$SLUG" || true' ... 'gh_auth_reset' (or the
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:13.3222431Z          mc_use_token/mc_reset_token pair from bin/lib/merge-conductor-lib.sh) — and
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:13.3222757Z          put '# gh-identity: app-token' in the header, one line under the shebang.
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:13.3222997Z          If it is genuinely still raw,
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:13.3223310Z          write '# gh-identity: raw-pat (BH-<n>) — <which slice converts it>' in the
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:13.3223777Z          header AND add tests/gh-app-ratchet-baseline/<path>.txt. If converting it
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:13.3224121Z          would be WRONG, write '# gh-identity: raw-by-design — <why>' and add no
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:13.3224438Z          registry entry.
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:13.3224702Z     gh-app-ratchet-test: 45 pass, 1 fail (2 raw files still in the registry, 6 raw-by-design)
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:13.3225025Z FAIL: case 4: the ratchet suite was rc 1 with no owner token
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:13.3225339Z       bin/lib/mc-foreign-red.sh:270 raw gh call, no App token armed and no gh-identity marker
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:13.3225639Z     FAIL: 1 script(s) make raw gh calls and declare no identity.
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:13.3225927Z          Fix: source bin/lib/gh-app-auth.sh, arm before the first gh call and reset at
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:13.3226252Z          the end — 'gh_auth_for "$SLUG" || true' ... 'gh_auth_reset' (or the
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:13.3226589Z          mc_use_token/mc_reset_token pair from bin/lib/merge-conductor-lib.sh) — and
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:13.3226898Z          put '# gh-identity: app-token' in the header, one line under the shebang.
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:13.3227133Z          If it is genuinely still raw,
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:13.3228064Z          would be WRONG, write '# gh-identity: raw-by-design — <why>' and add no
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:13.3228284Z          registry entry.
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:13.3228533Z     gh-app-ratchet-test: 45 pass, 1 fail (2 raw files still in the registry, 6 raw-by-design)
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:13.3228835Z gh-app-ratchet-owner.bh-1984-test: 6 pass, 2 fail
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:13.5742199Z EXIT 1 gh-app-ratchet-owner.bh-1984-test.sh
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:15.1135803Z --- tests/gh-app-ratchet-test.sh rc=1 2s
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:15.1139348Z   bin/lib/mc-foreign-red.sh:270 raw gh call, no App token armed and no gh-identity marker
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:15.1139775Z FAIL: 1 script(s) make raw gh calls and declare no identity.
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:15.1140078Z      Fix: source bin/lib/gh-app-auth.sh, arm before the first gh call and reset at
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:15.1140616Z      the end — 'gh_auth_for "$SLUG" || true' ... 'gh_auth_reset' (or the
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:15.1140955Z      mc_use_token/mc_reset_token pair from bin/lib/merge-conductor-lib.sh) — and
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:15.1141285Z      put '# gh-identity: app-token' in the header, one line under the shebang.
+Tests, traced (shard 3/8)	UNKNOWN STEP	2026-10-02T05:41:15.1141531Z      If it is genuinely still raw,
+Tests, traced (shard 6/8)	UNKNOWN STEP	2026-10-02T05:45:36.9801462Z --- tests/prearm-skip-on-queue-test.sh rc=0 0s
+Tests, traced (shard 6/8)	UNKNOWN STEP	2026-10-02T05:45:37.2119158Z --- tests/project-accounts-console.bh-1657-test.sh rc=0 0s
+Tests, traced (shard 6/8)	UNKNOWN STEP	2026-10-02T05:45:37.4278566Z --- tests/prompt-eval-grade-test.sh rc=0 0s
+Tests, traced (shard 6/8)	UNKNOWN STEP	2026-10-02T05:45:37.4877603Z --- tests/qa-flows-test.sh rc=0 0s
+Tests, traced (shard 6/8)	UNKNOWN STEP	2026-10-02T05:45:37.9683103Z --- tests/queue-put-route-target.bh-3316-test.sh rc=0 0s
+Tests, traced (shard 6/8)	UNKNOWN STEP	2026-10-02T05:46:01.4716468Z --- tests/ratchet-markers-test.sh rc=1 23s
+Tests, traced (shard 6/8)	UNKNOWN STEP	2026-10-02T05:46:01.4721131Z FAIL: fixture: the gh ratchet must be green on the untouched slice (rc 1):      registry entry.
+Tests, traced (shard 6/8)	UNKNOWN STEP	2026-10-02T05:46:01.4721848Z block 3d: no origin remote here (an export is not a checkout) — the raw-pat owner check was skipped
+Tests, traced (shard 6/8)	UNKNOWN STEP	2026-10-02T05:46:01.4722272Z gh-app-ratchet-test: 45 pass, 1 fail (3 raw files still in the registry, 6 raw-by-design)
+Tests, traced (shard 6/8)	UNKNOWN STEP	2026-10-02T05:46:01.4722676Z FAIL: block 1: the gh ratchet must be green on the merge (rc 1):      registry entry.
+Tests, traced (shard 6/8)	UNKNOWN STEP	2026-10-02T05:46:01.4723102Z block 3d: no origin remote here (an export is not a checkout) — the raw-pat owner check was skipped
+Tests, traced (shard 6/8)	UNKNOWN STEP	2026-10-02T05:46:01.4723496Z gh-app-ratchet-test: 45 pass, 1 fail (1 raw files still in the registry, 6 raw-by-design)
+Tests, traced (shard 6/8)	UNKNOWN STEP	2026-10-02T05:46:01.4723959Z FAIL: owner check: an OPEN ticket must leave the ratchet green (rc 1): FAIL: 1 script(s) make raw gh calls and declare no identity.
+Tests, traced (shard 6/8)	UNKNOWN STEP	2026-10-02T05:46:01.4724520Z FAIL: owner check: a gh that cannot answer must not turn the ratchet red (rc 1): FAIL: 1 script(s) make raw gh calls and declare no identity.
+Tests, traced (shard 6/8)	UNKNOWN STEP	2026-10-02T05:46:01.4724881Z ratchet-markers-test: 43 pass, 4 fail
+Tests, traced (shard 6/8)	UNKNOWN STEP	2026-10-02T05:46:02.9802860Z EXIT 1 ratchet-markers-test.sh
+Tests, traced (shard 6/8)	UNKNOWN STEP	2026-10-02T05:46:07.8788936Z --- tests/rb-prepr-late.bh-2021-test.sh rc=0 5s
+Tests, traced (shard 6/8)	UNKNOWN STEP	2026-10-02T05:46:12.3259664Z --- tests/rb-prepr-orphans.bh-2414-test.sh rc=0 4s
+Tests, traced (shard 6/8)	UNKNOWN STEP	2026-10-02T05:46:13.8067400Z --- tests/ready-queue-rows.bh-1305-test.sh rc=0 0s

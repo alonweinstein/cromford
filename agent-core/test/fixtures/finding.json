@@ -1,0 +1,12 @@
+{
+  "agent": "archie",
+  "fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "title": "Review lane stopped at 02:00",
+  "source": {
+    "kind": "alert",
+    "url": "https://example.com/alerts/fixture-1",
+    "labels": ["ops"],
+    "filedBy": "hub"
+  },
+  "observedAt": "2026-10-08T02:00:00Z"
+}

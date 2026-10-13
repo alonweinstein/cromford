@@ -1,0 +1,9 @@
+# PARTICIPANTS (BH-5349, BH-5348.0): participant machine enrollment, decisions and whoami; the detail GET (BH-5353),
+# appended after pool-state at the END of the table.
+POST /api/participants/request
+GET /api/participants
+GET /api/participants/whoami
+GET re:/^\/api\/participants\/([^/]+)$/
+POST re:/^\/api\/participants\/([^/]+)\/approve$/
+POST re:/^\/api\/participants\/([^/]+)\/deny$/
+POST re:/^\/api\/participants\/([^/]+)\/revoke$/

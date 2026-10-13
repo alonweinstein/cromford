@@ -1,0 +1,6 @@
+# runner env diff (BH-19): every 15 minutes diff this box's RUNNER_* / *_BILLING /
+# *_MODEL / *_EFFORT env keys against state/env-diff/snapshot.tsv and send ONE
+# triaged fleet_alert naming the box and old→new when any of them changed. A
+# billing-mode change is an architecture change and must never be silent.
+# Off via ENV_DIFF=0 or flags/lane-off-env-diff.
+*/15 * * * * /root/harness/bin/env-diff.sh >/dev/null 2>&1

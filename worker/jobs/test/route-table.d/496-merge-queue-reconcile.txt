@@ -1,0 +1,4 @@
+# BH-5670 (BH-5008 child 4): the reconciler against Mergify's merge-queue API,
+# right after the live route.
+GET /api/merge-queue/reconcile
+POST /api/merge-queue/reconcile

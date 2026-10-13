@@ -1,0 +1,23 @@
+POST /api/metrics/burn
+GET /api/metrics/burn
+POST /api/metrics/vendor-spend
+GET /api/metrics/vendor-spend
+POST /api/metrics/pr-costs
+GET /api/metrics/pr-costs
+GET /api/metrics/cost-anchored
+POST /api/metrics/cost-rows
+GET /api/metrics/cost-rows
+GET /api/metrics/llm-spend
+# BH-2537: the lane-dedup stub, directly after llm-spend in the cost family.
+GET /api/metrics/lane-dedup
+# Added after the split (BH-1032): the cost family's own two routes, in the
+# position the table puts them — between the cost-rows pair and cli-versions.
+POST /api/model-prices
+GET /api/model-prices
+PUT /api/model-prices/source
+# BH-5652: Fly prices, model slugs and the price audit, appended after the model-prices routes.
+POST /api/fly-prices
+GET /api/fly-prices
+POST /api/model-slugs
+GET /api/model-slugs
+GET /api/price-audit

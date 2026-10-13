@@ -1,0 +1,15 @@
+[
+  {
+    "key_kind": "file",
+    "key_value": "bin/foo.sh",
+    "item_ids": [
+      "r1",
+      "r2"
+    ],
+    "target": "harness",
+    "project": "cromford",
+    "title": "We reopen — twice",
+    "cause": "Merge—half applied",
+    "proposed_fix": "Fix it — now — please"
+  }
+]

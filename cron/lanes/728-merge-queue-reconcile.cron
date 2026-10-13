@@ -1,0 +1,12 @@
+# @hub-lanes
+
+# ── MERGE-QUEUE-RECONCILE LANE (BH-5670, BH-5008.4) ─────────────────────────
+# Every 2 min. Asks the jobs worker which repos have an active merge-queue row
+# (GET /api/merge-queue/reconcile); none = no Mergify call. Otherwise reads
+# Mergify's merge-queue/status for up to merge_queue_reconcile_repos repos and
+# POSTs the answers back, which writes a corrective stage row where a dropped
+# webhook left one wrong. No lock: the writes are idempotent. One line per run
+# in logs/merge-queue-reconcile.log. Needs MERGIFY_API_TOKEN in env/global.env
+# (unset = not-configured, nothing sent). Off: flags/lane-off-merge-queue-reconcile
+# (bin/harness-ctl.sh off merge-queue-reconcile).
+*/2 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/merge-queue-reconcile.sh >/dev/null 2>&1

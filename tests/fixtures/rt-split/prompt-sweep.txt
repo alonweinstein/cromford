@@ -1,0 +1,9 @@
+TICK SCOPE (results sweep — deterministic): this tick fired because these finished builds await their board close-out (dir :: first RESULT line):
+/root/harness/builds/project-5-TK-562-2609160001 :: PR_CREATED https://github.com/x/y/pull/1
+
+Handle ONLY these result dirs this tick, per the SOP's sweep rules: read each dir's RESULT in full, post the close-out comment on its ticket (direct production links included), set the ticket's status, mark the dir COMMENTED. Queue rules still apply to any launch these close-outs unblock. Fetch ONLY the tickets these dirs name — SKIP the full board/ticket enumeration: the board fingerprint was re-checked at the start of this tick.
+If a dir or its ticket looks inconsistent (missing ticket, unparseable RESULT), handle the others and note the odd one; if the whole list looks wrong, discard this scope and run the full SOP instead.
+
+SOP for project-5. Fetch the thread. Do the work.
+
+FILE-OVERLAP GUARD (deterministic — run it, do not reason about it). Immediately before you launch a build for a ticket, run `/root/harness/bin/overlap-guard.sh project-5 <KEY>`. It answers LAUNCH (go — every error answers LAUNCH too, except an unreadable open-PR list with no cached copy, which DEFERs as `DEFER <KEY> gh unknown …`) or DEFER, and a DEFER names the sibling build or open PR whose files collide. On DEFER do NOT launch that ticket this tick: leave its queue line in place, and say in your output which key deferred and on which files. The next tick re-offers it — this is BUILD_DEFERRED semantics, not a queue and not a wait.

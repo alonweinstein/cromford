@@ -1,0 +1,10 @@
+# @hub-lanes
+
+# ── ISSUE STATE LEDGER (2026-09-24, BH-938) ─────────────────────────────────
+# Every 15 min: record the open/closed state of each GitHub-issues project's
+# issues in harness-jobs ledgers(kind=issue_state, key=<project>#<n>), from a
+# per-project watermark (kind=issue_state_wm). The console's Pages Function
+# joins these rows at read time and holds back DEAD build cards whose issue is
+# closed. Bounded by ISSUE_STATE_MAX_PUTS / ISSUE_STATE_MAX_PAGES per tick; a
+# capped tick persists its watermark and logs DEFERRED. flock -n dedupe.
+*/15 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/issue-state-ledger.sh >/dev/null 2>&1

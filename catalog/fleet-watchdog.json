@@ -1,0 +1,5 @@
+{
+  "_note": "BH-2091: carried into env/global.env by bin/harness-sync.sh ONLY on a box whose checkout's origin is `repo`; a fork stays empty",
+  "repo": "example-org/cromford",
+  "watchdog_url": "https://harness-watchdog.operator.workers.dev"
+}

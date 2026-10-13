@@ -1,0 +1,1 @@
+{"name":"triage-shard-caps-off","readers":["bin/lib/triage-shards-lib.sh"],"box_scoped":true,"what":"stops the hourly caps on triage shard launches"}

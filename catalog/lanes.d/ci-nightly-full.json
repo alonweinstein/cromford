@@ -1,0 +1,60 @@
+{
+  "id": "ci-nightly-full",
+  "name": "Daily full CI run",
+  "scope": "hub",
+  "script": "bin/ci-nightly-full.sh",
+  "cadence": "17 * * * *; 41 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-ci-nightly-full",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "CI_NIGHTLY_FULL_HOUR",
+      "type": "int",
+      "default": 3,
+      "min": 0,
+      "max": 23,
+      "zero_means": null,
+      "note": "BH-4970: the UTC hour from which `dispatch` (hourly at :17) starts the day's full harness-ci run on main, once per UTC date. Default 3 = 03:17 UTC. A skip (merge-queue armed, automerge disabled, budget low, a failed dispatch) retries on the next hourly tick the same date."
+    },
+    {
+      "env": "CI_NIGHTLY_FULL_LOOKBACK_DAYS",
+      "type": "int",
+      "default": 3,
+      "min": 1,
+      "max": 14,
+      "zero_means": null,
+      "note": "BH-4970: how many UTC dates back `collect` looks for a dispatched run with no done/lost marker. Bounds what one tick reads; nothing is deleted."
+    },
+    {
+      "env": "CI_NIGHTLY_FULL_MAX_LOGS",
+      "type": "int",
+      "default": 8,
+      "min": 1,
+      "max": 30,
+      "zero_means": null,
+      "note": "BH-4970: at most this many failed shard job logs read per red run to find the failed suites. A cap that bites is said in the ticket body."
+    },
+    {
+      "env": "CNF_POLL_SLEEP",
+      "type": "int",
+      "default": 10,
+      "min": 0,
+      "max": 60,
+      "zero_means": null,
+      "note": "BH-4970: seconds between the three reads `dispatch` makes to find the new run's id (gh workflow run does not return it). An id still not found is resolved by `collect`. Tests set 0."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/ci-nightly-full.log"
+  }
+}

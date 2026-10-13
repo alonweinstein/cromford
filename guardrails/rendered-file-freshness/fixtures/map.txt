@@ -1,0 +1,2 @@
+# a target repo brings its own rows: <rendered glob>|<input paths>|<renderer command>
+config/generated.json|config/parts/|scripts/render-config.sh --write

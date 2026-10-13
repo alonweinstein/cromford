@@ -1,0 +1,54 @@
+{
+  "id": "issue-state-ledger",
+  "name": "Issue state ledger",
+  "scope": "hub",
+  "script": "bin/issue-state-ledger.sh",
+  "cadence": "*/15 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-issue-state-ledger",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "ISSUE_STATE_BACKFILL_DAYS",
+      "type": "int",
+      "default": 14,
+      "min": 8,
+      "max": 90,
+      "unit": "days",
+      "zero_means": null,
+      "note": "BH-938. Read by bin/issue-state-ledger.sh as ${ISSUE_STATE_BACKFILL_DAYS:-14}: how far back a project with no issue_state_wm watermark row starts reading its GitHub issues. It only has to exceed the 7-day DEAD archive window in console-ui/functions/api/dash/kanban/pipeline.js; a non-numeric value falls back to 14."
+    },
+    {
+      "env": "ISSUE_STATE_MAX_PUTS",
+      "type": "int",
+      "default": 300,
+      "min": 1,
+      "max": 2000,
+      "unit": "rows",
+      "zero_means": null,
+      "note": "BH-938. Read by bin/issue-state-ledger.sh as ${ISSUE_STATE_MAX_PUTS:-300}: the most issue_state ledger rows one tick writes across all projects. Past it the watermark is persisted, a DEFERRED line is logged and the next tick resumes; a non-numeric value falls back to 300."
+    },
+    {
+      "env": "ISSUE_STATE_MAX_PAGES",
+      "type": "int",
+      "default": 10,
+      "min": 1,
+      "max": 50,
+      "unit": "pages",
+      "zero_means": null,
+      "note": "BH-938. Read by bin/issue-state-ledger.sh as ${ISSUE_STATE_MAX_PAGES:-10}: the most 100-item GitHub issue pages one tick reads per project. Past it the watermark is persisted and a DEFERRED line is logged; a non-numeric value falls back to 10."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/issue-state-ledger.log"
+  }
+}

@@ -1,0 +1,3 @@
+src/app/clients/[id]/page.tsx
+src/app/api/clients/route.ts
+docs/verification-map/clients.md

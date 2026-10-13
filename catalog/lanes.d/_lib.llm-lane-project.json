@@ -1,0 +1,28 @@
+{
+  "libs": [
+    {
+      "id": "llm-lane-project",
+      "file": "bin/lib/llm-lane-project.sh",
+      "note": "BH-5942. The entry of the three LLM alert lanes (alert-triage, alerts-medic, watchdog-responder) on the per-project runner (bin/lib/project-lanes.sh). The cron line, with no argument, dispatches one detached run per fleet.conf project; each run holds only locks/<lane>-<project>.lock, reads only its project's items, and runs its claude call on the project's pinned account (ACCOUNT_PROJECT_FOR_LANE) with the project's GitHub App token. Applied by the lib itself with lib_env_apply llm-lane-project.",
+      "knobs": [
+        {
+          "env": "LLM_LANE_DISPATCH_SPREAD_SECS",
+          "type": "int",
+          "default": 300,
+          "min": 0,
+          "max": 1500,
+          "unit": "seconds",
+          "zero_means": null,
+          "note": "Each project run of an LLM alert lane starts at a stable offset inside this window (a hash of lane and project, never within 5 s of a whole minute). 300 keeps every start inside the shortest cadence (alert-triage, 10 minutes). 0 starts every project run at once. A non-number falls back to 300 with one log line."
+        },
+        {
+          "env": "LLM_LANE_HOME_PROJECT",
+          "type": "string",
+          "default": "cromford",
+          "zero_means": null,
+          "note": "The project whose run owns an alert with no project, the project `harness`, or a project that is not in fleet.conf. A value that is not a plain name falls back to cromford."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+# catalog/plan-failure-modes.tsv — the failure-mode checklist a plan answers when it
+# changes bin/ or worker/ (BH-5800, prompts/plan-contract.md §13). Read by
+# bin/lib/plan-failure-modes.sh: bin/plan-gate.sh refuses a plan without it, and
+# the plan prompt is rendered from it. Tab-separated: kind, id, ERE, label, question.
+# kind scope: a plan that names a path matching the ERE needs the section. A
+# repo-relative path, or one rooted at /root/harness/ or $HARNESS/, counts.
+# kind heading: one checklist entry. The ERE is matched against the start of a
+# bullet or heading line inside `## Failure modes`, lower-cased.
+scope	bin-worker	(^|[^A-Za-z0-9_.@/-]|/root/harness/|[$]HARNESS/|[$][{]HARNESS[}]/)(bin|worker)/[A-Za-z0-9_.@-][A-Za-z0-9_.@/-]*	a path under bin/ or worker/	the plan changes code in bin/ or worker/
+heading	decision	^decision[- ]rules?	Decision rule	for each decision rule, a table of 2 or more cases on each side, including the edge case
+heading	exits	^exit[- ]paths?	Exit paths	for each exit path, the state it leaves and the budget or counter it touches
+heading	roundtrip	^(writer ?/ ?reader|round[- ]trip)	Writer/reader round-trip	for each new format, every writer and every reader, and a test that round-trips it
+heading	blast	^(alert|freeze)	Alert or freeze blast radius	for each new alert or freeze, its worst-case count on the first tick and its scope
+heading	defaults	^defaults?	Defaults in prod	for each new knob, its default in prod and why
+heading	status	^status	Status evidence	for each status or report line, the evidence that makes it say done

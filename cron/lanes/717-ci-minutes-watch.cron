@@ -1,0 +1,9 @@
+# @hub-lanes
+
+# ── CI MINUTES WATCH (K1, 2026-09-24) ───────────────────────────────────────
+# bin/ci-minutes-watch.sh — estimated billed CI job-minutes over the last 24h
+# (MonkCI bills per job-minute and was running ~120K/day with nothing in the
+# harness measuring it). Four ticks a day, each at most repos x (pages +
+# sample) GitHub reads, skipped outright while the bucket is low. One critical
+# page a day over CI_MINUTES_DAY_MAX. Kill: bin/harness-ctl.sh off ci-minutes-watch.
+23 */6 * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/ci-minutes-watch.sh >/dev/null 2>&1

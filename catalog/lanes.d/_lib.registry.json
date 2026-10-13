@@ -1,0 +1,44 @@
+{
+  "libs": [
+    {
+      "id": "registry",
+      "file": "bin/lib/registry.sh",
+      "note": "BH-5649 (BH-5633.1): the fleet registry read path. With REGISTRY_SOURCE=db, bin/fleet-conf.sh and bin/render-cron.sh read harness-jobs GET /api/registry first, then the last good cache under state/registry/, then the committed fleet.conf and lanes.d. bin/box-for.sh and cron_watchdog_name_for read through fleet-conf.sh, so they follow. The default file reads only the committed files and never sources this lib. The D1 tables are seeded by bin/registry-seed.sh. These knobs are read from the environment of the calling process, not from settings rows: fleet-conf.sh must not make an HTTP call to learn whether to make one.",
+      "knobs": [
+        {
+          "env": "REGISTRY_SOURCE",
+          "type": "string",
+          "default": "file",
+          "zero_means": null,
+          "required": false,
+          "settable": false,
+          "note": "file or db. Any other value reads as file. Read as ${REGISTRY_SOURCE:-file} in bin/fleet-conf.sh and bin/render-cron.sh; the code default stays file. BH-5651: bin/harness-sync.sh appends REGISTRY_SOURCE=db to env/global.env once, when that file has no REGISTRY_SOURCE= line and GET /api/registry answers with the checkout fleet.conf project set. An operator line REGISTRY_SOURCE=file in env/global.env is the kill switch and is never overwritten."
+        },
+        {
+          "env": "REGISTRY_CACHE_TTL_S",
+          "type": "int",
+          "default": 60,
+          "min": 0,
+          "max": 3600,
+          "unit": "seconds",
+          "zero_means": "every call refetches",
+          "required": false,
+          "settable": false,
+          "note": "How old state/registry/fleet.conf may be before db mode asks GET /api/registry again. A younger cache answers with no HTTP call. An outage serves the cache at any age. Read as ${REGISTRY_CACHE_TTL_S:-60}. Set it in env/global.env."
+        },
+        {
+          "env": "REGISTRY_API_TIMEOUT_S",
+          "type": "int",
+          "default": 5,
+          "min": 1,
+          "max": 30,
+          "unit": "seconds",
+          "zero_means": null,
+          "required": false,
+          "settable": false,
+          "note": "The curl timeout of one GET /api/registry. There is no retry: a failure serves the cache. Read as ${REGISTRY_API_TIMEOUT_S:-5}. Set it in env/global.env."
+        }
+      ]
+    }
+  ]
+}

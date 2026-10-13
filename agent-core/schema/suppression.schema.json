@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/example-org/cromford/agent-core/schema/suppression.schema.json",
+  "title": "Suppression",
+  "description": "A human-approved, expiring mute for one fingerprint.",
+  "type": "object",
+  "required": [
+    "fingerprint",
+    "reason",
+    "approver",
+    "expiresAt"
+  ],
+  "properties": {
+    "fingerprint": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "approver": {
+      "type": "string",
+      "minLength": 1
+    },
+    "expiresAt": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "additionalProperties": false
+}

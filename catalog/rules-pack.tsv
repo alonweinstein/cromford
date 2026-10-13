@@ -1,0 +1,31 @@
+# catalog/rules-pack.tsv — the components bin/rules-pack.sh runs (BH-3477).
+# One row per component, six TAB-separated columns:
+#   id      stable name; --only/--skip and stdout findings (`<id>: <line>`) use it
+#   shape   delta (judged against the fork of --base and HEAD) | tree (whole tree)
+#   kind    suite (a tests/*.sh) | cmd (a command line) | builtin (a function in
+#           the pack's own checks lib)
+#   argv    what runs, from the repo root; may contain spaces. `<fork>` is
+#           replaced with the merge-base sha at run time
+#   needs   comma list of binaries the component needs, or `-` for none. Never
+#           empty: TAB is IFS whitespace, so `read` would collapse an empty
+#           field and shift reason into needs
+#   reason  one plain line saying what the component catches
+lib-root	delta	suite	tests/lib-root-literal-ratchet.bh-2613-test.sh	-	a bin/lib file must not fall back to the literal harness root
+alert-writers	delta	suite	tests/alert-writers-ratchet.bh-2314-test.sh	python3	no raw ALERTS.log writes
+jobs-client-modules	tree	suite	tests/jobs-client-modules.bh-1194-test.sh	-	jobs-client module map gaps and fixtures copying the real client
+switch	delta	suite	tests/switch-ratchet.bh-2320-test.sh	jq	switch ratchet
+grep-q	tree	builtin	rp_grep_q	-	a file-grep piped into grep -q flakes under pipefail
+model-literal	tree	suite	tests/model-literal-lint.sh	-	model ids come from the resolver, not literals
+model-id-delta	delta	builtin	rp_model_id_delta	-	this diff adds no model id literal
+test-sources	tree	cmd	bin/test-sources-lint.sh	-	test suites source helpers with a same-line handler
+changelog-headers	tree	cmd	bin/changelog-header-lint.sh	-	no per-ticket changelog bullet (# - BH-N: / // - BH-N:) in a comment
+determinism	tree	cmd	bin/test-determinism-lint.sh --changed <fork>	-	tests do not read the real clock or network
+agent-push	tree	suite	tests/agent-push-ratchet.bh-2741-test.sh	-	agent push ratchet
+route-fragments	tree	cmd	cd worker/jobs && node --test test/route-table.test.js	node	worker route fragments are unique
+checks-tree	tree	cmd	bin/checks-run.sh --tree .	-	the repo checks/ over the whole tree
+date-bomb	delta	cmd	bin/test-date-bomb-lint.sh --base <fork> .	-	no hard-coded deadline date that expires against the real clock
+scratch-closure	delta	suite	tests/scratch-closure-lint.bh-4552-test.sh	-	a new or edited suite hand-copies bin/lib files instead of scratch_install_closure
+fast-lints-data	tree	suite	tests/fast-lints-data.bh-3860-test.sh	-	the fast-lints data: the always set and well-formed durations rows (BH-5797)
+marker-reason	delta	cmd	bin/marker-reason-lint.sh --base <fork> .	-	an added lint-silencing marker carries its reason on the same line (BH-5797)
+fixture-hygiene	delta	cmd	bin/fixture-hygiene.sh check --tree . --base <fork>	-	a new test line carries a tailnet or RFC1918 address, or a SECRET/TOKEN= literal without fixture (BH-5789)
+tier-wording	delta	cmd	bin/lint-tier-wording.sh --base <fork> .	-	this diff adds no "tier-2 waits for a human" wording to rules or prompts

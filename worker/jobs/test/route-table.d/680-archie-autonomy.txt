@@ -1,0 +1,5 @@
+# ARCHIE AUTONOMY (BH-4067, BH-3966.6): Archie's earned autonomy, appended
+# after initiatives at the END of the table.
+POST /api/archie/decisions
+POST /api/archie/decisions/choice
+POST /api/archie/classes/delegation

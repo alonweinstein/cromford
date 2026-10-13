@@ -1,0 +1,1 @@
+board brd_ia31: CHANGED 7412 "Show the account's total annual cost on the plan summary" (waitingOn: client -> team; comments: 2 -> 3; activity)

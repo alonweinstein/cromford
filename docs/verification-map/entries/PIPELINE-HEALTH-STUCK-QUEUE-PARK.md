@@ -1,0 +1,1 @@
+| `bin/pipeline-health.sh` check 1 ("queued Nm with no spawn") pages only for a real `state/build-queue/<project>/*.json` file older than 45 minutes, never for a `*.failed.json` park beside it, so a parked (often closed) ticket does not page every 2h | [fly-pool-sweep.md](fly-pool-sweep.md) | `bin/pipeline-health.sh` (cron) — `tests/pipeline-health-stuck-queue-test.sh` |

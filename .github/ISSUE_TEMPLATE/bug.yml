@@ -1,0 +1,41 @@
+name: Bug report
+description: Something here doesn't do what its code or docs say it does.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time. This board is public, so please don't paste
+        API keys, tokens, `.env` files, or code and tickets from a private repo.
+        Replace them with `<redacted>`. We can't take a report back once it's posted.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you ran, and what it did.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: How to reproduce
+      description: The script and flags you ran, and its output. Shorter is better.
+      render: shell
+  - type: input
+    id: commit
+    attributes:
+      label: Commit
+      description: The output of `git rev-parse --short HEAD` in your copy.
+  - type: checkboxes
+    id: clean
+    attributes:
+      label: Before you submit
+      options:
+        - label: I took out every key, token and piece of private repo content.
+          required: true

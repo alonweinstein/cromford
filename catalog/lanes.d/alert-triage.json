@@ -1,0 +1,231 @@
+{
+  "id": "alert-triage",
+  "name": "Alert triage (LLM)",
+  "scope": "hub",
+  "script": "bin/alert-triage.sh",
+  "cadence": "*/10 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-alert-triage",
+    "aliases": [
+      {
+        "name": "alert-quarantine-disabled",
+        "off_when": "present"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "TRIAGE_MAX_FAMILIES",
+      "type": "int",
+      "default": 4,
+      "min": 0,
+      "max": 50,
+      "unit": "families",
+      "zero_means": "off",
+      "note": "Alert families one tick may hand to a model. 0 stops the lane spending entirely."
+    },
+    {
+      "env": "TRIAGE_SPOOL_ALERT",
+      "type": "int",
+      "default": 40,
+      "min": 1,
+      "max": 1000,
+      "unit": "alerts",
+      "zero_means": null,
+      "note": "Spool depth that raises one backlog alert."
+    },
+    {
+      "env": "HOUSEKEEPING_RUNNER",
+      "read_in": "bin/lib/lane-model.sh",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "note": "Empty by default since BH-1510.2: the floor runner is the runner on model_routes role 'housekeeping.floor' rung 0, read through bin/lib/lane-model.sh:lane_housekeeping_floor. Set this only to override that row."
+    },
+    {
+      "env": "HOUSEKEEPING_FLOOR_MODEL",
+      "read_in": "bin/lib/lane-model.sh",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "note": "Empty by default since BH-1510.2: the model is a database row, model_routes role 'housekeeping.floor' rung 0, read through bin/lib/lane-model.sh:lane_housekeeping_floor. Set this only to override that row on this box/lane; no reviewed min/max, nothing is clamped."
+    },
+    {
+      "env": "LANE_BYTES_CAP_ALERT_TRIAGE",
+      "type": "int",
+      "default": null,
+      "min": 1000,
+      "max": 2000000,
+      "unit": "bytes",
+      "zero_means": null,
+      "note": "Evidence byte cap for ONE run of this lane. Unset follows the lane's row in catalog/lane-caps.conf; too small and a family is re-spooled every tick and never triaged (it pages once a day and bills nothing)."
+    },
+    {
+      "env": "TRIAGE_CLIFF_FLOOR_RETRY",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "Retry a cliff-routed family on the floor tier. 0 turns the retry off."
+    },
+    {
+      "env": "TRIAGE_CLIFF_MAX_REFUSALS",
+      "type": "int",
+      "default": 3,
+      "min": 1,
+      "max": 20,
+      "unit": "attempts",
+      "zero_means": null,
+      "note": "Cliff refusals for one family before it stops being re-spooled. Nothing is called and nothing is billed on a refusal."
+    },
+    {
+      "env": "TRIAGE_CONDSTATE_MAX_AGE_H",
+      "type": "int",
+      "default": 6,
+      "min": 1,
+      "max": 168,
+      "unit": "hours",
+      "zero_means": null,
+      "note": "Hours before STEP 0 retires a merge-conductor per-PR BUDGET NOTE (bin/triage-spool-retire.sh rule 1). Parks (BLOCKED_HUMAN, RED_TWICE) and the stuck detector are excluded and live out TRIAGE_SPOOL_MAX_AGE_H."
+    },
+    {
+      "env": "TRIAGE_CONTEXT_KILL_TOKENS",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 5000000,
+      "unit": "tokens",
+      "zero_means": "off",
+      "note": "Per-session context ceiling for THIS lane only, exported to agent-call.sh as CONTEXT_KILL_TOKENS. Unset/0 means catalog/context-budgets.json decides, so the manifest stays the single source."
+    },
+    {
+      "env": "LLM_LANE_ENABLED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "0 makes this lane call no model at all. bin/lib/llm-gate.sh refuses BEFORE the vendor call and writes a zero-cost row_source=refused row, so the stop is visible in the ledger rather than being a lane that went quiet."
+    },
+    {
+      "env": "LLM_RUNNER_ALLOWED",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Comma/space list of the ONLY ladder rungs this lane may reach. Empty is every rung, i.e. today's ladder unchanged. A rung outside the list is refused before the call, so a cliff or a failure on the standing lane cannot descend into one that costs ~100x (#1141, the $793 descent)."
+    },
+    {
+      "env": "LLM_USD_CAP_DAY",
+      "type": "float",
+      "default": 0,
+      "min": 0,
+      "max": 10000,
+      "unit": "usd",
+      "zero_means": "unlimited",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Dollars this lane may spend in the current UTC day, summed from D1 cost_rows through GET /api/metrics/llm-spend — never from the box's own logs/cost.csv. A second, project-scoped ceiling is the lane.<id>.<project>.llm_usd_cap_day row, which is read only when somebody wrote it."
+    },
+    {
+      "env": "LANE_USD_CAP_ALERT_TRIAGE",
+      "type": "number",
+      "default": 5,
+      "min": 0,
+      "max": 1000,
+      "unit": "USD/day",
+      "zero_means": "off",
+      "prefix": "LANE_USD_CAP_",
+      "read_in": "bin/lib/lane-caps.sh",
+      "note": "Dollars this lane may spend in one UTC day, resolved by bin/lib/lane-caps.sh over catalog/lane-caps.conf (now: 5). 0 STOPS the lane; `off` runs it uncapped; nothing is dropped when it trips — the queue waits and it pages once a day. This is the cap BH-1039 added after alert-triage burned $793 in 12 hours inside its session cap."
+    },
+    {
+      "env": "TRIAGE_CONDUCTOR_HOLD",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "Hold [orchestrator/merge-conductor] alert lines (re-spooled, not sessioned) while the conductor publishes kill-switch, observe or no mode at all (unknown). 0 makes this lane ignore the conductor's mode."
+    },
+    {
+      "env": "LANE_NOISE_CAP_ALERT_TRIAGE",
+      "type": "int",
+      "default": 10,
+      "min": 0,
+      "max": 1000,
+      "unit": "sessions/day",
+      "zero_means": "off",
+      "prefix": "LANE_NOISE_CAP_",
+      "read_in": "bin/lib/lane-caps.sh",
+      "note": "Sessions concluding `handled=0 escalated=0` this lane may buy in one UTC day, resolved by bin/lib/lane-caps.sh over the `noise` rows of catalog/lane-caps.conf (now: 10). At the budget the lane stops buying sessions until 00:00Z and pages once; a session that handles or escalates anything resets the count. 0 STOPS the lane; `off` runs it unbounded; nothing is dropped — the queue waits. BH-1168, after 150 of 192 sessions on 2026-09-20 concluded handled=0 escalated=0 at ~$4 each."
+    },
+    {
+      "env": "TRIAGE_VERIFY_TIMEOUT_S",
+      "read_in": "bin/triage-family-scripts.sh",
+      "type": "int",
+      "default": 20,
+      "min": 1,
+      "max": 120,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "BH-2544: seconds one alert-family verify script may run before bin/triage-family-scripts.sh kills it and keeps the family for a session (unknown). Clamped to what is left of TRIAGE_VERIFY_DEADLINE_S."
+    },
+    {
+      "env": "TRIAGE_VERIFY_MAX",
+      "read_in": "bin/triage-family-scripts.sh",
+      "type": "int",
+      "default": 20,
+      "min": 0,
+      "max": 200,
+      "unit": "verifies",
+      "zero_means": "off",
+      "note": "BH-2544: verify scripts bin/triage-family-scripts.sh runs per tick. Matched families past it keep their session and are counted unchecked=. 0 turns the registry pass off: no fetch, one log line, every family kept."
+    },
+    {
+      "env": "TRIAGE_VERIFY_DEADLINE_S",
+      "read_in": "bin/triage-family-scripts.sh",
+      "type": "int",
+      "default": 120,
+      "min": 10,
+      "max": 600,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "BH-2544: seconds the whole family-registry pass may take in one tick. Matched families past it keep their session and are counted unchecked=."
+    },
+    {
+      "env": "TRIAGE_RUNNERS",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "note": "BH-2544: comma list of runner NAMES only, never model ids; empty = today's ladder. Read by bin/alert-triage.sh (BH-2570)."
+    }
+  ],
+  "stats": {
+    "cost_stage": "triage",
+    "cost_project_filter": "alert-triage",
+    "lanes_row": false,
+    "log": "logs/alert-triage.log"
+  }
+}

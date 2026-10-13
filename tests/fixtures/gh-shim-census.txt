@@ -1,0 +1,72 @@
+# tests/fixtures/gh-shim-census.txt — every `gh pr|issue|run|repo` form the
+# harness really writes, one argv per line (after the word `gh`).
+#
+# WHAT READS IT: tests/gh-passthrough-budget.bh-791-test.sh drives every line
+# through the real bin/gh-rest-shim and asserts the pass-through log stays
+# empty, and it scans bin/**/*.sh, catalog/ and skills/ for `gh <group> <verb>`
+# at command position and asserts that verb set is a SUBSET of this file. A new
+# subcommand in the harness is red until it is added here, where the shim must
+# then prove it translates it.
+#
+# `#` and blank lines are ignored. A line starting with `!` is a verb the
+# harness calls that the shim deliberately does NOT translate; the suite asserts
+# those DO log a pass-through, at depth=1.
+#
+# Two placeholders the suite substitutes at run time:
+#   @BODYFILE@  a temp file holding a PR body
+#   @DIR@       a scratch clone target
+#
+# reads — pr
+pr view 1 -R o/r --json state,number,url,headRefName,baseRefName,mergeable,mergeStateStatus,labels,title,body,isDraft,mergedAt,statusCheckRollup
+pr view 1 -R o/r --json state,mergeCommit,mergedAt
+pr view https://github.com/o/r/pull/1 --json state,number,url
+pr view 1 -R o/r --json comments
+pr view 1 -R o/r --json files
+pr view 1 -R o/r --json reviews
+pr view 1 -R o/r --json commits
+pr view 1 -R o/r --json author,labels -q .author.login
+pr list -R o/r --state all --search "BH-1"
+pr list -R o/r --state open --limit 100 --json number,headRefName,title
+pr list -R o/r --state merged --limit 30 --json number,mergedAt
+pr list -R o/r --head feature --json number,url
+pr list -R o/r --base main --state open --json number
+pr list -R o/r --label ai-build --json number,labels
+pr list -R o/r --author app/example-org-bot --state open --json number,author
+# reads — issue
+issue view 1 -R o/r --json title,body,comments,labels,state
+issue view 1 -R o/r --json number,state,labels
+issue list -R o/r --label ai-build --state open --limit 100 --json number,title,labels,updatedAt,comments
+issue list -R o/r --state all --limit 1000 --json title
+issue list -R o/r --label ai-build --state open --search "up10: o/r" --json number,title
+# reads — repo
+repo view o/r --json name,defaultBranchRef,isArchived
+repo view -R o/r --json defaultBranchRef -q .defaultBranchRef.name
+repo clone o/r @DIR@
+# reads — actions
+run view 42 -R o/r --json status,conclusion
+run view 42 -R o/r --json databaseId,headSha,conclusion -q .conclusion
+run view 42 -R o/r --log-failed
+run list -R o/r --workflow harness-ci.yml --branch main --limit 5 --json databaseId,status,conclusion,headSha
+run rerun 42 -R o/r --failed
+# writes — pr
+pr create -R o/r --title "t" --body "b" --base main --head feature
+pr create -R o/r --title "t" --body-file @BODYFILE@ --base main --head feature --label ai-build --draft
+pr edit 1 -R o/r --add-label ready
+pr edit 1 -R o/r --base main
+pr close 1 -R o/r --comment "c"
+pr reopen 1 -R o/r
+pr comment 1 -R o/r --body "hi"
+pr review 1 -R o/r --approve --body "ok"
+pr diff 1 -R o/r --name-only
+pr diff 1 -R o/r
+pr merge 1 -R o/r --squash --delete-branch
+# writes — issue
+issue create -R o/r --title "t" --body "b" --label ai-build
+issue edit 1 -R o/r --add-label ai-build
+issue comment 1 -R o/r --body "hi"
+issue close 1 -R o/r --comment "done"
+# NEVER TRANSLATED — a long-poll watch is not one REST call. These two must
+# still be listed, because the subset ratchet reads this file as the whole set
+# of verbs the harness is allowed to call.
+!pr checks https://github.com/o/r/pull/1 --required --watch --fail-fast
+!run watch 42 -R o/r --exit-status

@@ -1,0 +1,1 @@
+{"name":"main-red-pr-pair-off","readers":["bin/main-red-pr-pair.sh"],"box_scoped":true,"what":"stops main-red-pr-pair.sh reading pairs of open PRs that fail the same job with the same first error"}

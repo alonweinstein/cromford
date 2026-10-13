@@ -1,0 +1,54 @@
+{
+  "id": "update-runners",
+  "name": "Update runners",
+  "scope": "box",
+  "script": "bin/update-runners.sh",
+  "cadence": "17 5 * * *",
+  "boxes": [
+    "project-4",
+    "hub",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-10",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-update-runners",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "CLI_UPDATE_CLIS",
+      "type": "string",
+      "default": "claude codex grok",
+      "zero_means": null,
+      "read_in": "bin/cli-update.sh",
+      "note": "Read by bin/cli-update.sh as ${CLI_UPDATE_CLIS:-claude codex grok}. Registered by BH-1494 so the runner-CLI list this lane updates is visible; NOT settable from the control plane — it is a list of executables a root lane installs, so only env/global.env on the box moves it, and the reviewed default lives beside the floors in catalog/cli-min-versions.json.",
+      "settable": false
+    },
+    {
+      "env": "TMPFS_RAM_PCT",
+      "type": "int",
+      "default": 50,
+      "min": 10,
+      "max": 75,
+      "unit": "percent",
+      "zero_means": null,
+      "read_in": "bin/tmpfs-ensure.sh",
+      "note": "BH-6041: the /tmp tmpfs size bin/tmpfs-ensure.sh declares, as a percent of MemTotal (whole GB, rounded down, never below 4G). This lane runs it daily and bin/bootstrap-machine.sh on first boot. It acts only when /tmp is already a tmpfs and only grows it: a remount plus one fstab line, so a reboot keeps the size. 50 on a 16 GB box is 8G."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/update-runners.log"
+  }
+}

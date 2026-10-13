@@ -1,0 +1,6 @@
+{
+  "name": "archie",
+  "role": "factory orchestrator",
+  "accountable": "operator@example.com",
+  "version": 1
+}

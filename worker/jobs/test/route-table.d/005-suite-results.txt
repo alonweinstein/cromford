@@ -1,0 +1,3 @@
+POST /api/suite-results/lookup
+PUT /api/suite-results
+PUT /api/suite-results/runs

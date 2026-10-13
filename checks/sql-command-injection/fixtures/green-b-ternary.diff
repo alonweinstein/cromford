@@ -1,0 +1,14 @@
+diff --git a/worker/jobs/src/routes/lead-protected-paths.js b/worker/jobs/src/routes/lead-protected-paths.js
+--- a/worker/jobs/src/routes/lead-protected-paths.js
++++ b/worker/jobs/src/routes/lead-protected-paths.js
+@@ -1,0 +1,10 @@
++const ORDER_DIR = " DESC";
++
++export async function list(env, url, repo) {
++  const all = url.searchParams.get("all") === "1";
++  const r = await env.DB.prepare(
++    `SELECT * FROM lead_protected_paths WHERE repo=?1${all ? "" : " AND removed_at IS NULL"} ORDER BY id`
++  ).bind(repo).all();
++  const s = await env.DB.prepare(`SELECT * FROM lead_protected_paths ORDER BY id${ORDER_DIR || " ASC"}`).all();
++  return [r, s];
++}

@@ -1,0 +1,5 @@
+# The client answered last, the turn is team, no PR or branch exists and a slot
+# is free. SOP: project-8.md:24 (client answered, turn flipped to
+# team, mechanism confirmed -> BUILDABLE) and :34 (launch every unblocked
+# ticket, one build per free slot).
+TK-7412 :: launch

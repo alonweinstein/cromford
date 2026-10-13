@@ -1,0 +1,49 @@
+{
+  "libs": [
+    {
+      "id": "starved-ready",
+      "file": "bin/lib/starved-ready.sh",
+      "note": "BH-3970: the starved-ready alarm. On every triage tick (bin/lib/rt/gate.sh, before a SKIP exits) it reads the gate's stored board view and pages ONE warn family per in-app project, id starved-ready-<project>, for tickets that are todo + triageVerdict=ready + waitingOn=team, answer OK to triage-gate.sh --buildable-strict, and have no READY-QUEUE.log line or ready row, no queue row in queued/claimed/ready/held and no build dir for STARVED_READY_MIN minutes. First-seen ledger state/starved-ready/<project>.tsv; resolves when a complete tick finds none. Resolved at call time with lib_env_apply starved-ready; tests/starved-ready-ticket-alarm.bh-3970-test.sh drives it.",
+      "knobs": [
+        {
+          "env": "STARVED_READY",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 1,
+          "zero_means": "off",
+          "required": false,
+          "note": "Master switch for the starved-ready alarm. 1 = on, 0 = off (no check, no page, no resolve). Read as ${STARVED_READY:-1}."
+        },
+        {
+          "env": "STARVED_READY_MIN",
+          "type": "int",
+          "default": 60,
+          "min": 1,
+          "unit": "minutes",
+          "zero_means": null,
+          "required": false,
+          "note": "How long a candidate must stay ready, buildable and unowned before it pages, measured from the first tick that saw it as a candidate. Read as ${STARVED_READY_MIN:-60}."
+        },
+        {
+          "env": "STARVED_READY_PROBE_MAX",
+          "type": "int",
+          "default": 20,
+          "min": 1,
+          "unit": "probes per tick",
+          "zero_means": null,
+          "required": false,
+          "note": "At most this many single-ticket buildable probes (bin/triage-gate.sh --buildable-strict) per project per tick, only for aged candidates with no owner. A tick that hits the cap with candidates left never resolves. Read as ${STARVED_READY_PROBE_MAX:-20}."
+        },
+        {
+          "env": "STARVED_READY_STATUSES",
+          "type": "string",
+          "default": "todo",
+          "zero_means": null,
+          "required": false,
+          "note": "Space-separated board statuses (lower-cased) that count as waiting to be built. Widen it (e.g. 'todo in_progress') to also catch a ticket parked in_progress with no build. Read as ${STARVED_READY_STATUSES:-todo}."
+        }
+      ]
+    }
+  ]
+}

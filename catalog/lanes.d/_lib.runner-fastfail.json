@@ -1,0 +1,47 @@
+{
+  "libs": [
+    {
+      "id": "runner-fastfail",
+      "file": "bin/lib/runner-fastfail.sh",
+      "note": "BH-3224. The fast-fail cooldown: a listed runner that failed at once (elapsed <= RUNNER_FASTFAIL_S) with no usage is not ready in bin/agent-call.sh's runner_ready until RUNNER_FASTFAIL_COOLDOWN_S ends, so it is skipped as primary and as tier-2. Half-open: the first call after the window is the reprobe, success clears the mark, another instant failure re-arms it. Per box, in state/runner-fastfail/<runner>. Applied by agent-call.sh through lib_env_apply runner-fastfail. A value that is not a number falls back to the default, never to 0.",
+      "knobs": [
+        {
+          "env": "RUNNER_FASTFAIL_RUNNERS",
+          "read_in": "bin/lib/runner-fastfail.sh",
+          "type": "string",
+          "default": "grok",
+          "zero_means": null,
+          "required": false,
+          "settable": true,
+          "note": "Comma or space list of the runners the cooldown watches. grok is the only runner with evidence (about 220 instant rc 1 triage calls in 48h to 2026-09-28); claude has its own account cooldown and rotation. Empty = watch none. Settings key lib.runner-fastfail.runner_fastfail_runners."
+        },
+        {
+          "env": "RUNNER_FASTFAIL_S",
+          "read_in": "bin/lib/runner-fastfail.sh",
+          "type": "int",
+          "default": 5,
+          "min": 1,
+          "max": 60,
+          "unit": "seconds",
+          "zero_means": null,
+          "required": false,
+          "settable": true,
+          "note": "A failure that took at most this long, with no tokens reported, is an instant failure and arms the cooldown. A slower failure or one with usage neither arms nor clears it. Settings key lib.runner-fastfail.runner_fastfail_s."
+        },
+        {
+          "env": "RUNNER_FASTFAIL_COOLDOWN_S",
+          "read_in": "bin/lib/runner-fastfail.sh",
+          "type": "int",
+          "default": 1800,
+          "min": 0,
+          "max": 86400,
+          "unit": "seconds",
+          "zero_means": "off",
+          "required": false,
+          "settable": true,
+          "note": "How long a runner that failed instantly is skipped. The first call after it is the reprobe. 0 = off: nothing is marked and every runner is tried as before BH-3224. Settings key lib.runner-fastfail.runner_fastfail_cooldown_s."
+        }
+      ]
+    }
+  ]
+}

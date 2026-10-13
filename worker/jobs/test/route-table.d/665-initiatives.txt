@@ -1,0 +1,7 @@
+# INITIATIVES (BH-4062, BH-3966.1): Archie's initiative register, appended
+# after dequeue-watch at the END of the table.
+POST /api/initiatives
+GET /api/initiatives
+POST /api/initiatives/check
+GET /api/initiatives/events
+POST /api/initiatives/reply

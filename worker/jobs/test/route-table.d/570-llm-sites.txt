@@ -1,0 +1,3 @@
+# BH-2553 (BH-2540.0): the LLM sites list stub, at the END of the table, after
+# fix-rounds, where src/index.js puts it.
+GET /api/metrics/llm-sites

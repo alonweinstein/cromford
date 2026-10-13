@@ -1,0 +1,4 @@
+# disk guard (BH-1123): every 10 minutes read `df -P /` and alert once at DISK_ALERT_PCT (85)
+# and critically at DISK_BUILD_REFUSE_PCT (92), the line where bin/run-build.sh stops starting
+# builds on this box. Both are knobs on the disk-guard lane. Off via flags/lane-off-disk-guard.
+*/10 * * * * /root/harness/bin/disk-guard.sh >/dev/null 2>&1

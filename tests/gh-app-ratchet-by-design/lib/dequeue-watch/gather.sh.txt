@@ -1,0 +1,1 @@
+Exempt by BH-3730 (2026-10-01), proposed by that build and decided in its PR review. The same shape and the same reason as lib/mc-stale-dequeue.sh: its one raw read (the batch log) runs on the identity bin/dequeue-watch.sh already armed per project. Full reason: the gh-identity line at the top of bin/lib/dequeue-watch/gather.sh.

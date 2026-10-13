@@ -1,0 +1,11 @@
+diff --git a/worker/jobs/src/routes/r.js b/worker/jobs/src/routes/r.js
+--- a/worker/jobs/src/routes/r.js
++++ b/worker/jobs/src/routes/r.js
+@@ -1,0 +1,7 @@
++const OK = ["a", "b"];
++const C = ["a", "b"];
++export async function h(env, body) {
++  const ok = await env.DB.prepare(`SELECT ${OK.join(", ")} FROM t`).all();
++  C.push(body.x);
++  return env.DB.prepare(`SELECT ${C.join(", ")} FROM t`).all();
++}

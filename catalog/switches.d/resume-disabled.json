@@ -1,0 +1,1 @@
+{"name":"resume-disabled","readers":["bin/lib/resume-dead.sh"],"box_scoped":true,"what":"stops bin/lib/resume-dead.sh relaunching builds whose run died"}

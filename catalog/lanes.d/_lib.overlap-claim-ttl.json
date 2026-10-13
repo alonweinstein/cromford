@@ -1,0 +1,22 @@
+{
+  "libs": [
+    {
+      "id": "overlap-claim-ttl",
+      "file": "bin/lib/claim-age.sh",
+      "note": "BH-3951 (slice 4 of BH-3943). bin/overlap-schedule.sh source 3 puts a key the jobs ledger lists as `claimed` on another box, with no plan file list here, into OVERLAP_UNJUDGED, and the schedule skips it. A claim whose build died on another harness used to keep its ticket out of every schedule for good. When the claim and its heartbeat (updated_at) are both older than this TTL, the claim is not this box's (JOBS_BOX or hostname), and bin/lib/open-pr-precheck.sh's open_pr_for_key reads cleanly that no open PR exists, the key is RELEASED for this box's schedule only: no ledger write, no lock, recomputed every run. Logged as OVERLAP_RELEASED and sent once per (key, claimed_at) as a warn alert. Any unreadable answer keeps today's behaviour.",
+      "knobs": [
+        {
+          "env": "OVERLAP_CLAIM_TTL_MIN",
+          "read_in": "bin/overlap-schedule.sh",
+          "type": "int",
+          "default": 360,
+          "min": 0,
+          "unit": "minutes",
+          "zero_means": "off",
+          "required": false,
+          "note": "Minutes a claim from another box, and its last heartbeat, must both be older than before bin/overlap-schedule.sh releases it locally. 0 = never release (the stderr line still shows the claim's age). Read by bin/overlap-schedule.sh as _preplan_env OVERLAP_CLAIM_TTL_MIN 360 after lib_env_apply overlap-claim-ttl, so env, then env/global.env, then 360."
+        }
+      ]
+    }
+  ]
+}

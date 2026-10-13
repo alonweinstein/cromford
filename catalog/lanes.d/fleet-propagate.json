@@ -1,0 +1,149 @@
+{
+  "id": "fleet-propagate",
+  "name": "Fleet propagate",
+  "scope": "hub",
+  "factory_stop": "deploy",
+  "script": "bin/fleet-propagate.sh",
+  "cadence": "*/5 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-fleet-propagate",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "FLEET_PROPAGATE_PATH",
+      "type": "string",
+      "default": "/root/.fly/bin:/usr/local/bin:/usr/bin:/bin",
+      "zero_means": null,
+      "note": "Read by bin/fleet-propagate.sh as ${FLEET_PROPAGATE_PATH:-/root/.fly/bin:/usr/local/bin:/usr/bin:/bin}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "HARNESS_CHECKOUT",
+      "type": "string",
+      "default": "/root/harness-checkout",
+      "zero_means": null,
+      "note": "Read by bin/fleet-propagate.sh as ${HARNESS_CHECKOUT:-/root/harness-checkout}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "POOL_IMAGE_MIN_AGE_MIN",
+      "type": "int",
+      "default": 30,
+      "zero_means": null,
+      "note": "Read by bin/fleet-propagate.sh as ${POOL_IMAGE_MIN_AGE_MIN:-30}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "POOL_BAKE_PARALLEL",
+      "type": "int",
+      "default": 2,
+      "zero_means": null,
+      "note": "How many pool images one propagate tick may bake at once. Read by bin/fleet-propagate.sh as ${POOL_BAKE_PARALLEL:-2}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "POOL_BAKE_TIMEOUT_S",
+      "type": "int",
+      "default": 1800,
+      "zero_means": null,
+      "note": "Seconds one bake may take before it is abandoned. Read by bin/fleet-propagate.sh as ${POOL_BAKE_TIMEOUT_S:-1800}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "POOL_BAKE_RETRY_MAX",
+      "type": "int",
+      "default": 2,
+      "zero_means": "off",
+      "note": "BH-3463: how many times a FAILED pool bake is retried on a later tick, per pool per UTC day. Read by bin/fleet-propagate.sh as ${POOL_BAKE_RETRY_MAX:-2}; the count lives in state/fly/<project>.bake-retries (`<UTC-date> <n>`), an ok bake removes it. 0 = off: one attempt, then the next merge or the 05:40Z nightly (the behaviour before BH-3463). Each retry is one remote Fly build; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "PROPAGATE_PAGE_ON_FIRST_FAIL",
+      "type": "int",
+      "default": 0,
+      "zero_means": null,
+      "note": "BH-3680: 1 = page --critical on the FIRST failed pool bake even when a retry is queued (the behaviour before BH-3680). Default 0: a failed bake whose retry is queued goes to the warn digest, and the page comes only when POOL_BAKE_RETRY_MAX runs out. Read by bin/fleet-propagate.sh as ${PROPAGATE_PAGE_ON_FIRST_FAIL:-0}; anything but 0/1 logs one line and uses 0."
+    },
+    {
+      "env": "POOL_BAKE_PUSH_GRACE_S",
+      "type": "int",
+      "default": 300,
+      "zero_means": "off",
+      "note": "BH-3680: extra seconds a pool bake that has already reached the image push (or the pointer record after it) gets past POOL_BAKE_TIMEOUT_S before it is killed. A bake still building at POOL_BAKE_TIMEOUT_S is killed as before. 0 = off: one timeout for the whole bake. Read by bin/fleet-propagate.sh as ${POOL_BAKE_PUSH_GRACE_S:-300}."
+    },
+    {
+      "env": "PROPAGATE_BOX_LAG_ALERT_MIN",
+      "type": "int",
+      "default": 30,
+      "zero_means": "off",
+      "note": "BH-6201: minutes the boxes may be behind the hub's synced sha (fleet paths only) before one critical alert. 0 = off. Read by bin/fleet-propagate.sh as ${PROPAGATE_BOX_LAG_ALERT_MIN:-30}."
+    },
+    {
+      "env": "HARNESS_SYNC_SCHEMA_ALERT_S",
+      "type": "int",
+      "default": 180,
+      "zero_means": null,
+      "read_in": "bin/harness-sync.sh",
+      "note": "BH-1538: seconds a worker schema.sql apply may run in bin/harness-sync.sh before it writes one ALERTS line. Read by bin/harness-sync.sh as ${HARNESS_SYNC_SCHEMA_ALERT_S:-} (then this same settings row read directly, for callers that are not this lane), falling back to D1_APPLY_ALERT_S_DEFAULT (180) in bin/lib/d1-schema.sh. Under the 300 s fleet-propagate gives harness-sync, so it fires before that timeout kills a slow apply. 0 pages on every apply that makes a round trip; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "CONSOLE_PAGES_DEPLOY",
+      "type": "int",
+      "default": 1,
+      "zero_means": "off",
+      "read_in": "bin/console-pages-deploy.sh",
+      "note": "BH-3554/BH-3563: the hub's Cloudflare Pages auto-deploy of console-ui, launched detached by bin/harness-sync.sh where cloudflare.env is. Read by bin/console-pages-deploy.sh as ${CONSOLE_PAGES_DEPLOY:-} (then this same settings row read directly, for callers that are not this lane), default 1. 0 = off: one log line in logs/console-pages-deploy.log and no deploy."
+    },
+    {
+      "env": "CONSOLE_PAGES_DEPLOY_TIMEOUT_S",
+      "type": "int",
+      "default": 1500,
+      "zero_means": null,
+      "read_in": "bin/harness-sync.sh",
+      "note": "BH-3563: seconds the whole detached console-ui Pages deploy (npm ci, npm test, vite build, upload, probes) may run. Read by bin/harness-sync.sh as ${CONSOLE_PAGES_DEPLOY_TIMEOUT_S:-1500} for the `timeout` of the detached launch; a killed run stamps nothing, so the next sync redeploys. No reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "CONSOLE_PAGES_RED_TRIES",
+      "type": "int",
+      "default": 2,
+      "zero_means": "unlimited",
+      "read_in": "bin/console-pages-deploy.sh",
+      "note": "BH-3563: how many times one console-ui sha's red npm test is re-run (one run per sync) before the deployer stops re-running it until a new console-ui commit. Read by bin/console-pages-deploy.sh as ${CONSOLE_PAGES_RED_TRIES:-} (then this same settings row), default 2; 0 never stops re-running. No reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "CONSOLE_PAGES_PROBE_WAIT_S",
+      "type": "int",
+      "default": 10,
+      "zero_means": null,
+      "read_in": "bin/console-pages-deploy.sh",
+      "note": "BH-3563: seconds between the anonymous Pages probe rounds after a deploy. Read by bin/console-pages-deploy.sh as ${CONSOLE_PAGES_PROBE_WAIT_S:-10}. A test seam; NOT settable from the control plane, so only env/global.env on the box moves it.",
+      "settable": false
+    },
+    {
+      "env": "CONSOLE_PAGES_PROJECT",
+      "type": "string",
+      "default": "mission-control",
+      "zero_means": null,
+      "read_in": "bin/lib/console-pages.sh",
+      "note": "BH-3554: the Cloudflare Pages project console-ui deploys to. Read by bin/lib/console-pages.sh as ${CONSOLE_PAGES_PROJECT:-mission-control}. NOT settable from the control plane — it is a host/identity, so only env/global.env on the box moves it.",
+      "settable": false
+    },
+    {
+      "env": "CONSOLE_PAGES_URL",
+      "type": "string",
+      "default": "https://console.example.pages.dev",
+      "zero_means": null,
+      "read_in": "bin/lib/console-pages.sh",
+      "note": "BH-3554: the production URL of the console, probed after each deploy. Read by bin/lib/console-pages.sh as ${CONSOLE_PAGES_URL:-https://console.example.pages.dev}. NOT settable from the control plane — it is a host, so only env/global.env on the box moves it.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/fleet-propagate.log"
+  }
+}

@@ -1,0 +1,3 @@
+# project-10 harness PAUSED 2026-08-04 per the operator — external team has it covered.
+# Full pre-pause crontab: /root/harness/state/crontab.pre-pause-20260804
+SHELL=/bin/bash

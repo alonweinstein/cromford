@@ -1,0 +1,58 @@
+{
+  "id": "rules-drift-check",
+  "name": "Rules drift check",
+  "scope": "hub",
+  "script": "bin/rules-drift-check.sh",
+  "cadence": "13 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-rules-drift-check",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "RULES_DRIFT_BOXES",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/rules-drift-check.sh as ${RULES_DRIFT_BOXES:-}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "RULES_DRIFT_SSH",
+      "type": "string",
+      "default": "ssh -o BatchMode=yes -o ConnectTimeout=8 -o StrictHostKeyChecking=accept-new",
+      "zero_means": null,
+      "note": "Read by bin/rules-drift-check.sh as ${RULES_DRIFT_SSH:-ssh -o BatchMode=yes -o ConnectTimeout=8 -o StrictHostKeyChecking=accept-new}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "RULES_DRIFT_SELF_REPORT_FRESH_S",
+      "type": "int",
+      "default": 7200,
+      "min": 0,
+      "zero_means": "off",
+      "settable": true,
+      "note": "BH-2626. Seconds a box's self-reported rules_reported_at (bin/box-self-report.sh, hourly) stays fresh enough to judge the box from its box_status row instead of ssh-ing it. Default 7200 = 2x the box-self-report lane's hourly period. 0 = self-reports ignored; every box is ssh'd, as before BH-2626. Non-numeric falls back to 7200. Read by bin/rules-drift-check.sh as ${RULES_DRIFT_SELF_REPORT_FRESH_S:-7200}."
+    },
+    {
+      "env": "RULES_DRIFT_FULL_PROBE_S",
+      "type": "int",
+      "default": 86400,
+      "min": 0,
+      "zero_means": null,
+      "settable": true,
+      "note": "BH-2626. Maximum age in seconds of a box's last full ssh probe before a box judged from its self-report row is ssh'd anyway, so RTK.md and settings.json, which the self-report row does not carry, are still checked. Default 86400 = a day; stamped per box under state/. 0 = every box is ssh'd every run, as before BH-2626. Non-numeric falls back to 86400. Read by bin/rules-drift-check.sh as ${RULES_DRIFT_FULL_PROBE_S:-86400}."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/rules-drift-check.log"
+  }
+}

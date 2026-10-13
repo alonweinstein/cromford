@@ -1,0 +1,5 @@
+# BH-1269: the merge-train registry. Added to BOTH lists in the position the
+# table puts it — right after the merge queue, which is the family it belongs
+# to and the import it sits next to in src/index.js.
+PUT /api/merge-trains
+GET /api/merge-trains

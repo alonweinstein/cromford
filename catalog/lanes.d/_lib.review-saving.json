@@ -1,0 +1,38 @@
+{
+  "libs": [
+    {
+      "id": "review-saving",
+      "file": "bin/lib/review-saving.sh",
+      "note": "BH-2545. The trivial-diff review route: bin/review-prs.sh routes through review_trivial_pick (a routed APPROVE is advisory: posted as a comment, never merged, and the head is re-reviewed on the full model next tick); bin/review-autopilot.sh only records the shadow event. Resolved by _rs_knobs through lib_env_apply in a subshell, then from this file's own default in the checkout. A value outside the accepted set is off and logged, never clamped.",
+      "knobs": [
+        {
+          "env": "REVIEW_TRIVIAL_MODE",
+          "type": "string",
+          "default": "shadow",
+          "zero_means": null,
+          "required": true,
+          "note": "off | shadow | route. shadow (the default) classifies each reviewed diff and records a TRIVIAL_SHADOW stage_events row, and changes no model. route has bin/review-prs.sh review a diff under REVIEW_TRIVIAL_MAX_LINES whose class is in REVIEW_TRIVIAL_ROUTE_CLASSES with the review.trivial model_routes row (TRIVIAL_ROUTED; a routed REQUEST_CHANGES stands, a routed APPROVE is advisory and never merges: the head is re-reviewed on the lane default next tick, TRIVIAL_ESCALATED), or with the lane's default model when that role has no route (TRIVIAL_NO_ROUTE); a trivial class outside the list is TRIVIAL_SHADOW. off does neither. Any other value is off, named in logs/review-saving.log."
+        },
+        {
+          "env": "REVIEW_TRIVIAL_MAX_LINES",
+          "type": "int",
+          "default": 200,
+          "min": 0,
+          "max": 5000,
+          "unit": "lines",
+          "zero_means": "off",
+          "required": true,
+          "note": "The most changed (+/-) lines a diff may carry and still be trivial. 0 means no diff is trivial. A non-number is off, named in logs/review-saving.log."
+        },
+        {
+          "env": "REVIEW_TRIVIAL_ROUTE_CLASSES",
+          "type": "string",
+          "default": "docs",
+          "zero_means": null,
+          "required": true,
+          "note": "The trivial classes route mode may send to the review.trivial model: a space-separated subset of docs lock tests. docs (the default) only: a lockfile or test-dir edit can loosen a supply chain or a gate, so lock and tests are classified and recorded as TRIVIAL_SHADOW until an operator widens this row. Any other token is off, named in logs/review-saving.log."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,142 @@
+{
+  "id": "lookback",
+  "name": "Lookback",
+  "scope": "hub",
+  "script": "bin/lookback.sh",
+  "cadence": "45 6 * * 1",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-lookback"
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "LOOKBACK_DAYS",
+      "type": "int",
+      "default": 7,
+      "zero_means": null,
+      "note": "Read by bin/lookback.sh as ${LOOKBACK_DAYS:-7}: the window, in days, handed to the collector as --days."
+    },
+    {
+      "env": "LOOKBACK_MAX_ISSUES",
+      "type": "int",
+      "default": 5,
+      "zero_means": null,
+      "note": "Read by bin/lookback.sh as ${LOOKBACK_MAX_ISSUES:-5}: the most clusters filed (filer rc 0) in any rolling 7 days, counted from ledgers(kind=lookback_cluster) detail.filed_at. A ledger that cannot be read, has no ledgers array or fills its 1000-row page stops all filing that run. Clusters past the cap are listed as `over cap` in the summary, never dropped silently."
+    },
+    {
+      "env": "LOOKBACK_MAX_USD",
+      "type": "float",
+      "default": 15,
+      "zero_means": null,
+      "read_in": "bin/lib/lookback-common.sh",
+      "note": "Read by a later BH-1795 slice (the clustering call's spend ceiling, dollars per run); declared by BH-1795.0 so siblings never edit this file. Until that slice lands nothing reads it; bin/lib/lookback-common.sh documents it."
+    },
+    {
+      "env": "LOOKBACK_CLUSTER_MIN",
+      "type": "int",
+      "default": 2,
+      "zero_means": null,
+      "read_in": "bin/lib/lookback-common.sh",
+      "note": "Read by a later BH-1795 slice (the fewest items a cluster needs); declared by BH-1795.0 so siblings never edit this file. Until that slice lands nothing reads it; bin/lib/lookback-common.sh documents it."
+    },
+    {
+      "env": "LOOKBACK_ALERT_MIN",
+      "type": "int",
+      "default": 3,
+      "zero_means": null,
+      "read_in": "bin/lib/lookback-common.sh",
+      "note": "Read by a later BH-1795 slice (the fewest occurrences of one alert family that count as a repeat); declared by BH-1795.0 so siblings never edit this file. Until that slice lands nothing reads it; bin/lib/lookback-common.sh documents it."
+    },
+    {
+      "env": "LOOKBACK_REREVIEW_MIN",
+      "type": "int",
+      "default": 2,
+      "zero_means": null,
+      "read_in": "bin/lib/lookback-common.sh",
+      "note": "Read by a later BH-1795 slice (the fewest re-reviews of one PR that count as a repeat); declared by BH-1795.0 so siblings never edit this file. Until that slice lands nothing reads it; bin/lib/lookback-common.sh documents it."
+    },
+    {
+      "env": "LOOKBACK_FOLLOWUP_DAYS",
+      "type": "int",
+      "default": 30,
+      "zero_means": null,
+      "read_in": "bin/lib/lookback-common.sh",
+      "note": "Read by a later BH-1795 slice (how many days after filing the follow-up checks a cluster again); declared by BH-1795.0 so siblings never edit this file. Until that slice lands nothing reads it; bin/lib/lookback-common.sh documents it."
+    },
+    {
+      "env": "LOOKBACK_DRY",
+      "type": "int",
+      "default": 0,
+      "zero_means": null,
+      "note": "Read by bin/lookback.sh as ${LOOKBACK_DRY:-0}: 0 files. 1, or any value other than 0, still clusters (spending up to LOOKBACK_MAX_USD) and reports each cluster it would file as `would file:` in a --severity warn summary (the digest), and files nothing. The follow-up only says what it would comment."
+    },
+    {
+      "env": "LOOKBACK_APP_FILING",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 1,
+      "zero_means": "off",
+      "note": "Read by bin/lookback.sh as ${LOOKBACK_APP_FILING:-0}: 1 lets a cluster whose target is `app` be filed on the project's product board through lookback_file_board. Off (0, or anything but 1) reports it as `not filed: app filing off:`, never files it on a board, and does not use it up against LOOKBACK_MAX_ISSUES. A board ticket is client-visible and carries no ai-build label."
+    },
+    {
+      "env": "LOOKBACK_BUNDLE_MAX_ITEMS",
+      "type": "int",
+      "default": 400,
+      "zero_means": null,
+      "read_in": "bin/lib/lookback-common.sh",
+      "note": "Read by a later BH-1795 slice (the collector's item cap; past it the bundle says truncated/incomplete); declared by BH-1795.0 so siblings never edit this file. Until that slice lands nothing reads it; bin/lib/lookback-common.sh documents it."
+    },
+    {
+      "env": "LOOKBACK_MODEL",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "read_in": "bin/lib/lookback-common.sh",
+      "note": "Read by a later BH-1795 slice (an explicit model for the clustering call; empty means the model route decides); declared by BH-1795.0 so siblings never edit this file. Until that slice lands nothing reads it; bin/lib/lookback-common.sh documents it."
+    },
+    {
+      "env": "LLM_LANE_ENABLED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "0 makes this lane call no model at all. bin/lib/llm-gate.sh refuses BEFORE the vendor call and writes a zero-cost row_source=refused row, so the stop is visible in the ledger rather than being a lane that went quiet."
+    },
+    {
+      "env": "LLM_RUNNER_ALLOWED",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Comma/space list of the ONLY ladder rungs this lane may reach. Empty is every rung, i.e. today's ladder unchanged. A rung outside the list is refused before the call, so a cliff or a failure on the standing lane cannot descend into one that costs ~100x (#1141, the $793 descent)."
+    },
+    {
+      "env": "LLM_USD_CAP_DAY",
+      "type": "float",
+      "default": 0,
+      "min": 0,
+      "max": 10000,
+      "unit": "usd",
+      "zero_means": "unlimited",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Dollars this lane may spend in the current UTC day, summed from D1 cost_rows through GET /api/metrics/llm-spend — never from the box's own logs/cost.csv. A second, project-scoped ceiling is the lane.<id>.<project>.llm_usd_cap_day row, which is read only when somebody wrote it. Registry default 0 like every LLM lane (tests/llm-lane-knobs.bh-2533); this lane's spend is bounded per run by LOOKBACK_MAX_USD (AGENT_CALL_BUDGET_USD on its one weekly call). Set lane.lookback.llm_usd_cap_day for a daily ceiling."
+    }
+  ],
+  "stats": {
+    "cost_stage": "lookback",
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/lookback.log"
+  }
+}

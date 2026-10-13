@@ -1,0 +1,1 @@
+{"name":"fly-disabled","readers":["bin/fly-dispatch.sh"],"box_scoped":true,"what":"stops fly-dispatch.sh sending builds to fly (bin/fly-trial-kill.sh is what writes it)"}

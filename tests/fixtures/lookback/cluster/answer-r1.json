@@ -1,0 +1,43 @@
+[
+  {
+    "key_kind": "reason",
+    "key_value": "Rebase conflict on 99 abc1234",
+    "item_ids": [
+      "la",
+      "lb"
+    ],
+    "target": "harness",
+    "project": "cromford",
+    "title": "We reopen tickets that touch bin/foo.sh",
+    "cause": "Our merge step leaves bin/foo.sh half applied.",
+    "proposed_fix": "Make the merge step in bin/foo.sh atomic."
+  },
+  {
+    "key_kind": "file",
+    "key_value": "bin/foo.sh",
+    "item_ids": [
+      "r1",
+      "r2",
+      "r3",
+      "r1"
+    ],
+    "target": "harness",
+    "project": "cromford",
+    "title": "We reopen tickets that touch bin/foo.sh",
+    "cause": "Our merge step leaves bin/foo.sh half applied.",
+    "proposed_fix": "Make the merge step in bin/foo.sh atomic."
+  },
+  {
+    "key_kind": "file",
+    "key_value": "src/x.ts",
+    "item_ids": [
+      "o1",
+      "o2"
+    ],
+    "target": "app",
+    "project": "project-3",
+    "title": "We reopen tickets that touch bin/foo.sh",
+    "cause": "Our merge step leaves bin/foo.sh half applied.",
+    "proposed_fix": "Make the merge step in bin/foo.sh atomic."
+  }
+]

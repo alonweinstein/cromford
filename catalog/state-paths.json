@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "about": "BH-5005: classifies state/<path> for bin/state-paths-guard.sh. rows = a DB row is the record and a new script must not write the file; cache = a local copy of rows, rebuildable; box-local = belongs to this box only. A path not listed here is unclassified and passes.",
+  "paths": [
+    {"path": "pool",                "class": "rows",      "authority": "pool spawn/terminal/hold rows (BH-5001)", "note": "state/pool/<p>/*.spawns, *.held, _spawn-hold"},
+    {"path": "fly-pool",            "class": "rows",      "authority": "build_queue claim with machine id (BH-5001)", "note": "state/fly-pool/<p>/ per-build machine records"},
+    {"path": "claims",              "class": "rows",      "authority": "job_claims (BH-5002)", "note": "plan/overlap claim files"},
+    {"path": "pr-owners",           "class": "rows",      "authority": "pr_owners (BH-5003)", "note": "PR owner clocks"},
+    {"path": "build-notes",         "class": "rows",      "authority": "build_note ledger row (BH-5003)", "note": "notes handed to the next build"},
+    {"path": "daily-digest",        "class": "rows",      "authority": "digest send-once ledger row (BH-5003)", "note": "sent-<date> markers"},
+    {"path": "build-queue",         "class": "rows",      "authority": "build_queue", "note": "queued build json per project"},
+    {"path": "merge-queue",         "class": "rows",      "authority": "merge_queue", "note": "state/merge-queue/<p>/<pr>"},
+    {"path": "deploy-queue",        "class": "rows",      "authority": "deploy_queue", "note": "state/deploy-queue/<p>/<epoch>-<sha8>"},
+    {"path": "settings-cache.json", "class": "cache",     "authority": "settings rows", "note": "local read cache of settings rows"},
+    {"path": "gh-etag",             "class": "cache",     "authority": "GitHub ETag cache", "note": "bin/lib/gh-rest-etag.sh, one file per key plus counts/"},
+    {"path": "box-id",              "class": "box-local", "authority": "this box's identity", "note": ""},
+    {"path": "box-name",            "class": "box-local", "authority": "this box's identity", "note": "written by bin/box-name.sh --write"},
+    {"path": "scratch",             "class": "box-local", "authority": "scratch space", "note": "bin/disk-clean.sh moves operator scratch here"}
+  ]
+}

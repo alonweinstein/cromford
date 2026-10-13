@@ -1,0 +1,8 @@
+# LANE RUNS (BH-6124, BH-6047 part 1 of 5): the lane-run queue, appended at
+# the END of the table. The four seam families after it (lane-runs-lease,
+# lane-fleet, lane-runs-metrics, lane-snapshots) export no route yet; their
+# fragments, when siblings add routes, take 751, 752, 753 and 754 in that order.
+POST /api/lane-runs
+POST /api/lane-runs/claim
+POST re:/^\/api\/lane-runs\/(\d+)\/report$/
+GET /api/lane-runs/stats

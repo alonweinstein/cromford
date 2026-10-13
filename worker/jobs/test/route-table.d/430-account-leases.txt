@@ -1,0 +1,5 @@
+POST /api/account-leases/claim
+POST /api/account-leases/release
+GET /api/account-leases
+POST /api/account-leases/token-health
+GET /api/account-leases/health

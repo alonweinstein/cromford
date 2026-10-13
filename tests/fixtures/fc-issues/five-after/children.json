@@ -1,0 +1,7 @@
+[
+ {"title":"scan result types + empty store","contract":"src/lib/scan/types.ts: ScanRow, ScanStore; src/lib/scan/store.ts: readScan(), writeScan()","after":[],"body":"Types and a store that compiles and returns nothing yet.\n\nFiles: src/lib/scan/types.ts, src/lib/scan/store.ts\n\n## Observable outcome\nThe slice acceptance test passes end to end."},
+ {"title":"scan ingest","after":[],"body":"Fill the store from the queue.\n\nFiles: src/jobs/scan-ingest.ts\n\n## Observable outcome\nThe slice acceptance test passes end to end."},
+ {"title":"scan read API","after":[],"body":"Serve the store over HTTP.\n\nFiles: src/api/scan.ts\n\n## Observable outcome\nThe slice acceptance test passes end to end."},
+ {"title":"scan dashboard tile","after":["3: readScan()"],"body":"Render the tile.\n\nFiles: src/app/dashboard/ScanTile.tsx\n\n## Observable outcome\nThe slice acceptance test passes end to end."},
+ {"title":"weekly scan digest","after":["2: ingest()"],"body":"Mail the digest.\n\nFiles: src/jobs/scan-digest.ts\n\n## Observable outcome\nThe slice acceptance test passes end to end."}
+]

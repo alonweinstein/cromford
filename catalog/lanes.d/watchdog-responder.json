@@ -1,0 +1,142 @@
+{
+  "id": "watchdog-responder",
+  "name": "Watchdog responder (LLM)",
+  "scope": "hub",
+  "script": "bin/watchdog-responder.sh",
+  "cadence": "3,23,43 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-watchdog-responder",
+    "aliases": [
+      {
+        "name": "responder-disabled",
+        "off_when": "present"
+      },
+      {
+        "name": "responder-prefetch-off",
+        "off_when": "partial"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "RESPONDER_DRY",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": null,
+      "note": "1 makes the lane decide and log without acting."
+    },
+    {
+      "env": "RESPONDER_FIX_EVIDENCE_MISSING",
+      "type": "string",
+      "default": "escalate-missing",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/responder-fix.sh",
+      "note": "Remedy for an item whose board evidence could not be fetched (BH-2548). `escalate-missing` (default) runs bin/responder-fix/escalate-missing.sh: one strict fleet_alert beat per project, no model call. `none` journals and stamps the cooldown only. `model` restores the old path (decision call + tooled call). Any other name runs bin/responder-fix/<name>.sh; a junk value or a name with no file is logged and falls back to `model`."
+    },
+    {
+      "env": "RESPONDER_FIX_NOT_OWED",
+      "type": "string",
+      "default": "none",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/responder-fix.sh",
+      "note": "Remedy for an item whose FETCHED ticket says waitingOn=client and has no open PR matching its key (BH-2548). `none` (default) journals and stamps the 12h cooldown with no model call. `model` restores the old path. Any other name runs bin/responder-fix/<name>.sh; a junk value or a name with no file is logged and falls back to `model`."
+    },
+    {
+      "env": "LLM_LANE_ENABLED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "0 makes this lane call no model at all. bin/lib/llm-gate.sh refuses BEFORE the vendor call and writes a zero-cost row_source=refused row, so the stop is visible in the ledger rather than being a lane that went quiet."
+    },
+    {
+      "env": "LLM_RUNNER_ALLOWED",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Comma/space list of the ONLY ladder rungs this lane may reach. Empty is every rung, i.e. today's ladder unchanged. A rung outside the list is refused before the call, so a cliff or a failure on the standing lane cannot descend into one that costs ~100x (#1141, the $793 descent)."
+    },
+    {
+      "env": "LLM_USD_CAP_DAY",
+      "type": "float",
+      "default": 0,
+      "min": 0,
+      "max": 10000,
+      "unit": "usd",
+      "zero_means": "unlimited",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Dollars this lane may spend in the current UTC day, summed from D1 cost_rows through GET /api/metrics/llm-spend — never from the box's own logs/cost.csv. A second, project-scoped ceiling is the lane.<id>.<project>.llm_usd_cap_day row, which is read only when somebody wrote it."
+    },
+    {
+      "env": "LANE_USD_CAP_RESPONDER",
+      "type": "number",
+      "default": 150,
+      "min": 0,
+      "max": 1000,
+      "unit": "USD/day",
+      "zero_means": "off",
+      "prefix": "LANE_USD_CAP_",
+      "read_in": "bin/lib/lane-caps.sh",
+      "note": "Dollars this lane may spend in one UTC day, resolved by bin/lib/lane-caps.sh over catalog/lane-caps.conf (now: 150). 0 STOPS the lane; `off` runs it uncapped; nothing is dropped when it trips — the queue waits and it pages once a day. This is the cap BH-1039 added after alert-triage burned $793 in 12 hours inside its session cap. The env suffix is the CAP lane name `responder` from catalog/lane-caps.conf, not this registry id."
+    },
+    {
+      "env": "LANE_BYTES_CAP_RESPONDER",
+      "type": "int",
+      "default": 60000,
+      "min": 1000,
+      "max": 2000000,
+      "unit": "bytes",
+      "zero_means": null,
+      "prefix": "LANE_BYTES_CAP_",
+      "read_in": "bin/lib/lane-caps.sh",
+      "note": "Evidence bytes this lane may put in ONE prompt, resolved by bin/lib/lane-caps.sh over catalog/lane-caps.conf (now: 60000). Truncation carries a marker; too small and a family is re-spooled every tick and never triaged, which pages once a day and bills nothing. The env suffix is the CAP lane name `responder` from catalog/lane-caps.conf, not this registry id."
+    },
+    {
+      "env": "RESPONDER_CONTEXT_CAP_TOKENS",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 6000000,
+      "unit": "tokens",
+      "zero_means": null,
+      "note": "Cumulative context tokens (input + cache_read) ONE session of this lane may reach before bin/agent-call.sh stops it. The evidence cap bounds the prompt; this bounds the session, including everything the tool loop reads. 0 derives the ceiling from the runner's `cliff_tokens` in catalog/model-prices.json instead (CONTEXT_KILL_CLIFF), which on a model with no cliff leaves the lane's 6,000,000 ceiling in catalog/context-budgets.json standing; a positive value is the ceiling verbatim."
+    },
+    {
+      "env": "RESPONDER_CLIFF_MARGIN_TOKENS",
+      "type": "int",
+      "default": 10000,
+      "min": 0,
+      "max": 100000,
+      "unit": "tokens",
+      "zero_means": null,
+      "note": "How far under the runner's price cliff the derived ceiling sits, when RESPONDER_CONTEXT_CAP_TOKENS is 0: the session is stopped at `cliff_tokens - this`. A margin at or past the cliff floors the ceiling at 1000 tokens and says so in logs/failovers.log rather than clamping silently."
+    }
+  ],
+  "stats": {
+    "cost_stage": "triage",
+    "cost_project_filter": "responder",
+    "lanes_row": false,
+    "log": "logs/responder.log"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "data": {
+    "issues": {
+      "nodes": [
+        {
+          "identifier": "CRO-2",
+          "title": "Fee toggle",
+          "url": "https://linear.app/crosstest/issue/CRO-2/fee-toggle",
+          "state": {
+            "name": "Todo"
+          },
+          "labels": {
+            "nodes": [
+              {
+                "name": "ai-build"
+              }
+            ]
+          }
+        }
+      ],
+      "pageInfo": {
+        "hasNextPage": false,
+        "endCursor": "cursor-p2"
+      }
+    }
+  }
+}

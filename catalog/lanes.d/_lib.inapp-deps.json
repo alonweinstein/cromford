@@ -1,0 +1,33 @@
+{
+  "libs": [
+    {
+      "id": "inapp-deps",
+      "file": "bin/lib/inapp-deps.sh",
+      "note": "BH-3946. In-app boards hold and release tickets on their `Blocked by` text lines. Applied by _inapp_deps_knobs with lib_env_apply inapp-deps. Kill switch inapp-deps-off (catalog/switches.d/inapp-deps-off.json), read through lane_switch by inapp_deps_on. The BH-3962 contract slice ships stubs only, so neither knob is read by a work function yet.",
+      "knobs": [
+        {
+          "env": "INAPP_DEPS_REMIND_S",
+          "type": "int",
+          "default": 21600,
+          "min": 60,
+          "max": 604800,
+          "unit": "seconds",
+          "zero_means": null,
+          "required": false,
+          "note": "BH-3946. The remind window for an in-app text-dependency release. bin/triage-gate.sh step 1e deletes state/inapp-deps-ready-<project> unread once it is older than this."
+        },
+        {
+          "env": "INAPP_DEPS_MAX_LOOKUPS",
+          "type": "int",
+          "default": 10,
+          "min": 0,
+          "max": 50,
+          "unit": "reads",
+          "zero_means": "no by-id lookups",
+          "required": false,
+          "note": "BH-3946. The most by-id reads one inapp-deps pass makes for a dependency key it cannot resolve from the board rows it already has."
+        }
+      ]
+    }
+  ]
+}

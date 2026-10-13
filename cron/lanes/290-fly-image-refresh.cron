@@ -1,0 +1,2 @@
+# @hub-lanes
+40 5 * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/fly-image-refresh.sh

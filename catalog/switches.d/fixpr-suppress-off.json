@@ -1,0 +1,1 @@
+{"name":"fixpr-suppress-off","readers":["bin/alert-triage.sh"],"box_scoped":true,"what":"turns off alert-triage's suppression of alerts that already have an open fix PR"}

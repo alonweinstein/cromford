@@ -1,0 +1,65 @@
+{
+  "id": "apply-migrations",
+  "name": "Apply migrations",
+  "scope": "project",
+  "factory_stop": "deploy",
+  "script": "bin/apply-migrations.sh",
+  "cadence": "*/15 * * * *",
+  "boxes": [
+    "project-4",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-apply-migrations",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "PROJECT_4_API_BASE",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/apply-migrations.sh as ${PROJECT_4_API_BASE:-}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "PROJECT_1_API_BASE",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/apply-migrations.sh as ${PROJECT_1_API_BASE:-}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "PROJECT_3_APP_BASE",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/apply-migrations.sh as ${PROJECT_3_APP_BASE:-}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "PROJECT_2_APP_BASE",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/apply-migrations.sh as ${PROJECT_2_APP_BASE:-}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/apply-migrations.log"
+  }
+}

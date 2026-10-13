@@ -1,0 +1,3 @@
+23 * * * * /root/harness/bin/quota-poll.sh >/dev/null 2>&1 # hourly per-account quota poll for account routing (inert without env/accounts.d; docs/ACCOUNT-ROUTING.md)
+# @box hub
+*/10 * * * * /root/harness/bin/quota-poll.sh >/dev/null 2>&1 # per-account quota poll every 10 min (ACCOUNT_POLL_MIN_SECS=480 in env/global.env keeps reads honest; one Fable review moves a 5h window ~3.5%, hourly overshot) for account routing (inert without env/accounts.d; docs/ACCOUNT-ROUTING.md)

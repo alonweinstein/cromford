@@ -1,0 +1,1 @@
+{"name":"route-shadow-off","readers":["bin/lib/route-rules.sh"],"box_scoped":true,"what":"stops route-rules.sh writing the P4 route_shadow record for a build (shadow mode only; nothing live reads it)"}

@@ -1,0 +1,7 @@
+# tests/mc/expected-map.d/BH-5914.tsv — BH-5914: the iron-law scan reads a
+# local git diff when the API answers 406, and the conductor publishes its
+# per-head verdict to the jobs ledger; origin=lib, new module functions.
+classify	mc_pr_diff_or_local	lib
+classify	mc_pr_diff_local	lib
+classify	mc_merge_verdict_put	lib
+classify	mc_iron_law_names	lib

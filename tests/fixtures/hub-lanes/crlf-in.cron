@@ -1,0 +1,7 @@
+SHELL=/bin/bash
+# BEGIN hub-lanes
+
+# a CRLF comment
+5 0 * * * /root/harness/bin/sync-data.sh
+# END hub-lanes
+*/5 * * * * /root/harness/bin/keepalive.sh

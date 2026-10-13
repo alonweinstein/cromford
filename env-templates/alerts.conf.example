@@ -1,0 +1,119 @@
+# /root/harness/flags/alerts.conf — the alert state machine's config.
+# Copy to /root/harness/flags/alerts.conf on a box that wants to change anything.
+# flags/ is machine-local and gitignored (same as flags/cost-caps.conf), so this
+# template is the documented copy. EVERY value below has a code default in
+# bin/lib/alert-state.sh and the file is entirely optional: a box with no
+# alerts.conf behaves exactly as the defaults printed here.
+#
+# Contract and worked examples: docs/ALERTS-STATE-MACHINE.md
+#
+# Five directives, one per line, '#' comments, PARSED not sourced:
+#   set <NAME> <value>          a scalar (an environment variable of the same
+#                               name still wins, for one-off overrides)
+#   collapse <ERE> <id>         lines matching <ERE> all share <id>; \1..\9 are
+#                               the ERE's capture groups
+#   severity <ERE> <level>      lines matching <ERE> are info | warn | critical
+#   parked <box-token>          a box that is deliberately not running; its
+#                               DOWN/SILENT lines are downgraded to info
+#                               (flags/paused-<box> does the same thing)
+#   logonly <ERE> log           lines matching <ERE> are notices: they keep
+#                               their ALERTS.log line and are never noted or
+#                               sent (BH-2337; the shipped table is in
+#                               bin/lib/alert-state.sh)
+
+# ── scalars ────────────────────────────────────────────────────────────────
+# Master switch. 0 (or flags/alert-state-off) restores the pre-2026-09-15
+# behaviour exactly: every alert sends, every time.
+set ALERT_STATE_ENABLED 1
+# Kill switch for the alerts table path (BH-1030). The comment stays ABOVE the
+# directive: the value is everything after the name (values have spaces in
+# them), so a trailing comment makes this read as "0 # kill switch ..." and the
+# switch fails OPEN — every lane keeps writing to the table.
+# set ALERTS_DB_ENABLED 0
+
+# What an alert that declares no severity is worth. CRITICAL on purpose: the
+# fire-once dedupe is what removes the noise, and an emitter nobody has
+# retrofitted must not go quiet because of a default it never saw. Move a class
+# to warn/info deliberately, with a `severity` rule below.
+set ALERT_DEFAULT_SEVERITY critical
+
+# While a condition stays open: one "still firing, n=..." send per this many
+# seconds. 6h = four reminders a day for something genuinely stuck, instead of
+# 96 (the 15-minute EXTRA-USAGE cadence that started all this).
+set ALERT_REMINDER_S 21600
+
+# A condition nobody called --resolve on is treated as ENDED after this long
+# with no sighting, so the next occurrence fires fresh. Without it a lane that
+# forgets to resolve silences its own alert forever.
+set ALERT_AUTO_CLOSE_S 21600
+
+# Closed/idle state files under state/alerts/ are swept after this long.
+set ALERT_STATE_RETENTION_S 604800
+
+# warn batching. MAX is the spool ceiling (oldest dropped first). MAX_AGE_S is
+# the dead-man: if the digest cron has not drained the spool in this long, the
+# next warn flushes it inline. Keep MAX_AGE_S comfortably above the drain cron's
+# period — 90 min against an hourly drain.
+set ALERT_WARN_BATCH_MAX 60
+set ALERT_WARN_BATCH_MAX_AGE_S 5400
+
+# Which lines the parked-box downgrade is even allowed to look at, so a parked
+# box's name appearing inside an unrelated alert can never mute it.
+set ALERT_PARK_DOWNGRADE_RE LANE DOWN|AUTH DOWN|LANE SILENT|watcher stale|UNREACHABLE|CANARY FAILED
+
+# Drop the rules that SHIP with bin/lib/alert-state.sh (the three collapse rules
+# and the one severity rule repeated below, which cover emitters that other
+# lanes own and this one may not edit). Set to 0 only if you want this file to
+# be the entire rule set.
+#set ALERT_BUILTIN_RULES 1
+
+# ── collapse rules ─────────────────────────────────────────────────────────
+# NOTE: the rules in the two sections below are ALREADY the shipped defaults in
+# bin/lib/alert-state.sh. They are written out here so this file documents what
+# is in force; a rule here is matched BEFORE the built-in table, so editing one
+# overrides it.
+# For emitters whose text is finer-grained than the problem. Without a rule the
+# key is bin/alert_family.py's row_key, which deliberately keeps ticket ids and
+# PR numbers apart — right for "two different stuck builds", wrong for "the same
+# lane is silent and here are ten of its rows".
+#
+# 10 SILENT triage rows in one tick are ONE dead lane. Key per project.
+collapse \[jobs-watchdog\] SILENT job: ([a-z0-9-]+) jobs-watchdog-silent-\1
+collapse \[jobs-watchdog\] LANE SILENT: ([a-z0-9-]+)@([a-z0-9-]+) jobs-watchdog-lane-silent-\1-\2
+# BH-3997: pipeline-health's merge alerts are one row per CONDITION, so a
+# shorter PR list, a new label or a later age updates that row instead of
+# minting a sibling. bin/alerts-merge-resolve.sh closes them when the PRs settle.
+# Awaiting merge (many PRs per line): one row per repo; needs the prs= token.
+collapse \[pipeline-health\] [a-z0-9._-]+: harness PR\(s\) [#0-9,]+ open >[0-9]+h awaiting merge.* prs=([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+)# ph-awaitmerge-\1-\2
+# Lead-cleared but not queued (one PR per line): one row per PR.
+collapse \[pipeline-health\] ([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+) #([0-9]+) has lead-verdict success .* not in the merge queue ph-leadunqueued-\1-\2-\3
+# APPROVE + CLEAN but not queued (one PR per line): one row per PR.
+collapse \[pipeline-health\] https://github\.com/([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+)/pull/([0-9]+) is APPROVE .*OPEN and CLEAN .*not in the merge queue ph-approveunqueued-\1-\2-\3
+# The canary says LANE DOWN twice for one failure, in two sentences: one written
+# straight to ALERTS.log, one beaten. This maps the log line onto the id the beat
+# declares, so one failure is one alert.
+collapse \[auth\] ([a-z0-9_.-]+) LANE DOWN lanedown-\1
+
+# ── severity rules ─────────────────────────────────────────────────────────
+# First match wins. (pipeline-health's RESOLVED lines are no longer demoted
+# here: since BH-4054 the retraction is a structured resolve that closes its
+# alert's row on that alert's channel, and its text copy is a built-in logonly
+# notice in bin/lib/alert-state.sh.)
+# Recovery lines their emitters write straight into ALERTS.log: with no severity
+# on them the default would make each one a fresh critical page saying a thing is
+# FINE.
+severity \[auth\] [a-z0-9_.-]+ RECOVERED info
+severity \[jobs-watchdog\] LANE RESUMED info
+# NOTE there is deliberately NO blanket rule on the word RESOLVED: a resolve
+# from `lane-alert.sh --resolve` is the closing edge of an alert somebody was
+# paged about, and demoting those turns "fire once, resolve once" into "fire
+# once".
+# The canary's fallback tiers are a safety net, not an outage: batch them.
+severity LANE DOWN warn
+severity MODEL POOL EXHAUSTED warn
+
+# ── parked boxes ───────────────────────────────────────────────────────────
+# The project-10 box has been parked since 2026-08-25; its four lane
+# canaries fail every 6h by design. Uncomment for a box you have deliberately
+# stopped, or just `touch flags/paused-<box>` on this machine.
+# parked project-10

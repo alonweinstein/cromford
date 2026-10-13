@@ -1,0 +1,13 @@
+diff --git a/migrations/002_customer_notes.sql b/migrations/002_customer_notes.sql
+new file mode 100644
+index 0000000..7ad6102
+--- /dev/null
++++ b/migrations/002_customer_notes.sql
+@@ -0,0 +1,7 @@
++CREATE TABLE customer_notes (
++  id bigint primary key,
++  customer_id bigint not null references customers (id),
++  author text not null,
++  created_at timestamptz not null default now(),
++  body text not null
++);

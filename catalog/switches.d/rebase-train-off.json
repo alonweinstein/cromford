@@ -1,0 +1,1 @@
+{"name":"rebase-train-off","readers":["bin/rebase-train-ahead.sh"],"box_scoped":true,"what":"stops rebase-train-ahead.sh merging main into open harness PRs before they go DIRTY"}

@@ -1,0 +1,2 @@
+# @hub-lanes
+11,41 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/sentry-triage.sh >> /root/harness/logs/sentry-triage.log 2>&1

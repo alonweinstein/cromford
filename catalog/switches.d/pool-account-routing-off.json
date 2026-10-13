@@ -1,0 +1,1 @@
+{"name":"pool-account-routing-off","readers":["bin/lib/pool-account.sh"],"box_scoped":true,"what":"turns off pool-account routing in bin/lib/pool-account.sh, so fly-pool.sh leases no pool account and a build uses the credential it used before pool routing"}

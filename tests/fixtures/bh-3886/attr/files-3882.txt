@@ -1,0 +1,4 @@
+.harness/specs/BH-3865/plan.md
+bin/always-eject-report.sh
+docs/notes/2026-10-02-BH-3860-fast-always-lints.md
+tests/always-eject-report.bh-3865-test.sh

@@ -1,0 +1,75 @@
+{
+  "id": "feature-map-draft",
+  "name": "Feature-map draft (LLM, operator-run)",
+  "scope": "box",
+  "script": "bin/feature-map-draft.sh",
+  "cadence": "on demand (via an operator at the shell; no cron line)",
+  "boxes": [
+    "project-4",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-feature-map-draft",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "FEATURE_MAP_DRAFT_ENABLED",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "OFF by default. 1 lets bin/feature-map-draft.sh draft a verification map with a paid agent call. Off, the script refuses (rc 3) before any fetch, worktree or agent call; --dry-run still runs, since it spends nothing. The per-run dollar cap is the settings row feature_map.draft_max_usd, a spend bound, not this switch."
+    },
+    {
+      "env": "LLM_LANE_ENABLED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "0 makes this lane call no model at all. bin/lib/llm-gate.sh refuses BEFORE the vendor call and writes a zero-cost row_source=refused row, so the stop is visible in the ledger rather than being a lane that went quiet."
+    },
+    {
+      "env": "LLM_RUNNER_ALLOWED",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Comma/space list of the ONLY ladder rungs this lane may reach. Empty is every rung, i.e. today's ladder unchanged. A rung outside the list is refused before the call, so a cliff or a failure on the standing lane cannot descend into one that costs ~100x (#1141, the $793 descent)."
+    },
+    {
+      "env": "LLM_USD_CAP_DAY",
+      "type": "float",
+      "default": 0,
+      "min": 0,
+      "max": 10000,
+      "unit": "usd",
+      "zero_means": "unlimited",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Dollars this lane may spend in the current UTC day, summed from D1 cost_rows through GET /api/metrics/llm-spend — never from the box's own logs/cost.csv. A second, project-scoped ceiling is the lane.<id>.<project>.llm_usd_cap_day row, which is read only when somebody wrote it."
+    }
+  ],
+  "stats": {
+    "cost_stage": "feature-map-draft",
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/feature-map-draft.log"
+  }
+}

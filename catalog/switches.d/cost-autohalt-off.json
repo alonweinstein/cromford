@@ -1,0 +1,1 @@
+{"name":"cost-autohalt-off","readers":["bin/cost-local-brake.sh","bin/pipeline-health.sh"],"box_scoped":true,"what":"stops the box-local cost brake and the pipeline-health cost autohalt from holding a project's new builds (flags/spend-hold-<p>) on this box"}

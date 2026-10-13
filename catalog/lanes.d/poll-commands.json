@@ -1,0 +1,67 @@
+{
+  "id": "poll-commands",
+  "name": "Poll commands",
+  "scope": "hub",
+  "script": "bin/poll-commands.sh",
+  "cadence": "* * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-poll-commands",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "TG_TOPICS_SYNC_SECS",
+      "type": "int",
+      "default": 600,
+      "zero_means": null,
+      "note": "Read by bin/poll-commands.sh as ${TG_TOPICS_SYNC_SECS:-600}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "JOBS_HTTP",
+      "type": "string",
+      "default": "unreachable",
+      "zero_means": null,
+      "note": "Read by bin/poll-commands.sh's pause handlers, box-command forwards and box-command expiry block (BH-2657) as ${JOBS_HTTP:-unreachable}: the jobs worker's last HTTP status, set by _jobs_req (bin/lib/jobs/req.sh) and named in a command RESULT. Registered by BH-1685 so it is visible; NOT settable from the control plane — it is a per-call status and a test seam, not an operator knob; nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "BOX_CONSOLE_COMMANDS_TTL_S",
+      "type": "int",
+      "default": 300,
+      "min": 30,
+      "max": 86400,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "Read by bin/poll-commands.sh's box-command expiry block as ${BOX_CONSOLE_COMMANDS_TTL_S:-300}: a forwarded console command still queued after this many seconds is expired, failure-beaten and alerted. Keep it equal to the box-console-commands lane's knob of the same name."
+    },
+    {
+      "env": "JOBS_BODY",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/poll-commands.sh's pause_board handler as ${JOBS_BODY:-}: the jobs worker's last response body, set by _jobs_req (bin/lib/jobs/req.sh), from which the RESULT's expires_at is read. Registered so it is visible; NOT settable from the control plane — it is a per-call response and a test seam, not an operator knob; nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "PAUSE_BOARD_TTL_S",
+      "type": "int",
+      "default": 604800,
+      "min": 60,
+      "max": 604800,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "Read by bin/poll-commands.sh's pause_board handler: the ttl_s a console board pause sends when its payload carries none, so the triage pause row always has an explicit expiry instead of the worker's generic pause_default_ttl_s (86400), which ended board pauses silently after 24h. A payload ttl_s wins; a value that is not a positive integer falls back to 604800 (the worker's one-week ceiling). The command RESULT names the stored expires_at, and bin/pipeline-health.sh warns PAUSE_EXPIRY_WARN_S before it."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/poll-commands.log"
+  }
+}

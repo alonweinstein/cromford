@@ -1,0 +1,3 @@
+# @hub-lanes
+# BH-2754: nudge untriaged and dep-unblocked GitHub-Issues tickets into wakes.
+*/10 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/untriaged-wake.sh >/dev/null 2>&1

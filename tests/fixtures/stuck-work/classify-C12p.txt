@@ -1,0 +1,5 @@
+# C12p twin of C12 at 91 minutes: one page, then quiet
+# want: queued	Mergify
+# decide: - page
+# decide: paged quiet 1800000300
+pr	o/r#12	https://github.com/o/r/pull/12	0	ai-build	success	1799991000	MERGE	abc	1799991000	abc	checking	-	-	-	-	-	-	-	-	-	1799994540

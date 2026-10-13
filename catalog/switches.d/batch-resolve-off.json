@@ -1,0 +1,1 @@
+{"name":"batch-resolve-off","readers":["bin/batch-resolve.sh"],"box_scoped":true,"what":"stops batch-resolve.sh building new merge trains (a train already pushed is still settled)"}

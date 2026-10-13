@@ -1,0 +1,19 @@
+{
+  "libs": [
+    {
+      "id": "ci-merge-reuse",
+      "file": "bin/lib/merge-push.sh",
+      "note": "BH-5357. Whether a PR push that only merges its base branch reuses the previous head's green Harness CI run for the lint steps catalog/ci-merge-reuse.tsv maps (verification-map, derived docs, lane renders, render-diff). Resolved by mp_knob through lib_env_apply in a subshell, then from this file's own default. CI cannot read the settings row; it reads the repo Actions variable PR_CI_MERGE_REUSE, then this default.",
+      "knobs": [
+        {
+          "env": "PR_CI_MERGE_REUSE",
+          "type": "string",
+          "default": "on",
+          "zero_means": null,
+          "required": true,
+          "note": "on | off. on: a merge-from-main push whose previous head has a green run skips the mapped lint steps its change cannot reach. off: every step runs on every push, as before BH-5357. Anything else reads as off."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+POST /api/preplans
+GET /api/preplans
+GET /api/preplans/adoption

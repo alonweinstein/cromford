@@ -1,0 +1,33 @@
+{
+  "libs": [
+    {
+      "id": "review-post",
+      "file": "bin/lib/review-post.sh",
+      "note": "BH-1940. The size caps on a posted review body. GitHub refuses a comment over 65536 chars. Resolved by _rp_knobs through lib_env_apply in a subshell, then from this file's own default in the checkout.",
+      "knobs": [
+        {
+          "env": "RP_RAW_CAP",
+          "type": "int",
+          "default": 20000,
+          "min": 1000,
+          "max": 60000,
+          "unit": "chars",
+          "zero_means": null,
+          "required": true,
+          "note": "Cap on each raw fence (the review, the agent envelope) in a PARSE_INCOMPLETE body. Read by bin/lib/review-post.sh with no literal since BH-1940; was ${RP_RAW_CAP:-20000}."
+        },
+        {
+          "env": "RP_TEXT_CAP",
+          "type": "int",
+          "default": 55000,
+          "min": 1000,
+          "max": 60000,
+          "unit": "chars",
+          "zero_means": null,
+          "required": true,
+          "note": "Cap on the verbatim review under a complete body. Read by bin/lib/review-post.sh with no literal since BH-1940; was ${RP_TEXT_CAP:-55000}."
+        }
+      ]
+    }
+  ]
+}

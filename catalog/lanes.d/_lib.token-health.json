@@ -1,0 +1,30 @@
+{
+  "libs": [
+    {
+      "id": "token-health",
+      "file": "bin/lib/token-health.sh",
+      "note": "BH-2516.0 (BH-2644). The token health reporter seam: token_health_report <kind> <subject> <ok|fail> [expires_at_iso] [error], always rc 0 and never stdout. Since BH-2646 it posts {kind, subject, box, ok, expires_at, error} to /api/account-leases/token-health through bin/jobs-client.sh (curl -m 5, no retry, no ALERTS line); called from bin/oauth-refresh.sh and gh-token.sh mint().",
+      "knobs": [
+        {
+          "env": "TOKEN_HEALTH_WARN_H",
+          "type": "int",
+          "default": 24,
+          "min": 1,
+          "max": 720,
+          "unit": "hours",
+          "required": false,
+          "note": "Hours before a token's expiry the health panel flags it red. Mirrors the worker settings row lib.token-health.token_health_warn_h (seeded 24). Registered only: nothing on the box reads it yet."
+        },
+        {
+          "env": "TOKEN_HEALTH_REPORT",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 1,
+          "required": false,
+          "note": "1 = token_health_report posts, 0 = off. Read by bin/lib/token-health.sh on every call; 0 sends no request."
+        }
+      ]
+    }
+  ]
+}

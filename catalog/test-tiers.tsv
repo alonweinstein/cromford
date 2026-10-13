@@ -1,0 +1,133 @@
+# catalog/test-tiers.tsv — which tier each suite runs in. Read by bin/test-tiers.sh
+# (see its header); bin/ci-plan.sh applies it to the merge-queue batch and to the
+# nightly run (.github/workflows/harness-nightly.yml). A suite with NO row is
+# batch, and so is any row the reader cannot make sense of — the file can only
+# ever move a suite OUT of the batch by saying so here, in review.
+#
+# Columns (tab separated): suite, tier, runtime_s, paths, reason
+#   tier       batch | nightly | guard
+#   runtime_s  the suite's median wall time in a traced batch shard when it was
+#              tiered (the 2026-09-28 test-value pass: 35 sampled batch runs,
+#              09-25T23:38..09-28T15:47Z)
+#   paths      guard rows only: what a batch diff must touch for the guard to
+#              run in the batch (exact file, dir/, or a glob); `-` otherwise
+#   reason     why this row exists
+#
+# THE NIGHTLY ROWS are the test-value report's SLOW-NEVER-FAILED bucket: >=10 s
+# in a traced shard and 0 failures in the 35 sampled batch runs. Together they
+# are ~41 of every batch's ~100 corpus suite-minutes. Before tiering one more,
+# say what its runs show; to bring one back into every batch, delete its row.
+# NEVER NIGHTLY, whatever their runtime (review of #3262):
+#   * a suite bin/test-impact.sh runs on EVERY diff (`always`: it reads the
+#     whole tree, so no PR "reaches" it and no builder gate runs it early) —
+#     tests/test-tiers-test.sh T8 enforces this one;
+#   * a ratchet-shaped suite (a count, ceiling or pin over the live tree): it
+#     must block the merge that breaks it, not a night later;
+#   * a merge, approval, spend or brake safety suite;
+#   * the switch-* ratchet family (another change is rewriting it).
+#
+# THE GUARD ROWS are safety and leak guards: a nightly miss on them costs more
+# than a slow batch, so a batch that touches what they guard still runs them.
+
+tests/pipeline-gaps-test.sh	nightly	189	-	slow and never failed: 189s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/share-publish-clean.bh-795-test.sh	guard	145	*	leak guard (public mirror): sanitize + leakcheck + gitleaks over `git archive HEAD`, i.e. every committed file the mirror ships; the 09-13/15/18/24 freezes were fixture tokens in ordinary tests. Guards every path, so it still runs on every batch; a changed-files scan is what would make it cheaper.
+tests/share-mirror-clean-test.sh	guard	115	*	leak guard (public mirror): renders then sanitizes + leakchecks the whole committed tree the publisher ships. Same derivation as share-publish-clean: every path is content it scans, so every batch still runs it.
+tests/parallel-lenses-test.sh	nightly	114	-	slow and never failed: 114s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/registry-no-commit-test.sh	guard	110	.gitignore .gitattributes fleet.conf catalog/ cron/ env-templates/ prompts/product-* bin/render-cron.sh bin/render-crontab.sh bin/render-env-example.sh bin/render-diff.sh bin/lanes-build.sh bin/box-name.sh bin/box-for.sh bin/fleet-conf.sh bin/lib/lanes-registry.sh bin/lib/cron-lines.sh bin/lib/render-fragments.sh tests/lib/	commit guard (BH-1247): no lane render is tracked or unignored, and the three renderers + loader + render-diff + box-name are deterministic. Paths = the ignore/attribute files, the render sources (catalog/ cron/ env-templates/ fleet.conf prompts/product-*) and the scripts it drives with what they source or run.
+tests/blocked-resolver-prepass.bh-1457-test.sh	nightly	61	-	slow and never failed: 61s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/remote-gate.bh-2049-test.sh	nightly	60	-	slow and never failed: 60s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/jobs-client-test.sh	nightly	48	-	slow and never failed: 48s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/deploy-train-wake-wait.bh-1062-test.sh	nightly	47	-	slow and never failed: 47s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/pr-dep-gate-lanes.bh-878-test.sh	nightly	45	-	slow and never failed: 45s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/blocked-resolver-test.sh	nightly	44	-	slow and never failed: 44s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/lead-pr-fence.bh-1558-test.sh	nightly	44	-	slow and never failed: 44s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/triage-shards-ticket-fp-test.sh	nightly	44	-	slow and never failed: 44s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/registry-render-test.sh	nightly	43	-	slow and never failed: 43s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/land-rebase.bh-870-test.sh	nightly	42	-	slow and never failed: 42s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/conductor-read-memo.bh-1486-test.sh	nightly	40	-	slow and never failed: 40s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/conductor-limited-read.bh-784-test.sh	nightly	39	-	slow and never failed: 39s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/pre-arm-guards-test.sh	nightly	39	-	slow and never failed: 39s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/merge-family-limited-read-repro.bh-784-test.sh	nightly	38	-	slow and never failed: 38s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/cron-job-enrollment-test.sh	nightly	37	-	slow and never failed: 37s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/triage-signal.bh-2542-test.sh	nightly	37	-	slow and never failed: 37s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/wake-loop-test.sh	nightly	37	-	slow and never failed: 37s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/blocked-resolver-rest.bh-783-test.sh	nightly	36	-	slow and never failed: 36s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/render-cron.bh-1185-test.sh	nightly	36	-	slow and never failed: 36s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/lead-verdicts.bh-1525-test.sh	nightly	34	-	slow and never failed: 34s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/remote-gate.bh-1854-test.sh	nightly	33	-	slow and never failed: 33s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/triage-spool-db.bh-2316-test.sh	nightly	33	-	slow and never failed: 33s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/eject-rebase.bh-1677-test.sh	nightly	32	-	slow and never failed: 32s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/remote-gate.bh-1836-test.sh	nightly	32	-	slow and never failed: 32s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/block-gate-lanes-test.sh	nightly	30	-	slow and never failed: 30s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/cron-fleet-parity-test.sh	nightly	30	-	slow and never failed: 30s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/resume-dead-builds-test.sh	nightly	30	-	slow and never failed: 30s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/conductor-detached-lanes-test.sh	nightly	29	-	slow and never failed: 29s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/mc/rebase-test.sh	nightly	29	-	slow and never failed: 29s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/remote-gate.bh-1918-test.sh	nightly	29	-	slow and never failed: 29s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/reconcile-prs-one-box.bh-1583-test.sh	nightly	28	-	slow and never failed: 28s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/review-prs-d1-hold.bh-2457-test.sh	nightly	27	-	slow and never failed: 27s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/lead-fence-lanes.bh-1606-test.sh	nightly	26	-	slow and never failed: 26s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/blocked-resolver.bh-1122-test.sh	nightly	24	-	slow and never failed: 24s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/tier2-autoenqueue-test.sh	nightly	24	-	slow and never failed: 24s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/batch-resolve-test.sh	nightly	23	-	slow and never failed: 23s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/lane-liveness-test.sh	nightly	23	-	slow and never failed: 23s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/reconcile-prs-d1-memory.bh-1595-test.sh	nightly	23	-	slow and never failed: 23s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/triage-signal.bh-2604-test.sh	nightly	23	-	slow and never failed: 23s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/fly-image-bake-pin.bh-1528-test.sh	nightly	22	-	slow and never failed: 22s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/wake-loop-claims.bh-2637-test.sh	nightly	22	-	slow and never failed: 22s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/alerts-table-test.sh	nightly	21	-	slow and never failed: 21s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/env-path-port-b-test.sh	nightly	21	-	slow and never failed: 21s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/mc-head-lag.bh-1529-test.sh	nightly	21	-	slow and never failed: 21s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/lanes-registry-test.sh	nightly	19	-	slow and never failed: 19s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/mergify-stuck-batch.bh-2611-test.sh	nightly	19	-	slow and never failed: 19s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/mc-head-lag-rows.bh-1564-test.sh	nightly	18	-	slow and never failed: 18s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/triage-shards-test.sh	nightly	18	-	slow and never failed: 18s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/lane-liveness-single-fact-test.sh	nightly	17	-	slow and never failed: 17s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/merge-conductor-rereview-lanefail-test.sh	nightly	17	-	slow and never failed: 17s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/triage-volume-caps.bh-1039-test.sh	nightly	17	-	slow and never failed: 17s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/account-routing-test.sh	nightly	16	-	slow and never failed: 16s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/blocked-resolver-ci-repair-cap-test.sh	nightly	16	-	slow and never failed: 16s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/merge-conductor-deadend-test.sh	nightly	16	-	slow and never failed: 16s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/launch-fastpath-test.sh	nightly	15	-	slow and never failed: 15s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/blocked-resolver-family.bh-1471-test.sh	nightly	14	-	slow and never failed: 14s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/iron-law-guard-signal-test.sh	nightly	14	-	slow and never failed: 14s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/model-routes-build-lanes.bh-1510-1-test.sh	nightly	14	-	slow and never failed: 14s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/outcome-contracts-test.sh	nightly	14	-	slow and never failed: 14s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/resume-via-watchdog-test.sh	nightly	14	-	slow and never failed: 14s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/state-backup-cron-test.sh	nightly	14	-	slow and never failed: 14s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/batch-resolve-lead-fence.bh-1630-test.sh	nightly	13	-	slow and never failed: 13s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/blocked-resolver-supersede.bh-1642-test.sh	nightly	13	-	slow and never failed: 13s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/blocked-resolver.bh-980-test.sh	nightly	13	-	slow and never failed: 13s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/conductor-block-gate-test.sh	nightly	13	-	slow and never failed: 13s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/hotfix-conductor-degraded-test.sh	nightly	13	-	slow and never failed: 13s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/orphan-reconcile-test.sh	nightly	13	-	slow and never failed: 13s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/outcome-metrics-test.sh	nightly	13	-	slow and never failed: 13s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/postmerge-qa-test.sh	nightly	13	-	slow and never failed: 13s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/triage-shards-prstates.bh-1079-test.sh	nightly	13	-	slow and never failed: 13s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/blocked-resolver-wt-cleanup.bh-1363-test.sh	nightly	12	-	slow and never failed: 12s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/br-contested-test.sh	nightly	12	-	slow and never failed: 12s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/conductor-gates.bh-2275-test.sh	nightly	12	-	slow and never failed: 12s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/conductor-wake-keyed.bh-1387-test.sh	nightly	12	-	slow and never failed: 12s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/fix-round-claim.bh-2530-test.sh	nightly	12	-	slow and never failed: 12s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/flaky-rerun-test.sh	nightly	12	-	slow and never failed: 12s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/fleet-propagate.bh-1115-test.sh	nightly	12	-	slow and never failed: 12s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/pr-attempts-idempotent.bh-1387-test.sh	nightly	12	-	slow and never failed: 12s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/review-tighten-test.sh	nightly	12	-	slow and never failed: 12s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/routing-sweep-readers.bh-1027-test.sh	nightly	12	-	slow and never failed: 12s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/batch-resolve-trains.bh-1306-test.sh	nightly	11	-	slow and never failed: 11s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/blocked-resolver.bh-488-test.sh	nightly	11	-	slow and never failed: 11s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/evals-suite-test.sh	nightly	11	-	slow and never failed: 11s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/job-phases-test.sh	nightly	11	-	slow and never failed: 11s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/resolver-hold-test.sh	nightly	11	-	slow and never failed: 11s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/ticket-ownership.bh-1526-test.sh	nightly	11	-	slow and never failed: 11s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/batch-resolve-trains.bh-1269-test.sh	nightly	10	-	slow and never failed: 10s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/batch-resolve-trains.bh-1270-test.sh	nightly	10	-	slow and never failed: 10s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/hotfix-migrate-endpoint-test.sh	nightly	10	-	slow and never failed: 10s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/hotfix-rereview-order-test.sh	nightly	10	-	slow and never failed: 10s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/mc/queue-test.sh	nightly	10	-	slow and never failed: 10s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/merge-sweep-budget-test.sh	nightly	10	-	slow and never failed: 10s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/model-cooldown-fleet.bh-2319-test.sh	nightly	10	-	slow and never failed: 10s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/preplan-speculative-test.sh	nightly	10	-	slow and never failed: 10s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/qa-ban-guard-test.sh	nightly	10	-	slow and never failed: 10s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/rebase-on-pool-test.sh	nightly	10	-	slow and never failed: 10s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)
+tests/triage-noise-budget.bh-1168-test.sh	nightly	10	-	slow and never failed: 10s median, 0 failures in 35 sampled batch runs (test-value 2026-09-28)

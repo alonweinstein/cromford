@@ -1,0 +1,3 @@
+# BH-5667 (BH-5008 child 1): the live Mergify batches, directly under the
+# merge-queue rows (src/index.js ROUTES: ...mergeQueue, ...mergeQueueLive, ...mergeQueueReconcile).
+GET /api/merge-queue/live

@@ -1,0 +1,101 @@
+{
+  "id": "progress-push",
+  "name": "Progress push (outside dead-man, K2)",
+  "scope": "hub",
+  "script": "bin/progress-push.sh",
+  "cadence": "*/10 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-progress-push",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "PROGRESS_SPEND_WINDOW_MIN",
+      "type": "int",
+      "default": 60,
+      "zero_means": null,
+      "note": "Read by bin/progress-push.sh as ${PROGRESS_SPEND_WINDOW_MIN:-60}. K2 rule (a): the short spend window, in minutes, the jobs worker sums priced cost_rows over per (project, stage). Pushed to the watchdog in cfg.spend_window_min; the worker rejects a non-positive value and keeps its last good config (docs/OUTSIDE-DEADMAN.md)."
+    },
+    {
+      "env": "PROGRESS_SPEND_MIN_USD",
+      "type": "int",
+      "default": 5,
+      "zero_means": null,
+      "note": "Read by bin/progress-push.sh as ${PROGRESS_SPEND_MIN_USD:-5}. K2 rule (a): a lane whose short-window spend reaches this many USD with its progress stamp older than PROGRESS_SPEND_QUIET_MIN pages (spend without progress)."
+    },
+    {
+      "env": "PROGRESS_SPEND_QUIET_MIN",
+      "type": "int",
+      "default": 180,
+      "zero_means": null,
+      "note": "Read by bin/progress-push.sh as ${PROGRESS_SPEND_QUIET_MIN:-180}. K2 rule (a): how old, in minutes, a spending lane's progress stamp (done triage, done build, review verdict, merge) may be before it pages. Longer than the spend window on purpose: a single build can run past an hour."
+    },
+    {
+      "env": "PROGRESS_NOMERGE",
+      "type": "string",
+      "default": "1440:50,10080:250",
+      "zero_means": null,
+      "note": "Read by bin/progress-push.sh as ${PROGRESS_NOMERGE:-1440:50,10080:250}. K2 rule (a2): window-minutes:usd pairs; a project spending at least usd over the window with no merge inside it pages (the project-9 shape: $643 in a week, 0 merges). A day and a week by default; at most three windows are read. Windows clamp to 60-20160 min in the watchdog."
+    },
+    {
+      "env": "PROGRESS_SILENT_MULT",
+      "type": "int",
+      "default": 2,
+      "zero_means": null,
+      "note": "Read by bin/progress-push.sh as ${PROGRESS_SILENT_MULT:-2}. K2 rule (b): a lane with work pending pages when its progress is older than this many times its cadence (PROGRESS_LANE_CADENCE)."
+    },
+    {
+      "env": "PROGRESS_LANE_CADENCE",
+      "type": "string",
+      "default": "build:120,merge:60",
+      "zero_means": null,
+      "note": "Read by bin/progress-push.sh as ${PROGRESS_LANE_CADENCE:-build:120,merge:60}. K2 rule (b): each lane's normal cadence in minutes, lane:minutes pairs (triage|build|merge). A lane not listed is NOT judged for silent stops: triage is out by default (#2289 B2 — a finished triage job exists only when the gate runs, and owed tickets already page through stale-owed); add triage:60 or more to opt in. merge 60 until merge_queue rows are proven to reach landed/dropped. A malformed pair is dropped and counted in logs/progress-push.log."
+    },
+    {
+      "env": "PROGRESS_STAGE_LANES",
+      "type": "string",
+      "default": "triage:triage,plan:build,execute:build,fix:build,preplan:build,feature-map-draft:build,review:review,lead-review:any",
+      "zero_means": null,
+      "note": "Read by bin/progress-push.sh as ${PROGRESS_STAGE_LANES:-...}. K2 rule (a): cost_rows stage -> the progress lane its spend must move (triage|build|review|merge|qa|any). `any`, or a stage not listed, is judged against the project's newest progress of any kind; lead-review is `any` because its report is not a verdict row."
+    },
+    {
+      "env": "PROGRESS_DETECTORS",
+      "type": "string",
+      "default": "fleet-slo:15,pipeline-health:15,cost-rollup:60,alert-warn-flush:30,ci-minutes-watch:360,progress-push:10",
+      "zero_means": null,
+      "note": "Read by bin/progress-push.sh as ${PROGRESS_DETECTORS:-...}. K2 rule (c), watch the watchers: detector:cadence-minutes pairs. Each is a lane_ticks lane id (hub-scoped ones, per catalog/lanes.json, are judged by their newest row across boxes), a direct stamp (POST /api/stamp/<name> with the watchdog's STAMP_SECRET), or progress-push (this push itself; REQUIRED — the watchdog rejects a config without it). fleet-slo and pipeline-health are 15 because they tick in the same minute as this push. share-mirror is out until its stamp credential exists; then add share-mirror:1440 (publish-cromford.yml's daily trigger, armed). A detector with no run newer than PROGRESS_DETECTOR_MULT x its cadence pages."
+    },
+    {
+      "env": "PROGRESS_DETECTOR_MULT",
+      "type": "int",
+      "default": 2,
+      "zero_means": null,
+      "note": "Read by bin/progress-push.sh as ${PROGRESS_DETECTOR_MULT:-2}. K2 rule (c): how many of its own cadences may pass since a detector last ran before it pages. 2 on purpose: the push itself is */10 and received after it runs, so one missed tick stays under 20 min while the 29-min 09-19 lease outage pages at about 25."
+    },
+    {
+      "env": "PROGRESS_REPAGE_MIN",
+      "type": "int",
+      "default": 360,
+      "zero_means": null,
+      "note": "Read by bin/progress-push.sh as ${PROGRESS_REPAGE_MIN:-360}. K2 paging: an open incident is re-sent at most once per this many minutes; its clear is sent once."
+    },
+    {
+      "env": "PROGRESS_LOOKBACK_H",
+      "type": "int",
+      "default": 168,
+      "zero_means": null,
+      "note": "Read by bin/progress-push.sh as ${PROGRESS_LOOKBACK_H:-168}. How far back, in hours, the jobs worker looks for a stamp; older than this reads as never on record. Clamped 1-720 by the route."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/progress-push.log"
+  }
+}

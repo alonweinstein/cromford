@@ -1,0 +1,20 @@
+# tests/rb-raw-readers-baseline/ — the registry of suites that read
+# bin/run-build.sh as the RAW driver instead of the flatten. ONE FILE PER SUITE,
+# named for the suite with .txt appended, holding the sentence that says why the
+# flatten will not do for it.
+#
+# The flatten (tests/lib/rb-all.sh, read as $RB_ALL) puts every stage module's
+# body back at its call site, so a suite reading it sees the pipeline in its
+# original order at every state of the BH-478 split. A suite that reads the raw
+# driver instead sees a pipeline with holes in it the moment a body moves out.
+# The one honest reason to read the driver is to EXECUTE it — the flatten is not
+# runnable.
+#
+# Adding a reader: put `# reads-run-build: raw — <why>` in that suite's header
+# and add its file here. Retiring one: delete both. Two PRs doing either never
+# touch the same path — which is the whole point, and why this is a directory
+# of one-file entries rather than a pinned list (BH-1177).
+#
+# AN ENTRY IS A .txt FILE, and nothing else in here is — that is why this file
+# has no extension. tests/rb-modules-source-test.sh reports any entry that does
+# not name a suite that really reads the driver.

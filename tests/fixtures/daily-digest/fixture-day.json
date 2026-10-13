@@ -1,0 +1,117 @@
+{
+  "day": "2026-09-29",
+  "from": "2026-09-29T00:00:00Z",
+  "to": "2026-09-30T00:00:00Z",
+  "as_of": "2026-09-30T07:00:05Z",
+  "empty": false,
+  "throughput": {
+    "ok": true,
+    "merged": 2,
+    "by_project": [
+      { "project": "cromford", "merged": 1 },
+      { "project": "project-5", "merged": 1 }
+    ],
+    "filing_to_merge": { "p50_s": 5400, "measured_n": 2, "unmeasured_n": 1 }
+  },
+  "spend": {
+    "ok": true,
+    "usd": 12.5,
+    "calls": 41,
+    "unpriced_calls": 3,
+    "usd_per_merged_pr": 6.25,
+    "top_tickets": {
+      "rows": [
+        { "project": "cromford", "ticket": "BH-<9>&\"x\"", "usd": 7.25, "job_id": 9101 },
+        { "project": "project-5", "ticket": "TK-1712", "usd": 3.1, "job_id": 9102 }
+      ],
+      "truncated": false
+    }
+  },
+  "autonomy": {
+    "ok": true,
+    "batch_dequeues": {
+      "n": 1,
+      "basis": "merge-queue dequeue events and batch-resolve ejections",
+      "rows": [ { "source": "merge-queue", "project": "cromford", "key": "BH-3601", "at": "2026-09-29T11:04:00Z" } ],
+      "truncated": false
+    },
+    "manual_requeues": {
+      "n": 1,
+      "rows": [ { "project": "project-5", "key": "TK-1699", "verdict": "REQUEUE", "actor": "operator", "at": "2026-09-29T13:20:00Z" } ],
+      "truncated": false
+    },
+    "rebuild_loops": {
+      "n": 1,
+      "abandoned": 1,
+      "rows": [ { "project": "cromford", "key": "BH-3555", "rebuilds": 3, "at": "2026-09-29T16:42:00Z" } ],
+      "truncated": false
+    },
+    "human_interventions": {
+      "n": 3,
+      "by_table": {
+        "config_changes": 1, "model_route_changes": 0, "routing_changes": 0, "cost_cap_changes": 0,
+        "route_rule_changes": 0, "flaky_quarantine_changes": 0, "alert_actions": 1, "stage_events": 0,
+        "pauses": 1, "verdicts": 0, "ticket_hold": 0
+      }
+    }
+  },
+  "tripwires": {
+    "ok": true,
+    "n": 8,
+    "rows": [
+      { "kind": "CHILD_PLAN_TRIPWIRE", "project": "cromford", "key": "BH-<9>&\"x\"", "at": "2026-09-29T01:10:00Z" },
+      { "kind": "CHILD_PLAN_TRIPWIRE", "project": "cromford", "key": "BH-3610", "at": "2026-09-29T02:10:00Z" },
+      { "kind": "COST_BREAKER", "project": "project-5", "key": "TK-1701", "at": "2026-09-29T03:10:00Z" },
+      { "kind": "COST_BREAKER", "project": "project-3", "key": "TK-212", "at": "2026-09-29T04:10:00Z" },
+      { "kind": "SPLIT_WATCHDOG", "project": "cromford", "key": "BH-3620", "at": "2026-09-29T05:10:00Z" },
+      { "kind": "SPLIT_WATCHDOG", "project": "project-4", "key": "TK-2101", "at": "2026-09-29T06:10:00Z" },
+      { "kind": "REPAIR_EXHAUSTED", "project": "cromford", "key": "BH-3633", "at": "2026-09-29T07:10:00Z" },
+      { "kind": "REPAIR_EXHAUSTED", "project": "project-5", "key": "TK-1705", "at": "2026-09-29T08:10:00Z" }
+    ],
+    "truncated": false
+  },
+  "self_heals": {
+    "ok": true,
+    "n": 2,
+    "by_source": { "context-gate": 1, "review-rescue": 1 },
+    "rows": [
+      { "source": "context-gate", "key": "cromford:cromford-BH-3610-202609290110", "at": "2026-09-29T01:20:00Z" },
+      { "source": "review-rescue", "key": "project-3/TK-212:project-3-TK-212-202609290300", "at": "2026-09-29T03:20:00Z" }
+    ],
+    "truncated": false
+  },
+  "holds": {
+    "ok": true,
+    "n": 1,
+    "basis": "D1 holds only (console holds, BLOCKED_HUMAN PRs, triage-seen waiting-on-human)",
+    "rows": [ { "source": "BLOCKED_HUMAN", "project": "cromford", "key": "BH-3590", "since": "2026-09-29T09:00:00Z" } ],
+    "truncated": false
+  },
+  "human_verdict_prs": {
+    "ok": true,
+    "n": 1,
+    "rows": [ { "project": "cromford", "repo": "example-org/cromford", "number": 3591, "reason": "BLOCKED_HUMAN", "since": "2026-09-29T09:00:00Z" } ],
+    "truncated": false
+  },
+  "model_watch": {
+    "ok": true,
+    "rows": [
+      { "vendor": "anthropic", "model_id": "claude-opus-5-6", "suggestion": "try it on stage.review rung 1" },
+      { "vendor": "openai", "model_id": "gpt-6-astra-mini", "suggestion": "" }
+    ],
+    "truncated": false
+  },
+  "spotcheck_candidates": {
+    "ok": true,
+    "rows": [ { "repo": "example-org/project-5", "pr": 1788, "head_sha": "4f2a9c1e0b7d6a5c3e2f1a0b9c8d7e6f5a4b3c2d", "project": "project-5" } ],
+    "truncated": false
+  },
+  "factory": {
+    "ok": true,
+    "factory_stop": { "set": true, "value": "1", "actor": "operator", "updated_at": "2026-09-29T18:00:00Z" },
+    "all_off": { "set": false, "actor": null, "since": null },
+    "fleet_pauses": [ { "what": "build", "expires_at": "2026-09-30T18:00:00Z", "actor": "operator" } ]
+  },
+  "pr_health": { "ok": true, "rows": [], "skipped": 0 },
+  "past_sla": { "ok": true, "total": 4, "by_state": { "ready": 3, "blocked": 1 }, "as_of": "2026-09-29T23:55:00Z", "stale": false }
+}

@@ -1,0 +1,44 @@
+{
+  "libs": [
+    {
+      "id": "lead-delta",
+      "file": "bin/lib/lead-delta.sh",
+      "note": "BH-5294. When a PR head moves after the lead approved an earlier head, how small the change to the PR's own files must be for the lead review to read only the delta (the earlier report, the inter-diff and the conflict resolutions) on the SAME lead.review model route, instead of the whole branch. An unchanged patch is replayed with no review at all. Resolved by ld_knob through lib_env_apply in a subshell, then from this file's own default in the checkout. No model choice lives here.",
+      "knobs": [
+        {
+          "env": "LEAD_DELTA_REVIEW_MAX_LINES",
+          "type": "int",
+          "default": 40,
+          "min": 0,
+          "max": 2000,
+          "unit": "lines",
+          "zero_means": "off",
+          "required": true,
+          "note": "Added+deleted lines of the PR's own change between the lead-approved head and the new head (git diff --numstat, renames off) at or under which the lead review runs in delta mode. Over it, or 0, a full lead review as before. Main-merge lines are not counted (BH-5582). A protected path in the delta is a full review unless LEAD_DELTA_PROTECTED_MAX_LINES allows it. Read by bin/lib/lead-delta.sh with no literal."
+        },
+        {
+          "env": "LEAD_DELTA_REVIEW_MAX_BYTES",
+          "type": "int",
+          "default": 60000,
+          "min": 0,
+          "max": 400000,
+          "unit": "bytes",
+          "zero_means": "off",
+          "required": true,
+          "note": "Byte ceiling on the delta text (inter-diff plus git show --remerge-diff of each merge) bin/lead-review.sh puts in the prompt in place of the branch diff. Over it, or 0, the review reads the whole branch diff as before. Read by bin/lib/lead-delta.sh with no literal."
+        },
+        {
+          "env": "LEAD_DELTA_PROTECTED_MAX_LINES",
+          "type": "int",
+          "default": 20,
+          "min": 0,
+          "max": 2000,
+          "unit": "lines",
+          "zero_means": "off",
+          "required": true,
+          "note": "BH-5582. Own-change lines (main-merge lines excluded) at or under which a re-review whose delta touches a lead protected path (catalog/lead-protected-paths.tsv, .github/, .mergify.yml, schema, migrations) stays in delta mode, when the lead's word on the earlier head was MERGE or MERGE-WITH-NOTES. The prompt names each protected file for full scrutiny. It protects the lead's full read of a large protected change. Each time it fires, one full Opus lead review of the whole branch is not bought. 0 = every protected delta is a full review (the BH-5294 behaviour). Read by bin/lib/lead-delta.sh with no literal."
+        }
+      ]
+    }
+  ]
+}

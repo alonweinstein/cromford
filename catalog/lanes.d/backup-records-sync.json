@@ -1,0 +1,55 @@
+{
+  "id": "backup-records-sync",
+  "name": "Backup records sync",
+  "scope": "hub",
+  "script": "bin/backup-records-sync.sh",
+  "cadence": "*/5 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-backup-records-sync",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "BACKUP_SYNC_NOW",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it ($(date +%s)). Read by bin/backup-records-sync.sh as ${BACKUP_SYNC_NOW:-$(date +%s)}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "BACKUP_SYNC_CLIENT",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it ($H/bin/jobs-client.sh). Read by bin/backup-records-sync.sh as ${BACKUP_SYNC_CLIENT:-$H/bin/jobs-client.sh}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "HUB_BOX_NAME",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/backup-records-sync.sh as ${HUB_BOX_NAME:-}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "BF_RECORD_FRESH_MIN",
+      "type": "int",
+      "default": 35,
+      "zero_means": null,
+      "note": "Minutes a box's own backup report stays current enough to write a record for. Read by bin/backup-records-sync.sh as ${BF_RECORD_FRESH_MIN:-35}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/backup-records-sync.log"
+  }
+}

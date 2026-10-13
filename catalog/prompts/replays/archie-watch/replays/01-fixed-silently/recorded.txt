@@ -1,0 +1,5 @@
+FINDING: Build BH-5871 on cromford sat in WAIT_CI for 95 min. The sweep re-ran CI and the check went green at 07:12Z.
+CAUSE: lane stuck-work
+LEVER: none, the sweep fixed it and the check is green
+SAY: none
+VERDICT: none

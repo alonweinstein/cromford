@@ -1,0 +1,21 @@
+{
+  "libs": [
+    {
+      "id": "plan-thread",
+      "file": "bin/lib/plan-thread.sh",
+      "note": "BH-5799. The plan thread gate: a plan that does not cite, by comment id, a ticket comment by a person or this fleet's App that is newer than the plan is refused. Call site A in bin/lib/rb/plan.sh refuses a reused or adopted plan and plans fresh in the same run; call site B at the top of rb_review in bin/lib/rb/review.sh ends the build PLAN_STALE with plan.md moved aside. GitHub-issue projects only; an in-app board answers n/a. An unreadable thread fails open. Resolved by ptg_enforce with lib_env_apply plan-thread.",
+      "knobs": [
+        {
+          "env": "PLAN_THREAD_GATE_ENFORCE",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 1,
+          "zero_means": "warn only: log the uncited comments and continue",
+          "required": true,
+          "note": "1 = refuse a plan that misses a newer comment. 0 is the kill switch: one PLAN_THREAD_WARN line in pipeline.log and the build continues. Anything ptg_enforce cannot resolve reads as 1."
+        }
+      ]
+    }
+  ]
+}

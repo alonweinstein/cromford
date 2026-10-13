@@ -1,0 +1,56 @@
+{
+  "id": "alerts-groom",
+  "name": "Alerts groom",
+  "scope": "hub",
+  "script": "bin/alerts-groom.sh",
+  "cadence": "12 */2 * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-alerts-groom",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "ALERT_FLAG_RETENTION_DAYS",
+      "type": "int",
+      "default": 7,
+      "min": 2,
+      "max": 365,
+      "unit": "days",
+      "zero_means": null,
+      "note": "Days bin/alerts-groom.sh keeps flags/alerted-*-YYYYMMDD, by the date in the name. Code fallback ${ALERT_FLAG_RETENTION_DAYS-7} (7 when unset); below 2 or not a whole number the groom refuses and deletes nothing, so today's and yesterday's flag always survive."
+    },
+    {
+      "env": "ALERTS_GROOM_MIGRATION_JOBS",
+      "type": "int",
+      "default": 20,
+      "min": 1,
+      "max": 200,
+      "unit": "jobs",
+      "zero_means": null,
+      "note": "BH-2526: newest kind=migration jobs per project whose stage_events rule 2 of bin/alerts-groom.sh reads for an APPLIED PR#n. Code fallback ${ALERTS_GROOM_MIGRATION_JOBS:-20}; not a whole number >= 1 holds the row as unknown.",
+      "read_in": "bin/lib/groom-db.sh"
+    },
+    {
+      "env": "PH_ACTIVE_FRESH_MIN",
+      "type": "int",
+      "default": 30,
+      "min": 1,
+      "max": 1440,
+      "unit": "minutes",
+      "zero_means": null,
+      "note": "BH-4056: how old pipeline-health's state/health-active.stamp (written after a COMPLETE pass) may be before the ph-absent pass of bin/alerts-supersede.py and bin/alerts-hygiene-ph-backlog.sh resolve anything from health-active.txt. Code fallback 30 when unset; not a whole number >= 1 holds the pass, never clamps.",
+      "read_in": "bin/ph_active.py"
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/alerts-groom.log"
+  }
+}

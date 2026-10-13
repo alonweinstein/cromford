@@ -1,0 +1,14 @@
+# @hub-lanes
+# Merge conductor (docs/MERGE-CONDUCTOR.md, 2026-09-12): ONE owner for every
+# harness PR from open to merged — state rows (ledger kind=pr_state), age
+# budgets, one alert per PR per state. OBSERVE-ONLY until flags/merge-conductor-
+# actions (rebase + head-bound re-review) and flags/merge-conductor-merge exist;
+# flags/automerge-disabled pauses every action.
+# C2 (2026-09-24): webhooks wake the conductor through bin/wake-loop.sh, so this
+# */30 tick is a BACKSTOP — bin/lib/cadence-backstop.sh lets one through every
+# lib.cadence-backstop.cadence_backstop_min_merge_conductor minutes (default 15;
+# 0 = every tick, as before). Fail-open: the lane is skipped ONLY on the gate's deliberate rc 3; a missing,
+# broken or aborted gate runs it.
+# BH-1389 (2026-09-28): */5 -> */30 once keyed ticks were proven live; with the default
+# 15-minute backstop row every tick passes the gate, and rollback is this line back to */5.
+*/30 * * * * /root/harness/bin/hub-lease.sh check && { /root/harness/bin/lib/cadence-backstop.sh merge-conductor; [ $? -ne 3 ]; } && /root/harness/bin/merge-conductor.sh >> /root/harness/logs/merge-conductor-cron.log 2>&1

@@ -1,0 +1,5 @@
+Welcom to Acme!
+
+Your account is ready. Sign in any time to see your orders.
+
+The Acme team

@@ -1,0 +1,47 @@
+[
+  {
+    "id": 5882216652,
+    "created_at": "2026-09-29T02:00:59Z",
+    "updated_at": "2026-09-29T02:03:02Z",
+    "user": {
+      "login": "mergify[bot]"
+    },
+    "body": "Queued — the merge queue status continues in [this comment ↓](https://github.com/example-org/cromford/pull/3396#issuecomment-5882237379)."
+  },
+  {
+    "id": 5882237379,
+    "created_at": "2026-09-29T02:03:02Z",
+    "updated_at": "2026-09-29T03:45:49Z",
+    "user": {
+      "login": "mergify[bot]"
+    },
+    "body": "<!---\nDO NOT EDIT\n-*- Mergify Payload -*-\n{\"version\": 1, \"state\": \"dequeued\", \"queue_rule_name\": \"default\", \"queued_at\": \"2026-09-29T02:03:01.765266+00:00\", \"estimated_time_of_merge\": null, \"speculative_check_pr\": null, \"required_conditions\": []}\n-*- Mergify Payload End -*-\n-->\n\n# Merge Queue Status\n\n- ✅ **Entered queue** — `2026-09-29 02:03 UTC` · Rule: `default` · triggered by @operator with the [`@mergifyio queue` command](https://github.com/example-org/cromford/pull/3396#issuecomment-5882236683)\n- ❌ **Checks failed** · on draft #3397\n- 🚫 **Left the queue** — `2026-09-29 02:17 UTC` · at `b49a1b832b0d294ee7a46325ac2ace79dc50d235`\n\nThis pull request spent **14 minutes 34 seconds** in the queue, including **11 minutes 21 seconds** running CI.\n\n## Reason\n\nThe merge conditions cannot be satisfied due to failing checks\n\n- `Pure-logic gate fixtures`\n\nFailing checks:\n- ❌ [`Pure-logic gate fixtures`](https://github.com/example-org/cromford/actions/runs/36511019338/job/109225593793) ([job log](https://github.com/example-org/cromford/actions/runs/36511019338/job/109225593793))\n\n## Hint\n\nYou may have to fix your CI before adding the pull request to the queue again.\nIf you update this pull request, to fix the CI, it will automatically be requeued once the queue conditions match again.\nIf you think this was a flaky issue instead, you can requeue the pull request, without updating it, by posting a `@mergifyio queue` comment.\n\n<details>\n<summary><strong>Waiting for</strong></summary>\n\n- [ ] `check-success = \"Pure-logic gate fixtures\"`\n- [ ] `check-success = \"Tests cannot touch a real harness\"`\n\n</details>\n<details>\n<summary>All conditions</summary>\n\n- [ ] `check-success = \"Pure-logic gate fixtures\"`\n- [ ] `check-success = \"Tests cannot touch a real harness\"`\n- `#changes-requested-reviews-by=0`\n  - [X] #3396\n- [X] `check-success = \"Jobs worker — routes + schema\"`\n- [X] `check-success = \"Mission Control SPA — unit tests + build\"`\n- [X] `check-success = \"Prompt replay evals (prompts/** only)\"`\n- [X] `check-success = \"Syntax + shellcheck + config integrity\"`\n- [X] `check-success = \"Test determinism lint\"`\n\n</details>\n\nRequeued — the merge queue status continues in [this comment ↓](https://github.com/example-org/cromford/pull/3396#issuecomment-5883232765)."
+  },
+  {
+    "id": 5883232765,
+    "created_at": "2026-09-29T03:45:49Z",
+    "updated_at": "2026-09-29T03:47:22Z",
+    "user": {
+      "login": "mergify[bot]"
+    },
+    "body": "<!---\nDO NOT EDIT\n-*- Mergify Payload -*-\n{\"version\": 1, \"state\": \"waiting\", \"queue_rule_name\": null, \"queued_at\": null, \"estimated_time_of_merge\": null, \"speculative_check_pr\": null, \"required_conditions\": []}\n-*- Mergify Payload End -*-\n-->\n\n# Merge Queue Status\n\n- 🟠 **Waiting for queue conditions**\n- ⏳ Enter queue\n- ⏳ Run checks\n- ⏳ Merge\n\n<details>\n<summary>Required conditions to enter a queue</summary>\n\n- [X] `-closed` [📌 queue requirement]\n- [X] `-conflict` [📌 queue requirement]\n- [X] `-draft` [📌 queue requirement]\n- [X] any of [📌 queue -> configuration change requirements]:\n  - [X] `-mergify-configuration-changed`\n  - [ ] `check-success = @mergify/Configuration changed`\n  - [ ] `check-success = @mergify/Configuration has been deleted`\n- [X] any of [🔀 queue conditions]:\n  - [X] all of [📌 queue conditions of queue rule `default`]:\n    - [X] `#changes-requested-reviews-by=0`\n    - [X] `base = main`\n    - [X] `check-success = \"Prompt replay evals (prompts/** only)\"`\n    - [X] `check-success = \"Syntax + shellcheck + config integrity\"`\n    - [X] `check-success = \"Test determinism lint\"`\n  - [ ] all of [📌 queue conditions of queue rule `hotfix`]:\n    - [ ] `label = fix-main-red`\n    - [X] `#changes-requested-reviews-by=0`\n    - [X] `base = main`\n    - [X] `check-success = \"Prompt replay evals (prompts/** only)\"`\n    - [X] `check-success = \"Syntax + shellcheck + config integrity\"`\n    - [X] `check-success = \"Test determinism lint\"`\n\n</details>"
+  },
+  {
+    "id": 5883249221,
+    "created_at": "2026-09-29T03:47:29Z",
+    "updated_at": "2026-09-29T04:03:36Z",
+    "user": {
+      "login": "mergify[bot]"
+    },
+    "body": "<!---\nDO NOT EDIT\n-*- Mergify Payload -*-\n{\"version\": 1, \"state\": \"merged\", \"queue_rule_name\": \"default\", \"queued_at\": \"2026-09-29T03:47:22.452872+00:00\", \"estimated_time_of_merge\": null, \"speculative_check_pr\": null, \"required_conditions\": []}\n-*- Mergify Payload End -*-\n-->\n\n# Merge Queue Status\n\n- ✅ **Entered queue** — `2026-09-29 03:47 UTC` · Rule: `default` · triggered by rule `queue on the harness label`\n- ✅ **Checks passed** · on draft #3410\n- ✅ **Merged** — `2026-09-29 04:03 UTC` · at `df9211636a88a6f822870b89434740d5529cf87e` · merge\n\nThis pull request spent **16 minutes 13 seconds** in the queue, including **12 minutes 21 seconds** running CI.\n\n<details>\n<summary>Required conditions to merge</summary>\n\n- `#changes-requested-reviews-by=0`\n  - [X] #3396\n- [X] `check-success = \"Jobs worker — routes + schema\"`\n- [X] `check-success = \"Mission Control SPA — unit tests + build\"`\n- [X] `check-success = \"Prompt replay evals (prompts/** only)\"`\n- [X] `check-success = \"Pure-logic gate fixtures\"`\n- [X] `check-success = \"Syntax + shellcheck + config integrity\"`\n- [X] `check-success = \"Test determinism lint\"`\n- [X] `check-success = \"Tests cannot touch a real harness\"`\n\n</details>"
+  },
+  {
+    "id": 5883254101,
+    "created_at": "2026-09-29T03:47:59Z",
+    "updated_at": "2026-09-29T03:47:59Z",
+    "user": {
+      "login": "mergify[bot]"
+    },
+    "body": "> `requeue`\n\n#### ☑️ This pull request is already queued\n\n\n\n"
+  }
+]

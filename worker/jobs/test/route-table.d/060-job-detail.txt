@@ -1,0 +1,3 @@
+POST re:/^\/api\/jobs\/([^/]+)\/heartbeat$/
+GET re:/^\/api\/jobs\/([^/]+)\/live$/
+GET re:/^\/api\/jobs\/([^/]+)$/

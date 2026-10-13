@@ -1,0 +1,1 @@
+{"name":"triage-state-off","readers":["bin/lib/triage-state-pr.sh","bin/lib/triage-state.sh"],"box_scoped":true,"what":"stops the TRIAGE-STATE per-ticket pre-check (bin/lib/triage-state.sh): no hashing, no rows written, every tick runs as it did before the pre-check existed; it also stops the PR pre-check (bin/lib/triage-state-pr.sh, PR_STATE_MODE reads off)"}

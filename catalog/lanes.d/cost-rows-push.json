@@ -1,0 +1,55 @@
+{
+  "id": "cost-rows-push",
+  "name": "Cost rows push",
+  "scope": "box",
+  "script": "bin/cost-rows-push.sh",
+  "cadence": "1,11,21,31,41,51 * * * *",
+  "boxes": [
+    "project-4",
+    "hub",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-cost-rows-push",
+    "aliases": [
+      {
+        "name": "cost-rows-push-off",
+        "off_when": "present"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "JOBS_HTTP",
+      "type": "string",
+      "default": "none",
+      "zero_means": null,
+      "note": "Read by bin/cost-rows-push.sh as ${JOBS_HTTP:-none}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "COST_ROWS_LANE_PROJECTS",
+      "read_in": "bin/lib/cost-row.sh",
+      "type": "string",
+      "default": "fleet alert-triage responder medic rule-miner greenfield trap-eval",
+      "zero_means": null,
+      "settable": true,
+      "note": "Space-separated lane names (rows whose project is a lane, not a fleet.conf project) the cost-rows mirror may send, on top of bin/fleet-conf.sh --projects (BH-3982). Read as ${COST_ROWS_LANE_PROJECTS:-…} in cost_row_allowed_projects; reaches bin/cost-rows-push.sh through lane_env_apply cost-rows-push. Exact, case-sensitive match. Settings key lane.cost-rows-push.cost_rows_lane_projects."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/cost-rows-push.log"
+  }
+}

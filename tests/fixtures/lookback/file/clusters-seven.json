@@ -1,0 +1,100 @@
+[
+  {
+    "fingerprint": "c1c1c1c1c1c1c1c1",
+    "key_kind": "lane",
+    "key_value": "lane1",
+    "item_ids": [
+      "i2",
+      "i3"
+    ],
+    "target": "harness",
+    "project": "cromford",
+    "title": "Cluster 1",
+    "cause": "Cause 1",
+    "proposed_fix": "Fix 1"
+  },
+  {
+    "fingerprint": "c2c2c2c2c2c2c2c2",
+    "key_kind": "lane",
+    "key_value": "lane2",
+    "item_ids": [
+      "i2",
+      "i3"
+    ],
+    "target": "harness",
+    "project": "cromford",
+    "title": "Cluster 2",
+    "cause": "Cause 2",
+    "proposed_fix": "Fix 2"
+  },
+  {
+    "fingerprint": "c3c3c3c3c3c3c3c3",
+    "key_kind": "lane",
+    "key_value": "lane3",
+    "item_ids": [
+      "i2",
+      "i3"
+    ],
+    "target": "harness",
+    "project": "cromford",
+    "title": "Cluster 3",
+    "cause": "Cause 3",
+    "proposed_fix": "Fix 3"
+  },
+  {
+    "fingerprint": "c4c4c4c4c4c4c4c4",
+    "key_kind": "lane",
+    "key_value": "lane4",
+    "item_ids": [
+      "i2",
+      "i3"
+    ],
+    "target": "harness",
+    "project": "cromford",
+    "title": "Cluster 4",
+    "cause": "Cause 4",
+    "proposed_fix": "Fix 4"
+  },
+  {
+    "fingerprint": "c5c5c5c5c5c5c5c5",
+    "key_kind": "lane",
+    "key_value": "lane5",
+    "item_ids": [
+      "i2",
+      "i3"
+    ],
+    "target": "harness",
+    "project": "cromford",
+    "title": "Cluster 5",
+    "cause": "Cause 5",
+    "proposed_fix": "Fix 5"
+  },
+  {
+    "fingerprint": "c6c6c6c6c6c6c6c6",
+    "key_kind": "lane",
+    "key_value": "lane6",
+    "item_ids": [
+      "i2",
+      "i3"
+    ],
+    "target": "harness",
+    "project": "cromford",
+    "title": "Cluster 6",
+    "cause": "Cause 6",
+    "proposed_fix": "Fix 6"
+  },
+  {
+    "fingerprint": "c7c7c7c7c7c7c7c7",
+    "key_kind": "lane",
+    "key_value": "lane7",
+    "item_ids": [
+      "i2",
+      "i3"
+    ],
+    "target": "harness",
+    "project": "cromford",
+    "title": "Cluster 7",
+    "cause": "Cause 7",
+    "proposed_fix": "Fix 7"
+  }
+]

@@ -1,0 +1,3 @@
+# K2: the outside dead-man's progress stamps (read-only), at the END of the
+# table, after call-guard, where src/index.js puts it.
+GET /api/progress/stamps

@@ -1,0 +1,1 @@
+{"name":"plan-touch-off","readers":["bin/touch-files.sh","bin/plan-overlap.sh"],"box_scoped":true,"what":"turns off the declared Files-to-touch set, so the overlap guard and the claim fall back to every path the plan mentions (bin/planned-files.sh plus hotspot mentions)"}

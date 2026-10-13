@@ -1,0 +1,6 @@
+# tests/mc/expected-map.d/BH-2361.tsv — BH-2361 (BH-2311.4): the rows-first held
+# check (log) and the every-tick pr_state merge (settle); origin=lib, new module functions.
+log	mc_hold_rows_file	lib
+log	mc_hold_rows_load	lib
+log	mc_hold_tick_flush	lib
+settle	mc_rows_merge	lib

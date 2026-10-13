@@ -1,0 +1,5 @@
+# tests/mc/expected-map.d/BH-3348.tsv — BH-3348: the once-a-day alert when
+# mc_enqueue_mergify cannot publish the lead-verdict commit status (queue,
+# beside mc_queue_inactive_alert, whose lock and ledger shape it shares);
+# origin=lib because it is a new module function.
+queue	mc_status_unpublished_alert	lib

@@ -1,0 +1,174 @@
+{
+  "id": "wake-loop",
+  "name": "Wake loop",
+  "scope": "box",
+  "script": "bin/wake-loop.sh",
+  "cadence": "* * * * *",
+  "boxes": [
+    "project-4",
+    "hub",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-10",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-wake-loop",
+    "aliases": [
+      {
+        "name": "wake-loop-off",
+        "off_when": "present"
+      },
+      {
+        "name": "wake-launch-off",
+        "off_when": "partial"
+      },
+      {
+        "name": "wake-coalesce-off",
+        "off_when": "partial"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "HARNESS_CHECKOUT",
+      "type": "string",
+      "default": "/root/harness-checkout",
+      "zero_means": null,
+      "read_in": "bin/lib/wake-class-push.sh",
+      "note": "Read by bin/lib/wake-class-push.sh as ${HARNESS_CHECKOUT:-/root/harness-checkout} (prompts_touched). Registered by BH-1351 because section 7 now scans the sourced class libs; NOT settable from the control plane — it is a path a root lane uses, so only env/global.env on the box moves it. Same row shape as fleet-propagate's.",
+      "settable": false
+    },
+    {
+      "env": "WAKE_BUDGET_STRETCH",
+      "type": "int",
+      "default": 5,
+      "zero_means": null,
+      "note": "Read by bin/wake-loop.sh as ${WAKE_BUDGET_STRETCH:-5}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "WAKE_CLAIM_LIMIT",
+      "type": "int",
+      "default": 200,
+      "min": 1,
+      "max": 500,
+      "zero_means": null,
+      "note": "Read by bin/wake-loop.sh as ${WAKE_CLAIM_LIMIT:-200}: how many wake rows one claim (POST /api/wakes/claim) scans. Anything but an integer in 1..500 is 200 with one log line. A capped scan is deferred, never dropped: the cursor moves only to the highest row scanned, and the rest is the next cycle's claim (BH-2525.2)."
+    },
+    {
+      "env": "WAKE_COALESCE_S",
+      "type": "int",
+      "default": 120,
+      "zero_means": null,
+      "note": "Read by bin/wake-loop.sh as ${WAKE_COALESCE_S:-120}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "WAKE_CONDUCTOR_FULL",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 1,
+      "zero_means": "off",
+      "note": "BH-5521. Read by bin/wake-loop.sh as ${WAKE_CONDUCTOR_FULL:-0}; anything but 0 or 1 is 0 with one log line. Matters only with WAKE_CONDUCTOR_KEYED=1. 0 = a wake never starts an unkeyed (fleet-wide) conductor run: a drain whose wakes name no PR launches nothing and owes nothing, a `*` owed line is dropped, and more than 50 owed keys launch as 50 keyed with the rest put back; the hourly cron sweep and the 5-minute keyed backstop cover the rest. 1 = the old fall-through to an unkeyed run (rollback)."
+    },
+    {
+      "env": "WAKE_CONDUCTOR_KEYED",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 1,
+      "zero_means": "off",
+      "note": "Read by bin/wake-loop.sh as ${WAKE_CONDUCTOR_KEYED:-0}; anything but 0 or 1 is 0 with one log line. 0 = the unkeyed launch (today); 1 = a wake launch hands the conductor the PR keys it drained (MC_ONLY_PR) and the conductor runs only those PRs; the cron sweep still covers everything (BH-1387)."
+    },
+    {
+      "env": "WAKE_CONDUCTOR_PER_TICK",
+      "type": "int",
+      "default": 1,
+      "zero_means": null,
+      "note": "Read by bin/wake-loop.sh as ${WAKE_CONDUCTOR_PER_TICK:-1}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "WAKE_CONDUCTOR_SHA_LOOKUPS",
+      "type": "int",
+      "default": 5,
+      "min": 0,
+      "max": 20,
+      "zero_means": "off",
+      "note": "BH-5521. Read by bin/wake-loop.sh as ${WAKE_CONDUCTOR_SHA_LOOKUPS:-5}; not a number is 5 with one log line. Per drain, how many checks-wake shas that state/merge-conductor/pr-state.tsv cannot place are looked up on GitHub (GET repos/<repo>/commits/<sha>/pulls, one REST read each, bin/lib/wake-conductor-keys.sh); an open PR with that head becomes a keyed launch. Past the limit a sha is counted skipped. 0 = no lookups."
+    },
+    {
+      "env": "WAKE_COOLDOWN_S",
+      "type": "int",
+      "default": 120,
+      "zero_means": null,
+      "note": "Read by bin/wake-loop.sh as ${WAKE_COOLDOWN_S:-120}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "WAKE_FLAKY_COOLDOWN_S",
+      "type": "int",
+      "default": 21600,
+      "zero_means": null,
+      "read_in": "bin/lib/wake-class-flaky.sh",
+      "note": "Read by bin/lib/wake-class-flaky.sh as ${WAKE_FLAKY_COOLDOWN_S:-21600}: the cooled() window between two wake-driven flaky-detect launches per project. Registered by BH-1351 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "WAKE_LOOP_CYCLES",
+      "type": "int",
+      "default": 4,
+      "zero_means": null,
+      "note": "Read by bin/wake-loop.sh as ${WAKE_LOOP_CYCLES:-4}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "WAKE_LOOP_INTERVAL_S",
+      "type": "int",
+      "default": 15,
+      "zero_means": null,
+      "note": "Read by bin/wake-loop.sh as ${WAKE_LOOP_INTERVAL_S:-15}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "WAKE_PROMPT_EVAL_COOLDOWN_S",
+      "type": "int",
+      "default": 86400,
+      "zero_means": null,
+      "read_in": "bin/lib/wake-class-push.sh",
+      "note": "Read by bin/lib/wake-class-push.sh as ${WAKE_PROMPT_EVAL_COOLDOWN_S:-86400}: the cooled() window between two wake-driven prompt-eval launches (a metered LLM lane). Registered by BH-1351 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "WAKE_PUSH_WINDOW_S",
+      "type": "int",
+      "default": 900,
+      "zero_means": null,
+      "note": "Read by bin/wake-loop.sh as ${WAKE_PUSH_WINDOW_S:-900}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "WAKE_QUEUE_PER_TICK",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 60,
+      "zero_means": null,
+      "read_in": "bin/lib/wake-class-queue.sh",
+      "note": "Read by bin/lib/wake-class-queue.sh as ${WAKE_QUEUE_PER_TICK:-1}: queue-class fly launches (fly-dispatch + fly-pool-tick) per wake-loop invocation; 0 = unlimited; a non-number is 1, logged once. A held launch writes state/wake-queue-owed and the next invocation's first drain pays it; the fly-dispatch/fly-pool-tick cron is the backstop (BH-4170)."
+    },
+    {
+      "env": "WAKE_TRIAGE_COOLDOWN_S",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/wake-loop.sh as ${WAKE_TRIAGE_COOLDOWN_S:-$COALESCE}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/wake-loop.log"
+  }
+}

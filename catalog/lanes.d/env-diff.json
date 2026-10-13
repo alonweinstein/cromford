@@ -1,0 +1,55 @@
+{
+  "id": "env-diff",
+  "name": "Env diff",
+  "scope": "box",
+  "script": "bin/env-diff.sh",
+  "cadence": "*/15 * * * *",
+  "boxes": [
+    "project-4",
+    "hub",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-10",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-env-diff"
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "ENV_DIFF",
+      "type": "int",
+      "default": 1,
+      "zero_means": "off",
+      "note": "Read by bin/env-diff.sh as ${ENV_DIFF:-1}; 0 stops the lane before it reads or writes anything (BH-19)."
+    },
+    {
+      "env": "ENV_DIFF_BOX",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/env-diff.sh as ${ENV_DIFF_BOX:-$(hostname)}: the box name the alert carries. NOT settable from the control plane — it is an identity, so only env/global.env on the box moves it (BH-19).",
+      "settable": false
+    },
+    {
+      "env": "ENV_DIFF_MAX_ITEMS",
+      "type": "int",
+      "default": 20,
+      "zero_means": null,
+      "note": "Read by bin/env-diff.sh as ${ENV_DIFF_MAX_ITEMS:-20}: how many changes the alert line lists before it says (+N more); the full list is always in logs/env-diff.log. 0 or non-numeric falls back to 20 (BH-19)."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/env-diff.log"
+  }
+}

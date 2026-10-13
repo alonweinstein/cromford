@@ -1,0 +1,2 @@
+POST re:/^\/api\/jobs\/([^/]+)\/retry$/
+POST re:/^\/api\/jobs\/([^/]+)\/requeue$/

@@ -1,0 +1,2 @@
+TK-4790 2026-08-23 blocked-by PR #612 (schema migration must land first)
+TK-4791 2026-08-24 ready — client confirmed the export columns

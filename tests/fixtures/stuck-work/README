@@ -1,0 +1,24 @@
+stuck-work FACTS fixtures (BH-3781)
+
+A FACTS line is one TSV line per item. The field order is fixed in
+bin/lib/stuck-work/classify.sh and tests/stuck-work-stub.bh-3781-test.sh (S6b)
+checks this list against it:
+
+FACTS: kind item url draft labels lead_status lead_status_at verdict verdict_sha verdict_at head mergify cond_state cond_since resolver_at dqw_action_at job_stage job_stage_seen issue_blocked issue_hold open_pr first_seen
+
+`-` means absent, `?` means the source could not be read (never the same as
+absent). kind is pr or ticket. Every *_at, *_since and *_seen field is epoch
+seconds.
+
+Sample, kind pr (tabs shown as <TAB>): an approved, non-draft PR the lead
+marked ready, with nothing from mergify, CI, the resolver or a build job:
+
+pr<TAB>o/r#12<TAB>https://github.com/o/r/pull/12<TAB>0<TAB>ai-build<TAB>ready<TAB>1700000000<TAB>APPROVE<TAB>abc<TAB>1700000100<TAB>abc<TAB>-<TAB>-<TAB>-<TAB>-<TAB>-<TAB>-<TAB>-<TAB>-<TAB>-<TAB>-<TAB>1700000000
+
+Sample, kind ticket: an open ticket with a build job at stage execute, no PR
+yet, and the blocked/hold labels unreadable:
+
+ticket<TAB>o/r#3781<TAB>https://github.com/o/r/issues/3781<TAB>-<TAB>ai-build<TAB>-<TAB>-<TAB>-<TAB>-<TAB>-<TAB>-<TAB>-<TAB>-<TAB>-<TAB>-<TAB>-<TAB>execute<TAB>1700000200<TAB>?<TAB>?<TAB>-<TAB>1700000200
+
+The classifier suite (tests/stuck-work-classify.bh-3781-test.sh) reads the
+classify-*.txt files here (.txt so the share-mirror leakcheck can audit them); the fact-reader slices add theirs alongside.

@@ -1,0 +1,2 @@
+# BH-3150 (BH-2510.0): the QUEUES panel's deploy-queue action, a 501 stub, after queue-actions.
+POST /api/deploy-queue/action

@@ -1,0 +1,30 @@
+# catalog/test-quarantine-protected.txt — suites flaky quarantine never touches (BH-3686).
+#
+# Read by bin/lib/test-protected.sh (tp_protected). One entry per line:
+# <path-or-glob><spaces><reason>. `#` starts a comment; blank lines are skipped.
+# An exact path wins over any glob. Globs match like `case`, as tt_hit does in
+# bin/test-tiers.sh. Every line must match at least one existing suite
+# (tests/flaky-quarantine-contract.bh-3686-test.sh case C1 checks this).
+#
+# A missing or unreadable copy of this file protects EVERY suite: quarantine
+# fails closed.
+tests/verification-map-build-test.sh      the union lane's verification contract
+tests/verification-map-no-commit-test.sh  the union lane's verification contract
+tests/generated-files-train-test.sh       the union lane's verification contract
+tests/test-tiers-test.sh                  pins the tier map CI selection runs on
+tests/ci-plan-test.sh                     pins which suites CI runs
+tests/render-rules-test.sh                pins the fleet rules render
+tests/harness-ci-cost-shape-test.sh       pins the CI workflow's shape
+tests/harness-nightly-workflow-test.sh    pins the nightly workflow
+tests/*bh-3686*                           the quarantine machinery's own suites
+tests/*ratchet*                           ratchets hold baselines, a red is a regression
+tests/switch-*                            kill switches
+tests/merge-*                             merge gates
+tests/*approval*                          approval binding
+tests/*spend*                             spend caps
+tests/*brake*                             brakes
+tests/*scratch*                           the scratch-tree guard every suite relies on
+tests/*trace-safety*                      trap and teardown safety
+tests/*leak*                              secret leak guards
+tests/*secret*                            secret handling
+tests/*iron-law*                          iron-law scans

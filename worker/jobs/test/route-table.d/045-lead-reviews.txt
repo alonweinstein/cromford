@@ -1,0 +1,15 @@
+# BH-1949: the lead review requests, directly under the verdict rows they end in
+# (src/index.js ROUTES: ...verdicts, ...leadReviews, ...catalog).
+POST /api/lead-reviews
+GET /api/lead-reviews
+POST /api/lead-reviews/start
+# BH-5779: the stale-running sweep, between start and the per-id routes.
+POST /api/lead-reviews/reclaim-stale
+GET re:/^\/api\/lead-reviews\/([^/]+)$/
+POST re:/^\/api\/lead-reviews\/([^/]+)\/claim$/
+# BH-5351: the claim heartbeat, between claim and result.
+POST re:/^\/api\/lead-reviews\/([^/]+)\/heartbeat$/
+POST re:/^\/api\/lead-reviews\/([^/]+)\/result$/
+# BH-5400: the reset route, between result and the promoted stamp.
+POST re:/^\/api\/lead-reviews\/([^/]+)\/reset$/
+POST re:/^\/api\/lead-reviews\/([^/]+)\/promoted$/

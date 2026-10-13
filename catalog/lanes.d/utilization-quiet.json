@@ -1,0 +1,92 @@
+{
+  "id": "utilization-quiet",
+  "name": "Went-quiet alert",
+  "scope": "hub",
+  "script": "bin/utilization-quiet.sh",
+  "cadence": "20 7 * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-utilization-quiet",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "UTIL_QUIET_WINDOW_H",
+      "type": "int",
+      "default": 72,
+      "min": 24,
+      "max": 168,
+      "unit": "hours",
+      "zero_means": null,
+      "read_in": "bin/utilization-quiet.sh",
+      "note": "BH-4012: how far back the went-quiet check looks. Read by bin/utilization-quiet.sh as UTIL_QUIET_WINDOW_H with 72 as the documented fallback (also when the value is not an integer). The DORA reads use it rounded up to whole days.",
+      "settable": true
+    },
+    {
+      "env": "UTIL_QUIET_PRIOR_DAYS",
+      "type": "int",
+      "default": 7,
+      "min": 1,
+      "max": 30,
+      "unit": "days",
+      "zero_means": null,
+      "read_in": "bin/utilization-quiet.sh",
+      "note": "BH-4012: the 'week before' the window, in days. The prior merges are DORA merged over window+these days minus merged over the window. Fallback 7.",
+      "settable": true
+    },
+    {
+      "env": "UTIL_QUIET_MIN_ROWS",
+      "type": "int",
+      "default": 60,
+      "min": 1,
+      "max": 168,
+      "unit": "rows",
+      "zero_means": null,
+      "read_in": "bin/utilization-quiet.sh",
+      "note": "BH-4012: a project with fewer hourly snapshots than this in the window is unmeasured, never quiet. Fallback 60.",
+      "settable": true
+    },
+    {
+      "env": "UTIL_QUIET_ENABLED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "read_in": "bin/utilization-quiet.sh",
+      "note": "BH-4012: read by bin/utilization-quiet.sh as ${UTIL_QUIET_ENABLED:-1}; the code literal is the documented fallback. 0 writes ` disabled` and stops.",
+      "settable": true
+    },
+    {
+      "env": "UTIL_NOW",
+      "type": "string",
+      "default": "",
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/utilization-quiet.sh",
+      "note": "Test seam: epoch seconds that replace the clock. Honoured only under HARNESS_TEST_SANDBOX=1 and only when it is all digits. NOT settable from the control plane.",
+      "settable": false
+    },
+    {
+      "env": "HARNESS_TEST_SANDBOX",
+      "type": "string",
+      "default": "",
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/utilization-quiet.sh",
+      "note": "Test seam gate: bin/utilization-quiet.sh honours UTIL_NOW only when this is 1 (the test harness sets it). Never set on a box, and NOT settable from the control plane.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/utilization-quiet.log"
+  }
+}

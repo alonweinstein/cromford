@@ -1,0 +1,33 @@
+{
+  "libs": [
+    {
+      "id": "deployment",
+      "file": "bin/lib/deployment.sh",
+      "note": "BH-4080. The one home of every value specific to the deployment this harness was built on: our repo and org, the operator's login and commit identity, the bot identities, the workers.dev subdomain, the box naming convention and the hub's fleet name. Each knob is `: \"${X:=default}\"`, so env/global.env (or an export) wins. Every knob is settable:false: a repo slug, a push identity or a host writable from a page is a hijack path. bin/deployment-lint.sh fails on a new literal of any of them outside its home; docs/config-inventory/deployment.md is the report.",
+      "knobs": [
+        {"env": "HARNESS_REPO", "type": "string", "default": "example-org/cromford", "zero_means": null, "required": false, "settable": false,
+         "note": "owner/name of the harness's own GitHub repo: rule miner, main-red lanes, CI runner status, flaky tier, lookback, stuck-work, restore drill, the box clone in load-project. Lane-specific names (LOOKBACK_HARNESS_REPO, CI_RUNNERS_SLUG, FLAKY_TIER_REPO, STUCK_WORK_REPO) still win where they exist. Set it in env/global.env."},
+        {"env": "HARNESS_GH_OWNER", "type": "string", "default": "example-org", "zero_means": null, "required": false, "settable": false,
+         "note": "The GitHub owner the App mints tokens for when GH_APP_DEFAULT_OWNERS is unset (bin/lib/gh-app-default.sh), and the owner poll-commands names. Unset, it is the owner half of HARNESS_REPO, so a fork sets HARNESS_REPO and gets this for free. Set it in env/global.env."},
+        {"env": "HARNESS_OPERATOR_LOGIN", "type": "string", "default": "operator", "zero_means": null, "required": false, "settable": false,
+         "note": "The operator's GitHub login: the first entry of the PR author and verdict author defaults (bin/lib/gh-pr-list.sh), merge-sweep's author, the triage gate's self actor, the cost lanes' author: queries, gh-pat-charge-alert's wording. A trust list member, so env/global.env only."},
+        {"env": "HARNESS_GIT_NAME", "type": "string", "default": "operator", "zero_means": null, "required": false, "settable": false,
+         "note": "Commit name a box uses when it has no global git identity (bin/lib/git-identity.sh, fly/builder-runner.sh, bootstrap-machine.sh's hint). Set it in env/global.env."},
+        {"env": "HARNESS_GIT_EMAIL", "type": "string", "default": "operator@example.com", "zero_means": null, "required": false, "settable": false,
+         "note": "Commit email paired with HARNESS_GIT_NAME, and the MC_GIT_EMAIL default on the merge conductor's, lander's, batch-resolve's and review-rescue's merges. gi_check refuses a push whose commits carry another email. Set it in env/global.env."},
+        {"env": "HARNESS_MERGE_GIT_NAME", "type": "string", "default": "box", "zero_means": null, "required": false, "settable": false,
+         "note": "Committer name on the merge conductor's, lander's, batch-resolve's and review-rescue's own merges. MC_GIT_NAME still wins where it is read. Set it in env/global.env."},
+        {"env": "HARNESS_BOT_GIT_NAME", "type": "string", "default": "cromford", "zero_means": null, "required": false, "settable": false,
+         "note": "Commit name of the harness bot (verification-map retrofit commits, the rebase fixup in bin/lib/mc/rebase.sh). Set it in env/global.env."},
+        {"env": "HARNESS_BOT_GIT_EMAIL", "type": "string", "default": "harness@example.com", "zero_means": null, "required": false, "settable": false,
+         "note": "Commit email paired with HARNESS_BOT_GIT_NAME. Set it in env/global.env."},
+        {"env": "HARNESS_WORKERS_SUBDOMAIN", "type": "string", "default": "operator", "zero_means": null, "required": false, "settable": false,
+         "note": "The Cloudflare workers.dev subdomain: JOBS_URL defaults to https://harness-jobs.<sub>.workers.dev when UNSET (an empty JOBS_URL still means no worker), LOCKS_URL to https://harness-locks.<sub>.workers.dev. Set it in env/global.env."},
+        {"env": "HARNESS_BOX_PREFIX", "type": "string", "default": "box-", "zero_means": null, "required": false, "settable": false,
+         "note": "Box naming convention: bin/box-for.sh answers <prefix><project minus -os> for a fleet.conf row with no box column, and load-project.sh's default box is <prefix>small. Set it in env/global.env."},
+        {"env": "HARNESS_HUB_BOX", "type": "string", "default": "box-hub", "zero_means": null, "required": false, "settable": false,
+         "note": "The hub's fleet name when HUB_BOX_NAME is unset (HUB_BOX_NAME, registered by fleet-status-push, always wins): bin/lib/hub-box.sh, bin/lib/cron-lines.sh, backup freshness, fleet-status-push, up10-lane. Set it in env/global.env."}
+      ]
+    }
+  ]
+}

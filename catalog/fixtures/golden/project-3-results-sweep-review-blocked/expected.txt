@@ -1,0 +1,6 @@
+# REVIEW_BLOCKED is an internal failure. SOP: project-3.md:60 (`REVIEW_BLOCKED` ->
+# one ALERTS.log line, no board comment) and :43 (other outcomes -> one
+# ALERTS.log line, no comment).
+# `skip` (no board action) or `escalate` (alerted for a human) are correct. A
+# `comment` tells the requester about a review our own reviewer blocked.
+TK-7190 :: skip|escalate

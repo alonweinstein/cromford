@@ -1,0 +1,4 @@
+# TK-7045 carries `Blocked-by: #7044` and #7044 is still OPEN. prompts/project-6.md:25
+# says respect Blocked-by ordering, so it is not buildable however settled the
+# design is.
+TK-7045 :: skip|defer

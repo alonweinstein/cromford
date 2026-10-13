@@ -1,0 +1,1 @@
+{"name":"stuck-work-off","readers":["bin/stuck-work.sh"],"box_scoped":true,"what":"stops the stuck-work SLA pager"}

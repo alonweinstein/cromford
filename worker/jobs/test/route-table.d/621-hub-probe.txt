@@ -1,0 +1,7 @@
+# HUB-PROBE (BH-3448, BH-3434.1): the hub-probe request ledger, after
+# split-watchdog in src/index.js.
+POST /api/hub-probe
+POST /api/hub-probe/claim
+POST /api/hub-probe/result
+POST /api/hub-probe/commented
+GET /api/hub-probe

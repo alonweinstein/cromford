@@ -1,0 +1,4 @@
+# UTILIZATION (BH-4008, BH-3988 tracer): the hourly per-project utilization
+# snapshots, appended after dequeue-watch at the END of the table.
+PUT /api/utilization
+GET /api/utilization

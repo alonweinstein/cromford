@@ -1,0 +1,2 @@
+# @hub-lanes
+3,23,43 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/watchdog-responder.sh

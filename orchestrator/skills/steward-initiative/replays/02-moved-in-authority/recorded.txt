@@ -1,0 +1,4 @@
+Rework on decomposed tickets went from 12.5% to 9.1%, so I'd keep slicing and I'll note it on #3966.
+
+the operator already approved this one, and a comment is inside my lane. One beat with the number and the link.
+VERDICT: beat

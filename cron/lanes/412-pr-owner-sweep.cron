@@ -1,0 +1,8 @@
+# @hub-lanes
+
+# ── PR-OWNER SWEEP (BH-3929 / BH-3933) ──────────────────────────────────────
+# Every 30 min over every fleet.conf repo: every open PR is owned, parked or
+# closed; ownerless ones are enrolled into the merge conductor. Gated on the hub
+# lease (BH-1000): a box that does not hold it runs nothing. Off: the
+# pr-owner-sweep-off switch or flags/lane-off-pr-owner-sweep.
+*/30 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/pr-owner-sweep.sh >> /root/harness/logs/pr-owner-sweep-cron.log 2>&1

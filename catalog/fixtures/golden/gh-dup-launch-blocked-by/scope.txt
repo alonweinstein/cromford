@@ -1,0 +1,2 @@
+board issues: CHANGED 61 "Correspondent detail page" (comments: 1 -> 2; activity)
+board issues: CHANGED 62 "Export button on the correspondent list" (comments: 0 -> 1; activity)

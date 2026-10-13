@@ -1,0 +1,5 @@
+# STAFF FINDINGS (BH-5560, BH-5556.3): the findings ledger claim (dedup by
+# agent-core fingerprint before any filing or model call) and the human
+# suppression, appended after staff at the END of the table.
+POST /api/staff/findings/claim
+POST /api/staff/suppressions

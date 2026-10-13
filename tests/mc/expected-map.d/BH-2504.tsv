@@ -1,0 +1,3 @@
+# BH-2504: the conductor loads bin/lib/hold-push.sh on first push (rebase, beside
+# mc_rebase and mc_restack, the two pushes it guards).
+rebase	mc_hold_push_load	lib

@@ -1,0 +1,11 @@
+POST /api/queue
+GET /api/queue
+POST /api/queue/claim
+PATCH /api/queue
+# BH-1026.1: the deploy queue's four routes, added to BOTH lists as the
+# comment above says — directly under the build queue's four, which is where
+# appending them to `routes` in src/routes/queue.js puts them.
+POST /api/deploy-queue
+GET /api/deploy-queue
+POST /api/deploy-queue/claim
+POST /api/deploy-queue/depart

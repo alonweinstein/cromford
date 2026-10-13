@@ -1,0 +1,13 @@
+# tests/raw-claude-allowlist.txt — the files allowed to run `claude -p` WITHOUT
+# going through bin/agent-call.sh or bin/claude-cost.sh, one per line, each with
+# the reason it is allowed. tests/no-raw-claude-test.sh fails on any other.
+#
+# The bar for a line here is NOT "this call is cheap". It is "wrapping this call
+# would change what it proves". A credential probe asserts that the bare CLI can
+# authenticate; run it through a wrapper and a wrapper bug reads as an auth
+# failure, which is the one answer that lane must never give wrongly. Everything
+# else — anything that does WORK with a model — goes through claude-cost.sh, and
+# the cheapness of a call is not a reason to make its spend invisible.
+#
+# Format:  <path>: <reason>
+#

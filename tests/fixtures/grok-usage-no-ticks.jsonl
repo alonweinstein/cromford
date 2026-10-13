@@ -1,0 +1,10 @@
+# PROVENANCE: HYPOTHESIS, not a capture. Same nesting and same token key names
+# as the verified 2026-08-20 shape, with NO costUsdTicks key at all. This is the
+# subscription-billed session we believe the fleet is producing today:
+# GROK_BILLING is unset everywhere, so agent-call.sh strips XAI_API_KEY and the
+# CLI bills the SuperGrok pool, which has no metered ticks to report. Nobody has
+# captured one of these from a live box (no grok CLI on the build box, ssh to
+# every grok box timed out 2026-09-15 23:10Z) — treat the ABSENCE of the ticks
+# key as the thing under test and the rest as reconstruction.
+{"jsonrpc":"2.0","method":"session/update","params":{"sessionId":"s-406b","update":{"sessionUpdate":"usage","usage":{"inputTokens":40000,"outputTokens":4000,"cachedReadTokens":20000,"cacheCreationTokens":0}}}}
+{"jsonrpc":"2.0","method":"session/update","params":{"sessionId":"s-406b","update":{"sessionUpdate":"usage","usage":{"inputTokens":100000,"outputTokens":10000,"cachedReadTokens":50000,"cacheCreationTokens":0}}}}

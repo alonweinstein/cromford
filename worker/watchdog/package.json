@@ -1,0 +1,9 @@
+{
+  "name": "harness-watchdog",
+  "private": true,
+  "type": "module",
+  "description": "External dead-man's switch for the box fleet. No dependencies on purpose, so node --test can drive the worker directly.",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  }
+}

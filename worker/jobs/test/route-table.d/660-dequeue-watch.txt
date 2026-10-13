@@ -1,0 +1,9 @@
+# DEQUEUE-WATCH (BH-3727, BH-3719.1): the dequeue ledger — events, one-claim
+# actions and the summary, appended after daily-digest at the END of the table.
+POST /api/dequeue-watch/events
+PUT /api/dequeue-watch/events/state
+GET /api/dequeue-watch/events
+POST /api/dequeue-watch/actions/claim
+PUT /api/dequeue-watch/actions/state
+GET /api/dequeue-watch/actions
+GET /api/dequeue-watch/summary

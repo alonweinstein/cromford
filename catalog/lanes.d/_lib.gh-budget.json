@@ -1,0 +1,33 @@
+{
+  "libs": [
+    {
+      "id": "gh-budget",
+      "file": "bin/lib/gh-budget.sh",
+      "note": "BH-1939 (BH-1511.2). The GitHub rate-limit budget library, sourced by 17 lanes. Applied by gh-budget.sh itself at file scope, in a subshell, so a fail-closed exit never stops the lane that sourced it. GH_BUDGET_DB (the 0/1 switch for the shared half) and GH_BUDGET_MIN_REMAINING (already a settings row through setting_get gh_budget_min_remaining) are not registered here.",
+      "knobs": [
+        {
+          "env": "GH_BUDGET_TTL_S",
+          "type": "int",
+          "default": 60,
+          "min": 0,
+          "max": 3600,
+          "unit": "seconds",
+          "zero_means": "no cache",
+          "required": true,
+          "note": "How long one rate_limit reading (the box cache, and the fleet row it pulls) is trusted before a fresh read. Was ${GH_BUDGET_TTL_S:-60}."
+        },
+        {
+          "env": "GH_BUDGET_DB_TIMEOUT_S",
+          "type": "int",
+          "default": 4,
+          "min": 1,
+          "max": 60,
+          "unit": "seconds",
+          "zero_means": null,
+          "required": true,
+          "note": "The jobs-worker timeout for the shared budget row's GET and PUT, so a worker outage delays a lane by seconds. Was ${GH_BUDGET_DB_TIMEOUT_S:-4}."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "_doc": "Readiness levels for bin/readiness-report.sh. A level is reached when every check in `requires` (its own and every lower level's) is `pass`, and no check in `must_not_fail` is `fail` — `unknown`, `skipped` and `na` never block, because a probe that could not run is not a finding about the repo. `unlocks` is what the harness can do with a repo at that level; docs/READINESS.md says which of those are wired today and which are policy. Resolution order: $READINESS_LEVELS (used as given, never fallen back from) > $HARNESS/flags/readiness-levels.json > <script-dir>/../catalog/readiness-levels.json > $HARNESS/catalog/readiness-levels.json > the builtin copy inside the script, which tests/readiness-report-test.sh A1 pins to this file.",
+  "max_level": 5,
+  "levels": {
+    "1": {
+      "requires": ["context.agents", "secrets.no_committed_env"],
+      "must_not_fail": [],
+      "unlocks": "a watcher can read the repo's own instructions, and enrolling it leaks no committed env file"
+    },
+    "2": {
+      "requires": ["tests.present", "secrets.env_example", "secrets.gitignore"],
+      "must_not_fail": [],
+      "unlocks": "a build can prove itself with a test run instead of a claim"
+    },
+    "3": {
+      "requires": ["ci.workflow"],
+      "must_not_fail": [],
+      "unlocks": "a PR carries a check the merge lanes can read before they decide anything"
+    },
+    "4": {
+      "requires": ["preview.config", "board.source"],
+      "must_not_fail": ["tests.green", "ci.branch_protection", "migrations.appliable"],
+      "unlocks": "eligible for tier-1 automerge (policy — no code reads this level yet, see docs/READINESS.md)"
+    },
+    "5": {
+      "requires": ["context.vmap", "context.arch"],
+      "must_not_fail": ["tests.green", "ci.branch_protection", "migrations.appliable"],
+      "unlocks": "the planner's primer and the architecture contract render from the repo itself"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+# STAFF SCREEN (BH-5567, BH-5556.10): the console /staff screen's reads (the
+# roster with Archie, one agent's open findings, one finding), appended after
+# staff-findings at the END of the table. Read only.
+GET /api/staff/roster
+GET /api/staff/findings
+GET /api/staff/finding

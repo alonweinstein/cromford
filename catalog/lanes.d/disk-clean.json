@@ -1,0 +1,189 @@
+{
+  "id": "disk-clean",
+  "name": "Disk clean",
+  "scope": "box",
+  "script": "bin/disk-clean.sh",
+  "cadence": "47 4 * * *",
+  "boxes": [
+    "project-4",
+    "hub",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-disk-clean",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "AGENT_SESSION_KEEP_DAYS",
+      "type": "int",
+      "default": 7,
+      "min": 1,
+      "zero_means": null,
+      "read_in": "bin/box-housekeeping.sh",
+      "note": "Days a file under ~/.grok/sessions or ~/.codex/sessions is kept before bin/box-housekeeping.sh (disk-clean stage 9) deletes it. Not a whole number >= 1: the session sweep is skipped and logged, never guessed. BH-4440."
+    },
+    {
+      "env": "BOX_HK_HOME",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it (${HOME:-/root}). Read by bin/box-housekeeping.sh as ${BOX_HK_HOME:-...}. A test seam for BH-4440's housekeeping; NOT settable from the control plane — it is a path or clock a root lane uses, so only env/global.env on the box moves it.",
+      "settable": false,
+      "read_in": "bin/box-housekeeping.sh"
+    },
+    {
+      "env": "BOX_HK_NOW",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it ($(date +%s)). Read by bin/box-housekeeping.sh as ${BOX_HK_NOW:-...}. A test seam for BH-4440's housekeeping; NOT settable from the control plane — it is a path or clock a root lane uses, so only env/global.env on the box moves it.",
+      "settable": false,
+      "read_in": "bin/box-housekeeping.sh"
+    },
+    {
+      "env": "BOX_HK_PROC",
+      "type": "string",
+      "default": "/proc",
+      "zero_means": null,
+      "note": "Read by bin/box-housekeeping.sh as ${BOX_HK_PROC:-...}. A test seam for BH-4440's housekeeping; NOT settable from the control plane — it is a path or clock a root lane uses, so only env/global.env on the box moves it.",
+      "settable": false,
+      "read_in": "bin/box-housekeeping.sh"
+    },
+    {
+      "env": "BOX_HK_TMP",
+      "type": "string",
+      "default": "/tmp",
+      "zero_means": null,
+      "note": "Read by bin/box-housekeeping.sh as ${BOX_HK_TMP:-...}. A test seam for BH-4440's housekeeping; NOT settable from the control plane — it is a path or clock a root lane uses, so only env/global.env on the box moves it.",
+      "settable": false,
+      "read_in": "bin/box-housekeeping.sh"
+    },
+    {
+      "env": "CLOSEOUT_TSV_KEEP_DAYS",
+      "type": "int",
+      "default": 30,
+      "zero_means": null,
+      "note": "Read by bin/disk-clean.sh as ${CLOSEOUT_TSV_KEEP_DAYS:-30}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "DISK_CLEAN_NOW",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it ($(date +%s)). Read by bin/disk-clean.sh as ${DISK_CLEAN_NOW:-$(date +%s)}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "DISK_CLEAN_NPM_DIR",
+      "type": "string",
+      "default": "/root/.npm",
+      "zero_means": null,
+      "note": "Read by bin/disk-clean.sh as ${DISK_CLEAN_NPM_DIR:-/root/.npm}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "DISK_CLEAN_PROC",
+      "type": "string",
+      "default": "/proc",
+      "zero_means": null,
+      "note": "Read by bin/disk-clean.sh as ${DISK_CLEAN_PROC:-/proc}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "DISK_CLEAN_REPOS",
+      "type": "string",
+      "default": "/root/repos",
+      "zero_means": null,
+      "note": "Read by bin/disk-clean.sh as ${DISK_CLEAN_REPOS:-/root/repos}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "HARNESS_ROOT",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "no static default — the script computes it (${HARNESS:-/root/harness). Read by bin/disk-clean.sh as ${HARNESS_ROOT:-${HARNESS:-/root/harness}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    },
+    {
+      "env": "LEASES_STALE_D",
+      "type": "int",
+      "default": 7,
+      "zero_means": null,
+      "note": "Read by bin/disk-clean.sh as ${LEASES_STALE_D:-7}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "LOCK_STALE_H",
+      "type": "int",
+      "default": 24,
+      "zero_means": null,
+      "note": "Read by bin/disk-clean.sh as ${LOCK_STALE_H:-24}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "NPM_CACHE_MAX_MB",
+      "type": "int",
+      "default": 2048,
+      "min": 256,
+      "zero_means": null,
+      "note": "Read by bin/disk-clean.sh as ${NPM_CACHE_MAX_MB:-2048}: stage 1 runs npm cache clean --force when the npm cache is over this many MB. Not a whole number: the clean is skipped and logged. BH-4440 (was a literal)."
+    },
+    {
+      "env": "TMP_AGE_SCAN_TIMEOUT_S",
+      "type": "int",
+      "default": 60,
+      "min": 5,
+      "zero_means": null,
+      "read_in": "bin/box-housekeeping.sh",
+      "note": "Seconds bin/box-housekeeping.sh may spend reading the newest mtime inside one /tmp entry; an entry whose age is not read in time is kept. BH-4440."
+    },
+    {
+      "env": "TMP_SCRATCH_STALE_H",
+      "type": "int",
+      "default": 24,
+      "zero_means": null,
+      "note": "Read by bin/disk-clean.sh as ${TMP_SCRATCH_STALE_H:-24}. How old tmp/brfix/* and tmp/state-backup.* must be before stage 8 sweeps them; age never deletes alone (no /proc cwd and no cmdline naming the path are both required). Registered by BH-1363 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "TMP_SWEEP_DEADLINE_S",
+      "type": "int",
+      "default": 600,
+      "min": 30,
+      "zero_means": null,
+      "read_in": "bin/box-housekeeping.sh",
+      "note": "Total seconds for bin/box-housekeeping.sh's /tmp sweep; entries past it are left for the next run and counted left=. BH-4440."
+    },
+    {
+      "env": "TMP_SWEEP_KEEP_GLOBS",
+      "type": "string",
+      "default": ".* systemd-private-* snap-private-tmp tmux-* worktrees repos builds",
+      "zero_means": null,
+      "read_in": "bin/box-housekeeping.sh",
+      "note": "Space-separated basename globs of /tmp top-level entries bin/box-housekeeping.sh never removes, at any age. Empty means this default. BH-4440."
+    },
+    {
+      "env": "TMP_TOPLEVEL_STALE_D",
+      "type": "int",
+      "default": 2,
+      "min": 1,
+      "zero_means": null,
+      "read_in": "bin/box-housekeeping.sh",
+      "note": "Days since the newest mtime anywhere inside a /tmp top-level entry before bin/box-housekeeping.sh removes it; anything a /proc fd or cwd points into is kept at any age. Invalid: the /tmp sweep is skipped and logged. BH-4440."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/disk-clean.log"
+  }
+}

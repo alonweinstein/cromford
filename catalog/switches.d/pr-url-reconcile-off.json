@@ -1,0 +1,1 @@
+{"name":"pr-url-reconcile-off","readers":["bin/pr-url-reconcile.sh"],"box_scoped":true,"what":"stops the pr-url-reconcile lane: it does nothing"}

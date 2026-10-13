@@ -1,0 +1,2 @@
+# @hub-lanes
+40 5 * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/cli-version-check.sh >/dev/null 2>&1 # 23 min after the 05:17 sweep: every box's claude/codex vs the hub + catalog/cli-min-versions.json floors; ONE ALERTS line per box behind/missing/split, fleet table -> D1

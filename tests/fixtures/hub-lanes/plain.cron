@@ -1,0 +1,7 @@
+SHELL=/bin/bash
+MAILTO=""
+@reboot /usr/sbin/sshd
+
+# a box-specific comment the renderer never owns
+*/5 * * * * /root/harness/bin/watchdog-ping.sh
+17 5 * * * /root/harness/bin/update-runners.sh

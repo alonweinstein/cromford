@@ -1,0 +1,1 @@
+{"name":"agent-call-ledger-off","readers":["bin/agent-call.sh"],"box_scoped":true,"what":"stops agent-call.sh recording its call ledger, so no stage replays a recorded answer"}

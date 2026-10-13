@@ -1,0 +1,61 @@
+{
+  "id": "merge-queue",
+  "name": "Merge queue",
+  "scope": "project",
+  "factory_stop": "merge",
+  "script": "bin/merge-queue.sh",
+  "cadence": "6,26,46 * * * *",
+  "boxes": [
+    "project-4",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-merge-queue",
+    "aliases": [
+      {
+        "name": "automerge-disabled",
+        "off_when": "present"
+      },
+      {
+        "name": "automerge-disabled-",
+        "off_when": "present"
+      },
+      {
+        "name": "conductor-owns-merges",
+        "off_when": "partial"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "MC_MAIN_RED_LABEL",
+      "type": "string",
+      "default": "fix-main-red",
+      "zero_means": null,
+      "note": "Read by bin/merge-queue.sh as ${MC_MAIN_RED_LABEL:-fix-main-red}, and registered only so that read is visible (section 7 of tests/lanes-registry-test.sh). NOT settable here (BH-1985): the label is set in ONE place, the lib row lib.main-red-label.mc_main_red_label (BH-1770), which every reader resolves first. A lane row would split the label for this lane alone, so lane-gate ignores one; MAIN_RED_LABEL is a deprecated alias.",
+      "settable": false
+    },
+    {
+      "env": "MQ_ABSENT_ALERT_AFTER",
+      "type": "number",
+      "default": 3,
+      "zero_means": "off",
+      "note": "Read by bin/merge-queue.sh as ${MQ_ABSENT_ALERT_AFTER:-3} (BH-784). How many consecutive HTTP 404 reads on ONE queue row before exactly one ALERTS.log line names it. The row is never dequeued on a 404 and the counter clears on any readable tick, so this only decides when a human hears about a row GitHub keeps answering 404 for. 0 means the alert never fires; the counter starts at 1."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/merge-queue.log"
+  }
+}

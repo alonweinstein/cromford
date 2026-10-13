@@ -1,0 +1,23 @@
+# .github/actionlint.yaml — actionlint's config for this repo.
+#
+# WHAT IT IS FOR. actionlint knows GitHub's hosted runner labels and nothing
+# else, so a `runs-on:` naming a self-hosted pool reads as
+# `label "bh-ci" is unknown`. Declaring the pool's labels here keeps that from
+# being a wall of known-false findings — which is how a lint stops being read at
+# all, so the next real one (a typo'd label whose jobs queue forever) arrives
+# into noise nobody looks at.
+#
+# IT IS INERT TODAY, ON PURPOSE. Since BH-1209 every job is
+# `runs-on: ${{ fromJSON(vars.CI_RUNNER || '"ubuntu-latest"') }}`, so actionlint
+# sees an expression rather than a label and checks nothing here. The file stays
+# for the case it was written for: a `runs-on` that names the pool directly,
+# whether in this workflow or a new one.
+#
+# IT IS NOT THE GUARD. What actually stops a literal creeping back into
+# harness-ci.yml is tests/harness-ci-runners.bh-1206-test.sh, which refuses a
+# hosted image name or a pool label on any runs-on line and anywhere in the
+# workflow's executable text — stricter than actionlint, and it fails the PR
+# rather than printing a note. docs/CI-RUNNERS.md has the switch itself.
+self-hosted-runner:
+  labels:
+    - bh-ci

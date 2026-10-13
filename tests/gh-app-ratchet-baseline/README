@@ -1,0 +1,29 @@
+# tests/gh-app-ratchet-baseline/ — the registry of scripts in bin/ that still
+# call `gh` on the fleet PAT. ONE FILE PER SCRIPT, named for the script's path
+# under bin/ with .txt appended, holding the sentence that says which slice of
+# the #425 App-token rollout converts it.
+#
+# It is a directory of one-file entries and not a list for one measured reason:
+# two PRs deleting ADJACENT LINES of one sorted list still conflict, while two
+# PRs deleting two different files never can. Converting a script is:
+#
+#   1. arm it (source bin/lib/gh-app-auth.sh, `gh_auth_for "$SLUG" || true`
+#      before the first gh call, `gh_auth_reset` at the end — or the
+#      mc_use_token / mc_reset_token pair from bin/lib/merge-conductor-lib.sh),
+#   2. change that script's own header line (one line under the shebang) to
+#      `# gh-identity: app-token`,
+#   3. delete that script's own file in here.
+#
+# Three paths, all of them yours. Nobody re-pins a count, and two conversions in
+# flight at once touch six disjoint paths.
+#
+# AN ENTRY IS A .txt FILE, and nothing else in here is. That is why this file
+# has no extension: the ratchet reads `*.txt` only, so notes can live beside the
+# entries without being counted as one. An entry that does not name a real file
+# in bin/ is reported either way.
+#
+# A script that is raw ON PURPOSE and forever gets NO entry here — it belongs in
+# the twin directory, tests/gh-app-ratchet-by-design/, and it needs one: a
+# permanent exception is a REVIEWED decision, not a sentence a script writes
+# about itself. The two registries are mutually exclusive and the ratchet fails
+# either way round, so a file is always exactly one of queued or exempt.

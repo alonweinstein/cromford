@@ -1,0 +1,15 @@
+# catalog/nightly-strict.txt — ratchets the nightly run checks in STRICT mode
+# (RATCHET_MODE=strict + --strict: the whole live tree against the committed
+# baseline), read by bin/nightly-strict-ratchets.sh.
+#
+# In every PR and batch these ratchets judge only the DIFF (tests/lib/ratchet-
+# delta.sh), so a direct push to main, or a batch whose selection skipped one,
+# can land drift that no diff ever showed. The nightly strict pass is where that
+# drift shows up. A suite on this list whose tree does not carry strict mode yet
+# is skipped with a notice, never run in its old absolute shape and never red.
+#
+# One suite path per line, then a reason.
+tests/switch-ratchet.bh-2320-test.sh        bare flags/*-off switch reads vs the FLOOR less .drop files
+tests/alert-writers-ratchet.bh-2314-test.sh raw ALERTS.log writers vs the per-file baseline
+tests/gh-graphql-reads-lint.bh-1585-test.sh GraphQL reads vs the frozen allowlist
+tests/alert-line-wave-fly-review.bh-2314-test.sh blocked-resolver lane-alert counts vs the BH-2363 pins

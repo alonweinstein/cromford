@@ -1,0 +1,22 @@
+{
+  "libs": [
+    {
+      "id": "scratch-closure-grace",
+      "file": "bin/lib/scratch-closure-grace.sh",
+      "note": "BH-4632: the grace the BH-4552 scratch-closure lint (tests/lib/scratch-closure-lint.sh lint()) gives a suite raised by a PR head cut before the lint landed. Such a suite prints its findings as WARN plus one grace line and does not fail, until the head is rebased onto or merged with post-lint main, or the window below ends. Read through lane_knob in libs scope by scg_grace_days; tests/scratch-closure-lint-grace.bh-4632-test.sh drives it.",
+      "knobs": [
+        {
+          "env": "SCRATCH_CLOSURE_GRACE_DAYS",
+          "type": "int",
+          "default": 14,
+          "min": 0,
+          "max": 60,
+          "unit": "days",
+          "zero_means": "off",
+          "required": false,
+          "note": "How many days the grace lasts, counted from the committer time of the commit that added tests/scratch-closure-lint.bh-4552-test.sh (found from git). 0 = off: every raised suite is red, as before BH-4632. A non-integer answer falls back to this default. The lib carries no literal of its own; with no harness root (a CI runner) the env, then this default, answers."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "id": "healthcheck",
+  "name": "Healthcheck",
+  "scope": "project",
+  "script": "bin/healthcheck.sh",
+  "cadence": "43 6,18 * * *",
+  "boxes": [
+    "project-4",
+    "project-6",
+    "project-1",
+    "project-3",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-healthcheck",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "HEALTHCHECK_TMP_ROOT",
+      "type": "string",
+      "default": "/tmp",
+      "zero_means": null,
+      "note": "Read by bin/healthcheck.sh as ${HEALTHCHECK_TMP_ROOT:-/tmp}. Registered by BH-1165 so it is visible; NOT settable from the control plane — it is a command, a host, a path, an identity or a test seam a root lane uses, so only env/global.env on the box moves it; no reviewed min/max yet, so nothing is clamped.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/healthcheck.log"
+  }
+}

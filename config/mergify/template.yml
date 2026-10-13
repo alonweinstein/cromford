@@ -1,0 +1,79 @@
+merge_queue:
+  # Batches built speculatively at once; each one costs CI runner minutes (ceiling 8 in bin/mergify-template.sh).
+  max_parallel_checks: @@MAX_PARALLEL@@
+  @@QUEUE_MODE_BLOCK@@
+
+queue_rules:
+  # FIRST IN THE FILE IS FIRST IN LINE: the hotfix queue is above default, and it
+  # takes `fix-main-red` PRs only. `hotfix` is the pool's build-priority label and
+  # queues in default like any other PR (BH-2121).
+  - name: hotfix
+    queue_conditions:
+      - base=@@BASE@@
+      - label=fix-main-red
+      # BH-2275: a standing changes-requested review keeps a PR out (and dequeues it).
+      - "#changes-requested-reviews-by=0"
+      @@QUEUE_CHECKS@@
+    merge_conditions:
+      # ... and a batch holding one cannot merge (BH-2275).
+      - "#changes-requested-reviews-by=0"
+      @@CHECKS@@
+    merge_method: @@MERGE_METHOD@@
+    # An emergency never shares a batch and never waits to fill one. Not a knob.
+    batch_size: 1
+    batch_max_wait_time: 0 s
+    max_checks_retries: 0
+    checks_timeout: @@CHECKS_TIMEOUT@@
+  @@SOLO_QUEUE_BLOCK@@
+  - name: default
+    # The PR's own CI must be green before it may enter the queue ...
+    queue_conditions:
+      - base=@@BASE@@
+      # BH-2275: a standing changes-requested review keeps a PR out (and dequeues it).
+      - "#changes-requested-reviews-by=0"
+      @@QUEUE_CHECKS@@
+      @@DEFAULT_STATUS_CHECKS@@
+    # ... and the batch, built on current main, must be green before it merges.
+    merge_conditions:
+      # ... and a batch holding one cannot merge (BH-2275).
+      - "#changes-requested-reviews-by=0"
+      @@CHECKS@@
+    merge_method: @@MERGE_METHOD@@
+    # A batch is all-or-nothing: one red PR ejects every sibling in it.
+    batch_size: @@BATCH_SIZE@@
+    batch_max_wait_time: @@BATCH_MAX_WAIT@@
+    # A retry hides a real failure and costs another CI run: 0 by default; a repo can opt into one for flaky shards.
+    max_checks_retries: @@MAX_RETRIES@@
+    # Explicit so a slow run is not dequeued by an `auto` timeout.
+    checks_timeout: @@CHECKS_TIMEOUT@@
+    @@BATCH_FAILURE_BLOCK@@
+
+# Interrupts running batches, so it fires for a main-red fix only (BH-2121).
+priority_rules:
+  - name: hotfix first
+    conditions:
+      - label=fix-main-red
+    priority: high
+    allow_checks_interruption: true
+
+pull_request_rules:
+  - name: queue a hotfix at the head of the line
+    conditions:
+      - base=@@BASE@@
+      - label=merge-queue
+      - label=fix-main-red
+    actions:
+      queue:
+        name: hotfix
+  - name: queue on the harness label
+    conditions:
+      - base=@@BASE@@
+      - label=merge-queue
+      # Everything else: without this a fix-main-red PR matches both rules.
+      - -label=fix-main-red
+      @@SOLO_EXCLUDE@@
+    actions:
+      queue:
+        name: default
+  @@SOLO_PR_RULE_BLOCK@@
+@@SCOPES_BLOCK@@

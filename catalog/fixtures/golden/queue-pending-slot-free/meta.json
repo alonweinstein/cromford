@@ -1,0 +1,6 @@
+{
+  "gate": "queue-pending",
+  "project": "project-2",
+  "board_shape": "board-api",
+  "note": "A queue tick where the blocking PR has merged and slots are free. Tests that the queue lane verifies its gating condition against reality and then actually launches, rather than re-queuing forever."
+}

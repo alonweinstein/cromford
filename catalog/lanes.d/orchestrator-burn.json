@@ -1,0 +1,23 @@
+{
+  "id": "orchestrator-burn",
+  "name": "Orchestrator burn",
+  "scope": "hub",
+  "script": "bin/orchestrator-burn.sh",
+  "cadence": "55 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-orchestrator-burn",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/orchestrator-burn.log"
+  }
+}

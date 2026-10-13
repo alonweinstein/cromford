@@ -1,0 +1,7 @@
+# @hub-lanes
+
+# orchestrator 5-min no-AI status monitor (operator line, outside managed blocks; the operator 2026-09-07
+# "loop to monitor this every 5 minutes"). Script lives in /root/orchestrator (hub-only, not repo-managed);
+# the 2026-09-07 10:17Z re-render dropped the hand-added live line, so it lives here now.
+# Kill: touch /root/orchestrator/flags/monitor-off
+*/5 * * * * /root/harness/bin/hub-lease.sh check && /root/orchestrator/bin/orc-monitor.sh >/dev/null 2>&1

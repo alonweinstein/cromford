@@ -1,0 +1,4 @@
+# tests/mc/expected-map.d/BH-3804.tsv — the live-head guard every conductor CI write asks first.
+#
+classify	mc_pr_live_head	lib
+classify	mc_head_still	lib

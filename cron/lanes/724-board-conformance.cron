@@ -1,0 +1,9 @@
+# @hub-lanes
+
+# ── BOARD API CONFORMANCE (BH-3947) ─────────────────────────────────────────
+# Daily: every in-app product board in fleet.conf is probed against the board
+# API contract, GET only, and state/board-conformance/<p>.json is rewritten.
+# A contract drift is slow, so once a day is enough. The probes are filled in by
+# the BH-3947 siblings, which also add one deduped warn alert on a change. Off:
+# flags/lane-off-board-conformance or bin/harness-ctl.sh off board-conformance.
+35 7 * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/board-conformance.sh --all >/dev/null 2>&1

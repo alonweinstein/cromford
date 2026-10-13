@@ -1,0 +1,6 @@
+{
+  "gate": "board-changed",
+  "project": "project-1",
+  "board_shape": "board-api",
+  "note": "The duplicate-work guard for project-1. The thread is answered and every readiness signal says build, but PR #1733 in example-org/project-1 already covers the scope, branch included."
+}

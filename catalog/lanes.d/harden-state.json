@@ -1,0 +1,33 @@
+{
+  "id": "harden-state",
+  "name": "Harden state",
+  "scope": "box",
+  "script": "bin/harden-state.sh",
+  "cadence": "*/10 * * * *",
+  "boxes": [
+    "project-4",
+    "hub",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-10",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-harden-state",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/harden-state.log"
+  }
+}

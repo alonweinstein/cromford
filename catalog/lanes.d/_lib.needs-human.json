@@ -1,0 +1,21 @@
+{
+  "libs": [
+    {
+      "id": "needs-human",
+      "file": "bin/lib/needs-human/trip.sh",
+      "note": "BH-3433 (contract slice BH-3442). A review BLOCK whose only open finding is a human step is held on the issue instead of rebuilt. bin/lib/needs-human.sh is the interface over bin/lib/needs-human/{classify,trip,release}.sh, all live. The hold is on by default. Kill switch: lane_switch needs-human-hold-off (the file flags/needs-human-hold-off), read by bin/needs-human-hold.sh and bin/lib/needs-human/trip.sh, stops every hold the review stage, the resolver and the tripwire would place.",
+      "knobs": [
+        {
+          "env": "NEEDS_HUMAN_TRIP_COUNT",
+          "type": "int",
+          "default": 2,
+          "min": 2,
+          "max": 10,
+          "unit": "count",
+          "required": false,
+          "note": "How many review BLOCKs with the same needs-human fingerprint on one issue trip the hold. Settings key lib.needs-human.needs_human_trip_count. Read by nh_trip_note in bin/lib/needs-human/trip.sh (BH-3445)."
+        }
+      ]
+    }
+  ]
+}

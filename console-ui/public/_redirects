@@ -1,0 +1,4 @@
+# SPA fallback: every non-asset path renders the app so deep links and reloads
+# work. Pages Functions (/api/*, /login/*) are matched before this file, so the
+# proxy still wins for those paths.
+/*    /index.html   200

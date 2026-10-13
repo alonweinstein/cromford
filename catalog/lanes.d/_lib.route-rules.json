@@ -1,0 +1,32 @@
+{
+  "libs": [
+    {
+      "id": "route-rules",
+      "file": "bin/lib/route-rules.sh",
+      "note": "P4 plan-driven model routing, SHADOW MODE (2026-09-25). bin/run-build.sh runs `route-rules.sh shadow` as its own process just before EXECUTE: it derives the plan's features from the build's artifacts, evaluates the route_rules rows (GET /api/route-rules, cached per box), resolves the would-be execute model through model_routes, and records it beside the model the build actually ran on ($BUILD/route-shadow.json, a pipeline.log line, POST /api/route-shadow). LOG ONLY: nothing reads the answer. Applied by the CLI through lib_env_apply route-rules. Doc: docs/ROUTE-RULES.md.",
+      "knobs": [
+        {
+          "env": "ROUTE_SHADOW",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 1,
+          "zero_means": "off",
+          "required": false,
+          "note": "The kill switch. 0 (or the file flags/route-shadow-off) = no features read, no worker call, no record: the build is exactly as it was before P4 (it is anyway: the record is log-only). Read as ${ROUTE_SHADOW:-1}."
+        },
+        {
+          "env": "ROUTE_RULES_TIMEOUT_S",
+          "type": "int",
+          "default": 4,
+          "min": 1,
+          "max": 15,
+          "unit": "seconds",
+          "zero_means": null,
+          "required": false,
+          "note": "The per-request worker timeout for the shadow's reads and its one write (JOBS_TIMEOUT for those requests, no retry). The run-build hook also caps the whole shadow at 30 s. Read as ${ROUTE_RULES_TIMEOUT_S:-4}."
+        }
+      ]
+    }
+  ]
+}

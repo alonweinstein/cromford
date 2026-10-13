@@ -1,0 +1,21 @@
+BH-5988 fixtures — two job logs of the "Syntax + shellcheck + config integrity"
+job, one per PR of the 2026-10-11 01:11:01Z false main-red pair.
+
+These are RECONSTRUCTIONS, not downloads. The build that added them could not
+reach api.github.com (execute-stage egress denied), so the real logs of jobs
+114352824911 (#5978) and 114355281126 (#5987) were not fetched. Each file has
+the shape of a runner log:
+  - the "Run FAIL=0" step header and its echoed script, copied from
+    .github/workflows/harness-ci.yml ("bash -n every script"), with the ANSI
+    colour the runner adds to echoed lines (ESC[36;1m ... ESC[0m);
+  - the continue-on-error merge-reuse step, with the output lines
+    bin/ci-merge-reuse.sh decide_full writes; in #5987 it fails with
+    "bad args: MR_BEFORE is empty" and exit code 2, as the ticket says;
+  - the "fast always-lints" step, ending in the summary line the ticket
+    quotes ("rules-pack rc=0  fast-lints rc=1  budget rc=0" for #5978,
+    "rules-pack rc=1  fast-lints rc=0  budget rc=0" for #5987) and the
+    runner's "##[error]Process completed with exit code 1.";
+  - post-job cleanup and a ##[warning].
+The suite lines between the step header and the summary are illustrative.
+To replace a file with the real log (kept by GitHub until about 2027-01-09):
+  gh api --allow-escape-sequences repos/example-org/cromford/actions/jobs/<id>/logs

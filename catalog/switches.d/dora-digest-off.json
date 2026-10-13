@@ -1,0 +1,1 @@
+{"name":"dora-digest-off","readers":["bin/dora-digest.sh"],"box_scoped":true,"what":"stops the daily DORA digest"}

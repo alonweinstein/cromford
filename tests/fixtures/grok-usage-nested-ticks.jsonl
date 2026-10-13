@@ -1,0 +1,13 @@
+# PROVENANCE: the shape the grok CLI was VERIFIED to write on 2026-08-20 (commit
+# 57c8bd7, read off live hub session ledgers): the usage dict is NOT at the top
+# level, it rides nested inside params.update, and it carries inputTokens,
+# outputTokens, cachedReadTokens, cacheCreationTokens and costUsdTicks
+# (1e-10 USD, so 9056360000 ticks = $0.905636). The KEY NAMES and the NESTING
+# are from that verification. The surrounding envelope fields (jsonrpc, method,
+# sessionUpdate) are illustrative padding, and the parser must not depend on any
+# of them — that dependency is the bug this fixture exists to pin.
+{"jsonrpc":"2.0","method":"session/update","params":{"sessionId":"s-406","update":{"sessionUpdate":"agent_message_chunk","content":{"type":"text","text":"working on it"}}}}
+{"jsonrpc":"2.0","method":"session/update","params":{"sessionId":"s-406","update":{"sessionUpdate":"usage","usage":{"inputTokens":120000,"outputTokens":3100,"cachedReadTokens":41000,"cacheCreationTokens":900,"costUsdTicks":3011000000}}}}
+{"jsonrpc":"2.0","method":"session/update","params":{"sessionId":"s-406","update":{"sessionUpdate":"tool_call","title":"read file","status":"completed"}}}
+{"jsonrpc":"2.0","method":"session/update","params":{"sessionId":"s-406","update":{"sessionUpdate":"usage","usage":{"inputTokens":310500,"outputTokens":8200,"cachedReadTokens":96000,"cacheCreationTokens":1400,"costUsdTicks":6122400000}}}}
+{"jsonrpc":"2.0","method":"session/update","params":{"sessionId":"s-406","update":{"sessionUpdate":"usage","usage":{"inputTokens":402118,"outputTokens":11003,"cachedReadTokens":128044,"cacheCreationTokens":2011,"costUsdTicks":9056360000}}}}

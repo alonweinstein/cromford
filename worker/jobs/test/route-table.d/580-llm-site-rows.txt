@@ -1,0 +1,2 @@
+# BH-2553 (BH-2540.0): one LLM site's cost rows (stub), after the list route.
+GET /api/metrics/llm-sites/rows

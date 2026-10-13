@@ -1,0 +1,1 @@
+{"name":"gh-app-tokens-off","readers":["bin/gh-token.sh","bin/lib/gh-app-auth.sh","bin/lib/gh-token-live.sh"],"box_scoped":true,"what":"turns off the whole GitHub App token path for writes and authorship: bin/gh-token.sh prints the PAT, gh_auth_for leaves the env alone and the pool neither swaps nor rotates tokens"}

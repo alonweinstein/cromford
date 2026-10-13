@@ -1,0 +1,23 @@
+{
+  "id": "flag",
+  "name": "Flag seed (one-time)",
+  "scope": "hub",
+  "script": "bin/flag.sh",
+  "cadence": "23 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-flag",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/flags.log"
+  }
+}

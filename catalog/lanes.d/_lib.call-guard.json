@@ -1,0 +1,69 @@
+{
+  "libs": [
+    {
+      "id": "call-guard",
+      "file": "bin/lib/call-guard.sh",
+      "note": "K3 pre-call guard (2026-09-24): never pay twice for the same work. Before the first rung of a bin/agent-call.sh call runs, the (project, guard stage, fingerprint) key claims a slot on the harness-jobs call_guard table (POST /api/call-guard/claim); at the stage's ceiling of paid calls inside the window the call is refused rc 74, nothing called, nothing billed. Metered runners fail CLOSED when the counter cannot be read; subscription runners fail open. Not a dollar budget: it counts paid calls of one piece of work. Applied by agent-call.sh right after lib_env_apply session-profile. Doc: docs/CALL-GUARD.md.",
+      "knobs": [
+        {
+          "env": "CALL_GUARD",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 1,
+          "zero_means": "off",
+          "required": false,
+          "note": "The global kill switch. 0 (or the file flags/call-guard-off) = the guard never engages and agent-call.sh runs exactly as before K3. Read as ${CALL_GUARD:-1}."
+        },
+        {
+          "env": "CALL_GUARD_STAGES",
+          "type": "string",
+          "default": "review triage-shard mc-rereview plan preplan execute fix triage prodqa lead-review orchestrator box-chat greenfield review-head lead-head",
+          "zero_means": null,
+          "required": false,
+          "note": "Which GUARD stages are enforced: a space/comma list, `all`, or `none`. The guard stage is AGENT_CALL_GUARD_STAGE when the caller names its family (bin/triage-shard.sh says triage-shard), else the agent-call stage. Default (BH-2305): ten stages, each with its own K in CALL_GUARD_MAX_MAP: the proven runaway families of the 09-19 audit (review, triage-shard), the merge conductor's own head-bound re-review (mc-rereview, K=5), and plan, preplan, execute, fix, triage, prodqa and lead-review. BH-2603 added the three raw-claude families bin/claude-cost.sh serves, each named by its caller through AGENT_CALL_GUARD_STAGE: orchestrator (K=6, two models on up to three accounts), box-chat (K=3, the -c rung, its no-conversation retry and the fallback rung) and greenfield (K=2). BH-3930 added review-head and lead-head (K=1 each): the head-bound review stages, keyed by the shared per-head fp review:<slug>#<n>@<sha> / lead:<slug>#<n>@<sha> from bin/lib/review-bought.sh, with a named ~reason suffix as the paid exception; each review lane moves onto them in its own ticket, and review, mc-rereview and lead-review keep their K until then. The raw agent-call stage chat is deliberately not in the list: bin/product-cmd.sh shares it. An operator narrows the set with this row (lib.call-guard.call_guard_stages); the default only reaches a box without one. Read as ${CALL_GUARD_STAGES:-$CALL_GUARD_STAGES_DEFAULT}."
+        },
+        {
+          "env": "CALL_GUARD_MAX_MAP",
+          "type": "string",
+          "default": "review=2 triage-shard=2 mc-rereview=5 triage=2 plan=3 preplan=2 execute=3 fix=3 prodqa=2 lead-review=2 orchestrator=6 box-chat=3 greenfield=2 review-head=1 lead-head=1 default=2",
+          "zero_means": null,
+          "required": false,
+          "note": "stage=K pairs, `default=` for any stage not named: the paid calls one fingerprint may have inside CALL_GUARD_WINDOW_S before the next is refused. K=0 turns that stage's guard off. review-head=1 and lead-head=1 (BH-3930): one paid review per PR head; a rereq, stepup, noverdict or rebuy<epoch> retry carries a ~reason suffix, so it is its own fp and one more paid call. An `empty` result (billed, nothing in it) counts. Read as ${CALL_GUARD_MAX_MAP:-$CALL_GUARD_MAX_MAP_DEFAULT}."
+        },
+        {
+          "env": "CALL_GUARD_WINDOW_S",
+          "type": "int",
+          "default": 86400,
+          "min": 60,
+          "max": 604800,
+          "unit": "seconds",
+          "zero_means": null,
+          "required": false,
+          "note": "The counting window. The worker clamps it to 60..604800. Read as ${CALL_GUARD_WINDOW_S:-86400}."
+        },
+        {
+          "env": "CALL_GUARD_FAIL_CLOSED_METERED",
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 1,
+          "zero_means": "off",
+          "required": false,
+          "note": "1 = when the counter cannot be read (transport failure, timeout, 5xx; a 404 'unknown endpoint' is a worker without the route and runs unguarded with one ROUTE MISSING warn instead) a call on a METERED runner (bin/billing-mode.sh: API key, GROK_BILLING=api, openrouter, fireworks) is refused rc 74, and a metered rung further down the ladder is refused too. Subscription runners always fail open. Read as ${CALL_GUARD_FAIL_CLOSED_METERED:-1}."
+        },
+        {
+          "env": "CALL_GUARD_TIMEOUT_S",
+          "type": "int",
+          "default": 5,
+          "min": 1,
+          "max": 30,
+          "unit": "seconds",
+          "zero_means": null,
+          "required": false,
+          "note": "The claim's worker timeout (JOBS_TIMEOUT for this one request; jobs-client's one transport retry still applies). Read as ${CALL_GUARD_TIMEOUT_S:-5}."
+        }
+      ]
+    }
+  ]
+}

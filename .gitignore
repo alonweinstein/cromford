@@ -1,0 +1,112 @@
+# machine-local — never in git
+env/
+logs/
+state/
+locks/
+flags/
+builds/
+plans/
+!docs/plans/
+*.bak-*
+.parry-guard.redb
+
+# wrangler deploy cache (created by `wrangler pages deploy`)
+.wrangler/
+
+# python bytecode from bin/*.py (imported by the lanes at runtime).
+# These three lines only stop an UNTRACKED artifact. A .pyc that is already
+# tracked is restaged by `git add -A` whatever they say — see BH-1138 for the
+# two halves that do reach it: PYTHONDONTWRITEBYTECODE=1 at every python call
+# site in bin/, and the staging pathspecs in bin/lane-checkpoint.sh and
+# bin/lander.sh. tests/pycache-untracked.bh-1138-test.sh is the tripwire.
+__pycache__/
+*.pyc
+*.pyo
+.codegraph/
+
+# The verification-map index is GENERATED and must never be committed (BH-1175).
+# It was in 105 of the last 200 merges to main, conflicted on every rebase of
+# the 2026-09-20 drain, and turned main red three times in one day when the
+# union merge driver duplicated a row. The SOURCES are committed
+# (docs/verification-map/entries/ and docs/verification-map/index/); CI, the
+# share mirror and every box run bin/verification-map-build.sh to get the index.
+docs/verification-map/README.md
+
+# The test-impact map is GENERATED and must never be committed (BH-1203, on
+# BH-1175's rule). It is derived from tests/ and bin/ and moves whenever any
+# suite, script or `source` line moves — which is most PRs — so a committed copy
+# would conflict on every rebase of a drain exactly the way
+# docs/verification-map/README.md did. Every consumer runs
+# `bin/test-impact.sh map`; a build takes about three seconds.
+catalog/test-impact.tsv
+
+# The orphan LIST is derived and must never be committed (BH-1268, on BH-1175's
+# rule). Nothing about the set is committed: `bin/test-impact.sh orphans --check`
+# diffs the live set against the merge-base's. The list itself moved whenever any
+# suite named a new script, so every PR that fixed a hole carried a regenerated
+# file and re-reddened the PRs that did not (#842, #1161, #1029, #1212, #1191 on
+# 2026-09-21 alone).
+catalog/test-impact-orphans.txt
+
+# The LLM call-site census is RENDERED from catalog/llm-sites.json and must
+# never be committed (BH-1268). The catalog is the source and
+# tests/llm-call-ratchet-test.sh holds it; the doc is a reading copy that CI,
+# the share mirror and every box render with bin/llm-sites-build.sh. Committed,
+# it made every marker re-point carry a regenerated doc (#1237, #1191).
+docs/LLM_CALL_SITES.md
+
+# The LLM call-site CATALOG is COMPOSED from catalog/llm-sites.d/ (_head.json
+# plus one NNNN-<id>.json per added site) by bin/llm-sites-build.sh --compose,
+# and must never be committed (BH-4987, on BH-1175's rule). Every new site used
+# to append to one JSON array, so two builds adding a site conflicted on its
+# last element. Every reader composes it first, at this same path.
+catalog/llm-sites.json
+
+# The lane registry's RENDERS are GENERATED and must never be committed
+# (BH-1247, on BH-1175's rule): the ten cron/<box>.cron, catalog/lanes.json and
+# env-templates/global.env.example. BH-1178 split their sources into fragments
+# but left the renders in git, so each stayed a shared mutable cell: a PR that
+# edited a lane and did not re-render turned red, and once it merged every other
+# open PR inherited the red on a file its ticket never mentioned. Three merge
+# trains died that way on 2026-09-21 (#1241, #1257, #1263).
+#
+# The SOURCES are committed (cron/lanes/, cron/boxes/, catalog/lanes.d/,
+# env-templates/lanes/). Every reader renders: bin/lib/lanes-registry.sh for the
+# registry, bin/render-crontab.sh for a box's crontab, CI and the share mirror
+# for the rest. bin/render-diff.sh is how a PR still shows what a box will run.
+#
+# `cron/*.cron` covers the ten renders and NOTHING else: a `*` in a .gitignore
+# pattern does not cross a `/`, so cron/lanes/<NNN>-<lane>.cron and
+# cron/boxes/<box>.d/<NNN>-<slug>.cron — the committed sources — are untouched
+# by it. (bin/batch-resolve.sh matches with shell `case`, where `*` DOES cross
+# `/`; that is why the regenerate table still writes the ten out one by one.)
+cron/*.cron
+catalog/lanes.json
+env-templates/global.env.example
+
+# The config-inventory renders are GENERATED and must never be committed
+# (BH-5518, on BH-1175's rule). Every PR that re-rendered touched all four, so
+# two such PRs always conflicted (generated_at_commit at least), and a merge
+# batch of two PRs that each rendered alone committed a deployment.md that was
+# neither side's render: no-hardcoded-deployment R1 failed batches #5426 and
+# #5427. The SOURCES are the tree bin/config-inventory.py scans
+# (DEPLOY_SCAN_DIRS, VAR_SCAN_DIRS, catalog/lanes.d/, catalog/deployment-literals.tsv);
+# `bin/config-inventory.sh` renders them and `--check` is the freshness proof.
+# registry-drift.tsv is the hand-run `tests/config-literal-lint.sh --drift`
+# snapshot, the same kind of file. Literal paths, so a later committed source in
+# that directory stays visible.
+docs/config-inventory/deployment.json
+docs/config-inventory/deployment.md
+docs/config-inventory/index.html
+docs/config-inventory/inventory.json
+docs/config-inventory/registry-drift.tsv
+
+# The CI suite durations are DATA CI composes from its own runs and must never
+# be committed (BH-5518 C1). Every PR that added an always-run suite had to add
+# a row here, so two such PRs conflicted on it, and a PR that forgot the row
+# turned every merge-queue batch red in fast-lints-data D1. bin/ci-durations.sh
+# fetch reads the newest green batch's `ci-durations-next` artifact (else the
+# last committed copy from git history); `merge` composes the next one from the
+# shards' timings. docs/ci-durations.md. A local copy for bin/fast-lints.sh or
+# suite_shard_plan: `bin/ci-durations.sh fetch --out catalog/ci-suite-durations.tsv`.
+catalog/ci-suite-durations.tsv

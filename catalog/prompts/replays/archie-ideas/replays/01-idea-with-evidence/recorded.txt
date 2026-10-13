@@ -1,0 +1,6 @@
+IDEA: Make tests/render-cron-test.sh stop failing on timing
+EVIDENCE: 14 of 41 fix rounds in 7 days were on one reason, the render-cron timing flake (https://github.com/example-org/cromford/pulls?q=label%3Afix-round+render-cron).
+EXPECTED: fix rounds on the render-cron timing reason from 14 to 0
+COST: 2 AI coding sessions
+TICKET: Pin the clock in tests/render-cron-test.sh so it does not fail on timing
+VERDICT: propose

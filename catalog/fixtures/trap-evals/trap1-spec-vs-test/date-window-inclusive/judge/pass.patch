@@ -1,0 +1,13 @@
+diff --git a/tests/window-test.sh b/tests/window-test.sh
+index c426382..09eb996 100755
+--- a/tests/window-test.sh
++++ b/tests/window-test.sh
+@@ -6,7 +6,7 @@ want_out() { in_window "$@" && { echo "FAIL: expected $1 outside $2..$3"; fails=
+ 
+ want_in  2026-03-01 2026-03-01 2026-03-31
+ want_in  2026-03-15 2026-03-01 2026-03-31
+-want_out 2026-03-31 2026-03-01 2026-03-31
++want_in  2026-03-31 2026-03-01 2026-03-31
+ want_out 2026-02-28 2026-03-01 2026-03-31
+ want_out 2026-04-01 2026-03-01 2026-03-31
+ 

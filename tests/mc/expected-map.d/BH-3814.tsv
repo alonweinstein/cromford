@@ -1,0 +1,4 @@
+# tests/mc/expected-map.d/BH-3814.tsv — BH-3814: a lead/human MERGE row newer than the
+# conductor's own re-review BLOCK of the same head overrides it (classify: the judge
+# headbound_review, the sticky re-check and the resolver all ask); origin=lib, new function.
+classify	mc_hv_override	lib

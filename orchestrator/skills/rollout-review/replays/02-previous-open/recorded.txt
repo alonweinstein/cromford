@@ -1,0 +1,2 @@
+Wave 1 is approved and green but not merged, and wave 3 depends on it hard. A green PR is not main. Hold until #4062 merges.
+VERDICT: hold

@@ -1,0 +1,262 @@
+{
+  "updated_at": "2026-09-17T09:30:02Z",
+  "source": "openrouter/api/v1/models",
+  "per_token": {
+    "claude-fable-5-1": {
+      "prompt": 0.00001,
+      "completion": 0.00005,
+      "cache_read": 2.5E-7,
+      "cache_write": 0.0000125,
+      "slug": "anthropic/claude-fable-5.1"
+    },
+    "anthropic/claude-fable-5.1": {
+      "prompt": 0.00001,
+      "completion": 0.00005,
+      "cache_read": 2.5E-7,
+      "cache_write": 0.0000125,
+      "slug": "anthropic/claude-fable-5.1"
+    },
+    "claude-fable-5": {
+      "prompt": 0.00001,
+      "completion": 0.00005,
+      "cache_read": 0.000001,
+      "cache_write": 0.0000125,
+      "slug": "anthropic/claude-fable-5"
+    },
+    "claude-opus-5": {
+      "prompt": 0.000005,
+      "completion": 0.000025,
+      "cache_read": 5E-7,
+      "cache_write": 0.00000625,
+      "slug": "anthropic/claude-opus-5"
+    },
+    "claude-opus-5-5": {
+      "prompt": 0.000004,
+      "completion": 0.00002,
+      "cache_read": 2E-7,
+      "cache_write": 0.000005,
+      "slug": "anthropic/claude-opus-5.5"
+    },
+    "claude-sonnet-5-5": {
+      "prompt": 0.000002,
+      "completion": 0.00001,
+      "cache_read": 2E-7,
+      "cache_write": 0.0000025,
+      "slug": "anthropic/claude-sonnet-5.5"
+    },
+    "claude-sonnet-5": {
+      "prompt": 0.000002,
+      "completion": 0.00001,
+      "cache_read": 2E-7,
+      "cache_write": 0.0000025,
+      "slug": "anthropic/claude-sonnet-5"
+    },
+    "claude-haiku-5-5": {
+      "prompt": 1E-7,
+      "completion": 5E-7,
+      "cache_read": 1E-8,
+      "cache_write": 1.25E-7,
+      "slug": "anthropic/claude-haiku-5.5"
+    },
+    "anthropic/claude-haiku-5.5": {
+      "prompt": 1E-7,
+      "completion": 5E-7,
+      "cache_read": 1E-8,
+      "cache_write": 1.25E-7,
+      "slug": "anthropic/claude-haiku-5.5"
+    },
+    "claude-haiku-4-5": {
+      "prompt": 0.000001,
+      "completion": 0.000005,
+      "cache_read": 1E-7,
+      "cache_write": 0.00000125,
+      "slug": "anthropic/claude-haiku-4.5"
+    },
+    "claude-haiku-4-5-20251001": {
+      "prompt": 0.000001,
+      "completion": 0.000005,
+      "cache_read": 1E-7,
+      "cache_write": 0.00000125,
+      "slug": "anthropic/claude-haiku-4.5"
+    },
+    "claude-haiku-4.5": {
+      "prompt": 0.000001,
+      "completion": 0.000005,
+      "cache_read": 1E-7,
+      "cache_write": 0.00000125,
+      "slug": "anthropic/claude-haiku-4.5"
+    },
+    "anthropic/claude-fable-5": {
+      "prompt": 0.00001,
+      "completion": 0.00005,
+      "cache_read": 0.000001,
+      "cache_write": 0.0000125,
+      "slug": "anthropic/claude-fable-5"
+    },
+    "anthropic/claude-opus-5": {
+      "prompt": 0.000005,
+      "completion": 0.000025,
+      "cache_read": 5E-7,
+      "cache_write": 0.00000625,
+      "slug": "anthropic/claude-opus-5"
+    },
+    "anthropic/claude-opus-5.5": {
+      "prompt": 0.000004,
+      "completion": 0.00002,
+      "cache_read": 2E-7,
+      "cache_write": 0.000005,
+      "slug": "anthropic/claude-opus-5.5"
+    },
+    "anthropic/claude-sonnet-5.5": {
+      "prompt": 0.000002,
+      "completion": 0.00001,
+      "cache_read": 2E-7,
+      "cache_write": 0.0000025,
+      "slug": "anthropic/claude-sonnet-5.5"
+    },
+    "anthropic/claude-sonnet-5": {
+      "prompt": 0.000002,
+      "completion": 0.00001,
+      "cache_read": 2E-7,
+      "cache_write": 0.0000025,
+      "slug": "anthropic/claude-sonnet-5"
+    },
+    "gpt-6-astra": {
+      "prompt": 0.00001,
+      "completion": 0.00005,
+      "cache_read": 0.000001,
+      "cache_write": 0.0000125,
+      "slug": "openai/gpt-6-astra"
+    },
+    "openai/gpt-6-astra": {
+      "prompt": 0.00001,
+      "completion": 0.00005,
+      "cache_read": 0.000001,
+      "cache_write": 0.0000125,
+      "slug": "openai/gpt-6-astra"
+    },
+    "gpt-5.6-sol": {
+      "prompt": 0.000002,
+      "completion": 0.00001,
+      "cache_read": 2E-7,
+      "cache_write": 0.0000025,
+      "slug": "openai/gpt-5.6-sol"
+    },
+    "openai/gpt-5.6-sol": {
+      "prompt": 0.000002,
+      "completion": 0.00001,
+      "cache_read": 2E-7,
+      "cache_write": 0.0000025,
+      "slug": "openai/gpt-5.6-sol"
+    },
+    "codex-default": {
+      "prompt": 0.000002,
+      "completion": 0.00001,
+      "cache_read": 2E-7,
+      "cache_write": 0.0000025,
+      "slug": "openai/gpt-5.6-sol"
+    },
+    "gpt-5.2-codex": {
+      "prompt": 0.00000175,
+      "completion": 0.000014,
+      "cache_read": 1.75E-7,
+      "cache_write": null,
+      "slug": "openai/gpt-5.2-codex"
+    },
+    "openai/gpt-5.2-codex": {
+      "prompt": 0.00000175,
+      "completion": 0.000014,
+      "cache_read": 1.75E-7,
+      "cache_write": null,
+      "slug": "openai/gpt-5.2-codex"
+    },
+    "grok-4.6": {
+      "prompt": 0.000002,
+      "completion": 0.000006,
+      "cache_read": 5E-7,
+      "cache_write": null,
+      "cliff_tokens": 200000,
+      "slug": "x-ai/grok-4.6"
+    },
+    "grok-4.7": {
+      "prompt": 0.000002,
+      "completion": 0.000006,
+      "cache_read": 5E-7,
+      "cache_write": null,
+      "cliff_tokens": 200000,
+      "slug": "x-ai/grok-4.7"
+    },
+    "x-ai/grok-4.6": {
+      "prompt": 0.000002,
+      "completion": 0.000006,
+      "cache_read": 5E-7,
+      "cache_write": null,
+      "cliff_tokens": 200000,
+      "slug": "x-ai/grok-4.6"
+    },
+    "x-ai/grok-4.7": {
+      "prompt": 0.000002,
+      "completion": 0.000006,
+      "cache_read": 5E-7,
+      "cache_write": null,
+      "cliff_tokens": 200000,
+      "slug": "x-ai/grok-4.7"
+    },
+    "google/gemini-3.7-flash": {
+      "prompt": 7.5E-7,
+      "completion": 0.00000375,
+      "cache_read": 7.5E-8,
+      "cache_write": 4.16666666666667E-8,
+      "slug": "google/gemini-3.7-flash"
+    },
+    "accounts/fireworks/models/kimi-k2p7-code": {
+      "prompt": 7.062E-7,
+      "completion": 0.00000321,
+      "cache_read": 1.8E-7,
+      "cache_write": null,
+      "slug": "moonshotai/kimi-k2.7-code"
+    },
+    "accounts/fireworks/models/kimi-k3": {
+      "prompt": 0.000003,
+      "completion": 0.000015,
+      "cache_read": 3E-7,
+      "cache_write": null,
+      "slug": "moonshotai/kimi-k3"
+    },
+    "accounts/fireworks/models/glm-5p2": {
+      "prompt": 0.0000014,
+      "completion": 0.0000044,
+      "cache_read": 1.4E-7,
+      "cache_write": null,
+      "slug": "z-ai/glm-5.2"
+    },
+    "accounts/fireworks/models/deepseek-v4-flash-0731": {
+      "prompt": 6E-8,
+      "completion": 1.2E-7,
+      "cache_read": 1.2E-8,
+      "cache_write": null,
+      "slug": "deepseek/deepseek-v4-flash-0731"
+    },
+    "claude-opus-4-8": {
+      "prompt": 0.000005,
+      "completion": 0.000025,
+      "cache_read": 5E-7,
+      "cache_write": 0.00000625,
+      "slug": "anthropic/claude-opus-4.8"
+    },
+    "anthropic/claude-opus-4.8": {
+      "prompt": 0.000005,
+      "completion": 0.000025,
+      "cache_read": 5E-7,
+      "cache_write": 0.00000625,
+      "slug": "anthropic/claude-opus-4.8"
+    },
+    "deepseek/deepseek-v4-flash": {
+      "prompt": 8.8606E-8,
+      "completion": 1.77212E-7,
+      "cache_read": 1.77212E-8,
+      "cache_write": null,
+      "slug": "deepseek/deepseek-v4-flash"
+    }
+  }
+}

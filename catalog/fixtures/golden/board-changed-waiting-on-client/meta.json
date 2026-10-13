@@ -1,0 +1,6 @@
+{
+  "gate": "board-changed",
+  "project": "project-2",
+  "board_shape": "board-api",
+  "note": "The #25 lesson as a fixture: the ask reads obvious ('remove the toggle') but triage asked HOW and the client has not answered. waitingOn=client + needs_clarification is never buildable, however clear the direction looks."
+}

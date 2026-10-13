@@ -1,0 +1,4 @@
+gh issue create -R example-org/scoutish --title 'TK-552.0: contract — metrics table + read API' --label ai-build --body-file <BUILD>/children/child-1.md
+gh issue create -R example-org/scoutish --title 'TK-552.1: dashboard tile' --label ai-build --body-file <BUILD>/children/child-2.md
+gh api -X POST repos/example-org/scoutish/issues/552/comments -F body=@<BUILD>/decompose-comment.md
+gh api -X DELETE repos/example-org/scoutish/issues/552/labels/ai-build

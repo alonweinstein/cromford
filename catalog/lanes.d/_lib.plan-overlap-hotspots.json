@@ -1,0 +1,30 @@
+{
+  "libs": [
+    {
+      "id": "plan-overlap-hotspots",
+      "file": "bin/lib/plan-hotspots.sh",
+      "note": "BH-5268. The stored conflict hotspots (GET /api/conflict-hotspots, BH-5267) that the plan-time overlap gate adds to a plan's claim when the plan names them anywhere outside its Sibling claims section. Read by bin/plan-overlap.sh (both sides of the comparison) and the hotspot claim region of bin/lib/rb/plan.sh (the published claim). A per-project row lib.plan-overlap-hotspots.<project>.<env> wins over the global one.",
+      "knobs": [
+        {
+          "env": "PLAN_OVERLAP_HOTSPOT_TOP",
+          "type": "int",
+          "default": 50,
+          "min": 0,
+          "max": 500,
+          "zero_means": "off",
+          "required": false,
+          "note": "How many hotspot rows (highest conflicts first) are read per project. 0 = hotspots off, no request. Code fallback 50 in ph_conf. A value outside 0..500 or not an integer turns hotspots off for that run with one PLAN_HOTSPOTS_BADKNOB stderr line; it is never clamped."
+        },
+        {
+          "env": "PLAN_OVERLAP_HOTSPOT_MIN",
+          "type": "int",
+          "default": 2,
+          "min": 1,
+          "max": 1000,
+          "required": false,
+          "note": "The minimum stored conflicts count for a row to count as a hotspot. Code fallback 2 in ph_conf: a file that conflicted once is noise. A value outside 1..1000 or not an integer turns hotspots off for that run with one PLAN_HOTSPOTS_BADKNOB stderr line; it is never clamped."
+        }
+      ]
+    }
+  ]
+}

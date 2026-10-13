@@ -1,0 +1,3 @@
+# BH-2438: bf_facts_local (bin/lib/backup-freshness.sh), bin/state-backup.sh and
+# bin/vendor-spend-pull.sh now read state-backup-off / vendor-spend-off through lane_switch.
+3

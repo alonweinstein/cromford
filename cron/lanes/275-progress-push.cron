@@ -1,0 +1,11 @@
+# @hub-lanes
+
+# ── PROGRESS PUSH (K2, outside dead-man) ────────────────────────────────────
+# bin/progress-push.sh — per-project progress stamps, spend, pending work and
+# each detector's last run, plus the thresholds from this lane's settings rows,
+# to the watchdog worker. The worker judges them on its own */5 cron and pages
+# Telegram directly (docs/OUTSIDE-DEADMAN.md). Behind the hub lease like every
+# hub lane: if the lease (or cron) stops this, the push goes stale and the
+# watchdog pages for exactly that.
+# Kill: bin/harness-ctl.sh off progress-push.
+*/10 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/progress-push.sh >/dev/null 2>&1

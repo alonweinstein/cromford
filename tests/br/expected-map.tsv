@@ -1,0 +1,21 @@
+# tests/br/expected-map.tsv — BH-1176: module	function	origin. Generated from bin/blocked-resolver.sh at 9fec0912, regenerated at 4fafe48b when the branch rebased onto main (BH-579/#715 added br_json_edit to the record layer and grew br_ladder_rung/br_action); the binding ownership map the bin/lib/br/ split is judged by. `lib` = the function is still defined inline in bin/blocked-resolver.sh too (the slice landed DARK; the inline copy wins and the module is inert until the cut).
+ladder	br_ladder_class	lib
+ladder	br_skips_mechanical	lib
+ladder	br_ladder_rung	lib
+ladder	br_regen_offered	lib
+ladder	br_regen_ladder	lib
+ladder	br_action	lib
+ladder	br_reason_of	lib
+record	br_rkey	lib
+record	br_cap_key	lib
+record	br_file	lib
+record	br_load	lib
+record	br_num	lib
+record	br_record	lib
+record	br_event	lib
+record	br_set_outcome	lib
+record	br_set_num	lib
+record	br_set_field	lib
+record	br_seen_rebuild	lib
+record	br_json_edit	lib
+record	br_save	lib

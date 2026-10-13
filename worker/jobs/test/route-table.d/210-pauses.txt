@@ -1,0 +1,6 @@
+# BH-1682 (BH-1672.1): the pauses family, added to BOTH lists directly under
+# the pause flags it sits beside (src/index.js ROUTES: ...flags, ...pauses).
+GET /api/pauses
+PUT /api/pauses
+POST /api/pauses/expire
+POST re:/^\/api\/pauses\/(\d+)\/end$/

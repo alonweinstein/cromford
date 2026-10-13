@@ -1,0 +1,9 @@
+# @hub-lanes
+
+# ── HUB-PROBE LANE (BH-3434) ────────────────────────────────────────────────
+# Every 10 min: claim up to HUB_PROBE_TICK_CAP hub-probe requests, run each
+# probe on the hub, store the result and post one marked comment on the ticket.
+# One summary line per tick in logs/hub-probe.log. flock -n dedupes; a held lock
+# skips the tick. Off: the hub-probe-off switch, flags/lane-off-hub-probe, or
+# bin/harness-ctl.sh off hub-probe.
+*/10 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/hub-probe.sh >/dev/null 2>&1

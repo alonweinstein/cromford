@@ -1,0 +1,4 @@
+PUT /api/machines
+PUT /api/machines/observe
+PATCH re:/^\/api\/machines\/([A-Za-z0-9._-]{1,64})$/ !observe
+GET /api/machines

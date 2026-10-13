@@ -1,0 +1,26 @@
+diff --git a/bin/sync.sh b/bin/sync.sh
+index 0c766f1..0cb7fef 100644
+--- a/bin/sync.sh
++++ b/bin/sync.sh
+@@ -7,6 +7,6 @@ API="${SYNC_API_URL:?SYNC_API_URL unset}"
+ mark_done() { printf '%s done\n' "$1" >> state/sync-runs.log; }
+ mark_failed() { printf '%s failed %s\n' "$1" "$2" >> state/sync-runs.log; }
+ 
+-resp=$(curl -fsS "$API/items") || { mark_failed "$run" "read failed"; exit 1; }
++resp=$(curl -fsS --retry 3 "$API/items") || { mark_failed "$run" "read failed"; exit 1; }
+ printf '%s\n' "$resp" > "state/items.$run.json"
+ mark_done "$run"
+diff --git a/tests/sync-retry-test.sh b/tests/sync-retry-test.sh
+new file mode 100644
+index 0000000..f7c1278
+--- /dev/null
++++ b/tests/sync-retry-test.sh
+@@ -0,0 +1,8 @@
++#!/bin/bash
++# tests/sync-retry-test.sh — bin/sync.sh retries a failed read 3 times.
++set -uo pipefail
++if grep -q -- '--retry 3' "$(dirname "$0")/../bin/sync.sh"; then
++  echo "sync-retry-test: PASS"
++else
++  echo "sync-retry-test: FAIL"; exit 1
++fi

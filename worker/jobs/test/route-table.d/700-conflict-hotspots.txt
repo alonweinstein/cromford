@@ -1,0 +1,4 @@
+# CONFLICT HOTSPOTS (BH-5267, BH-5248.1): each project's weekly conflict
+# hotspots as rows, appended after pool-state at the END of the table.
+GET /api/conflict-hotspots
+PUT /api/conflict-hotspots

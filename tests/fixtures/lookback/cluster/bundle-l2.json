@@ -1,0 +1,43 @@
+{
+  "window": {
+    "from": "2026-09-21T06:45:00Z",
+    "to": "2026-09-28T06:45:00Z"
+  },
+  "items": [
+    {
+      "id": "r1",
+      "source": "reopens",
+      "at": "2026-09-22T10:00:00Z",
+      "project": "cromford",
+      "ticket": "BH-10",
+      "pr": 101,
+      "files": [
+        "bin/foo.sh",
+        "docs/a.md"
+      ],
+      "lane": null,
+      "reason": "reopened after merge 123"
+    },
+    {
+      "id": "r2",
+      "source": "reopens",
+      "at": "2026-09-23T10:00:00Z",
+      "project": "cromford",
+      "ticket": "BH-11",
+      "pr": 102,
+      "files": [
+        "bin/foo.sh"
+      ],
+      "lane": null,
+      "reason": "reopened after merge 456"
+    }
+  ],
+  "sources": {
+    "reopens": {
+      "ok": true,
+      "n": 2,
+      "truncated": false
+    }
+  },
+  "incomplete": false
+}

@@ -1,0 +1,19 @@
+# PR_MERGED with no COMMENTED marker: the sweep posts the what-shipped comment
+# with direct links and moves the ticket's status. `comment` is the decision;
+# `status` is acceptable if the session logs the move as the ticket's decision
+# instead. Silence here means the client is never told the work landed.
+#
+# `close` is NOT accepted here, and that is now a pinned SOP rule rather than an
+# accident of this fixture. The lane began logging `close` for merged close-outs
+# on 2026-08-30 and this gate went red for six sessions; the behaviour was
+# correct all along — the comment WAS posted with a real link — but the tick did
+# three things to one ticket and the contract never said which one to log. It
+# does now: catalog/agent-contracts/triage-system-append.txt requires the
+# CLIENT-FACING act, so telling the client and then closing is `comment`.
+# `close` stays legal for the case it actually describes: closing IS the whole
+# decision and nothing was said to the client.
+#
+# Widening this to comment|status|close was the other option and was rejected:
+# it would pass a future regression that closed the ticket in SILENCE, which is
+# precisely the failure this scenario exists to catch.
+TK-4770 :: comment|status

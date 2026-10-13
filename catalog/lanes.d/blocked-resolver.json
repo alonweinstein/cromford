@@ -1,0 +1,573 @@
+{
+  "id": "blocked-resolver",
+  "name": "Blocked resolver (LLM)",
+  "scope": "hub",
+  "per_project_hold": true,
+  "script": "bin/blocked-resolver.sh",
+  "cadence": "4,14,24,34,44,54 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-blocked-resolver",
+    "aliases": [
+      {
+        "name": "blocked-resolver-disabled",
+        "off_when": "present"
+      },
+      {
+        "name": "blocked-resolver-observe",
+        "off_when": "partial"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "BR_PER_TICK",
+      "type": "int",
+      "default": 4,
+      "min": 0,
+      "max": 50,
+      "unit": "rungs",
+      "zero_means": "off",
+      "note": "Ladder rungs one tick may spend. 0 makes every tick a no-op."
+    },
+    {
+      "env": "BR_REBUILDS_PER_TICK",
+      "type": "int",
+      "default": 4,
+      "min": 0,
+      "max": 50,
+      "unit": "rebuilds",
+      "zero_means": "off",
+      "note": "Rebuild-fresh / rebuild-retry rungs one tick may buy across the whole fleet, counted on pool builds actually BOUGHT (an enqueue that never landed does not spend it). BR_PER_TICK bounds RUNGS, and the rebuild is the only rung that costs a whole pool machine — raising the rung budget to 50 must not become permission for 50 pool builds in one tick. A capped park costs no rung slot, is not closed, writes no ladder record and keeps its conductor hand-off; it is re-offered next tick. The default is today's default rung budget, so a fleet at BR_PER_TICK=4 is unchanged. 0 means no rebuild rung fires at all — this lane's semantics, which #1477 will adopt when it is re-cut (it proposed 5 with 0=unlimited)."
+    },
+    {
+      "env": "BR_TICK_MAX_SECS",
+      "type": "int",
+      "default": 1800,
+      "min": 0,
+      "max": 21600,
+      "unit": "seconds",
+      "zero_means": "off",
+      "note": "Wall clock one tick may go on starting work, discovery included. It can only stop the tick BETWEEN rows — a fix round holds its machine for up to BR_FIX_LANE_TIMEOUT and is never interrupted — and a tick always looks at at least one row however long discovery took. The bound is measured on rows LOOKED at, not rungs run, so a tick made entirely of held or terminal rows is bounded too. The rung budget it did not spend is carried to the next tick, clamped to BR_PER_TICK, so a large budget raises throughput instead of latency. 1800 is three cron periods; 0 is no cap at all."
+    },
+    {
+      "env": "BR_OPT_OFF",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "note": "Comma list (no spaces) of optional modules under bin/lib/br/opt/ this lane will not source: mechanical, family, cirepair, stale, external, extfix, extpark, extrebase, parentprio, untouched, profile, readmemo, unchanged. One kill switch for every optional rung; nobody adds a per-behaviour flag. Empty is every module that exists, and a name nothing ships is ignored silently. With no module present the lane does exactly what it did before the seam existed, so on a box that has never been given one this knob has nothing to turn off."
+    },
+    {
+      "env": "BR_PARENT_WAIT_ALERT_MIN",
+      "type": "int",
+      "default": 120,
+      "min": 0,
+      "max": 1440,
+      "unit": "minutes",
+      "zero_means": "off",
+      "note": "How long a BLOCKed parent PR with approved stacked children may wait with no fix round started before ONE ALERTS line names it and the number of children waiting (BH-5741, bin/lib/br/opt/parentprio.sh). One line per episode: a started fix round restarts the clock. A non-number falls back to 120 with one log line. 0 = no alert; the parent is still ranked first."
+    },
+    {
+      "env": "BR_DISPATCH_SPREAD_SECS",
+      "read_in": "bin/blocked-resolver.sh",
+      "type": "int",
+      "default": 540,
+      "min": 0,
+      "max": 3600,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "BH-5913: the cron line runs `blocked-resolver.sh --dispatch`, which starts one detached run per project with no cap on how many run at once. Each project starts at a stable offset inside this window (a hash of its name), never within 5 s of a whole minute, so the fleet does not hit GitHub and D1 in one burst. 540 keeps every start inside the 10-minute cadence. 0 starts every project run at once. A non-number falls back to 540 with one log line."
+    },
+    {
+      "env": "BR_UNTOUCHED_ALERT_MIN",
+      "read_in": "bin/lib/br/opt/untouched.sh",
+      "type": "int",
+      "default": 120,
+      "min": 0,
+      "max": 10080,
+      "unit": "minutes",
+      "zero_means": "off",
+      "note": "How long a project's oldest park may wait with no tick looking at it before ONE ALERTS line names the project (BH-5913, bin/lib/br/opt/untouched.sh). One line per project episode: the episode ends when the project has no untouched park older than this. Held projects never page. A non-number falls back to 120 with one log line. 0 = no alert."
+    },
+    {
+      "env": "BR_CI_REPAIR_ROUNDS",
+      "read_in": "bin/lib/br/opt/cirepair.sh",
+      "type": "int",
+      "default": 2,
+      "min": 0,
+      "max": 10,
+      "unit": "rounds",
+      "zero_means": "off",
+      "note": "Lane D. CI repair rounds per PR head lineage: rungs whose record says they PUSHED a sha in answer to a CI-red park (mechanical, regen, fix round; a CI re-run or a queued pool rebase is not one), counted on the current PR only (another PR of the ticket, or a rebuild-fresh, starts at zero). When CI is red again after this many, the park is CI_PARKED instead of another round: the PR stays open with one comment and one untriaged warn beat for the digest (no page), and a narrower re-plan of the ticket is enqueued automatically (BR_CI_REPLAN_MAX). 0 = no cap, the old ladder."
+    },
+    {
+      "env": "EXTERNAL_PR_FIX_ROUNDS",
+      "read_in": "bin/lib/br/opt/external.sh",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 10,
+      "unit": "rounds",
+      "zero_means": "off",
+      "note": "BH-4664: the global fallback under the per-project D1 row external_pr.fix_rounds.<project>. Above 0 an opted-in project's external (non-harness, non-draft) PRs with a standing CHANGES_REQUESTED or a dirty branch become resolver candidates. The row wins; with no row this env applies; a settings outage reads 0 (off), never this env. An external PR is never closed, rebuilt or abandoned by the lane, whatever this says."
+    },
+    {
+      "env": "EXTERNAL_PR_AUTHOR_QUIET_MIN",
+      "read_in": "bin/lib/br/opt/external.sh",
+      "type": "int",
+      "default": 60,
+      "min": 0,
+      "max": 10080,
+      "unit": "minutes",
+      "zero_means": null,
+      "note": "BH-4664: minutes an external PR's head commit must sit before the resolver acts on it (D1 row external_pr.author_quiet_min wins; an outage reads 60; 0 = no wait). Under the window the row logs AUTHOR_ACTIVE and is retried next tick, with nothing written. A head authored as the harness git identity counts as quiet."
+    },
+    {
+      "env": "BR_CI_REPLAN_MAX",
+      "read_in": "bin/lib/br/opt/cirepair.sh",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 3,
+      "unit": "re-plans",
+      "zero_means": "off",
+      "note": "Lane D policy (the operator 2026-09-24, rules/topics/01-iron-guardrails.md). Automatic narrower re-plans per ticket lineage when CI-repair exhaustion (BR_CI_REPAIR_ROUNDS) parks a PR: the PR stays open, the failing-CI evidence is carried to the next build's plan stage (state/build-notes, KIND: ci-replan) and a fresh build of the ticket is enqueued, once per park. When the ticket has used this many, the next CI exhaustion is ABANDONED (the old rule). 0 = the old rule at once: CI exhaustion is ABANDONED."
+    },
+    {
+      "env": "BR_FAMILY_TTL_SECS",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 31536000,
+      "unit": "seconds",
+      "zero_means": "unlimited",
+      "note": "How long a stored family ruling (bin/lib/br/opt/family.sh, #1471) may be carried to another PR of the same family. 0 = a ruling never expires. Resolved in the lane so the console can explain it before the module lands, and read by the module out of the environment it is sourced into; a non-numeric value falls back to 0."
+    },
+    {
+      "env": "BR_MAX_REBUILDS",
+      "type": "int",
+      "default": 3,
+      "min": 0,
+      "max": 20,
+      "unit": "rebuilds",
+      "zero_means": null,
+      "note": "Rebuild rungs per ticket."
+    },
+    {
+      "env": "BR_SUPERSEDE_SETTLE_SECS",
+      "type": "int",
+      "default": 1800,
+      "min": 0,
+      "max": 86400,
+      "unit": "seconds",
+      "zero_means": "off",
+      "required": true,
+      "note": "BH-1642: how long the rebuild rung waits after a NEW head before it may close the PR as superseded, so CI and the head-bound review can answer on that head. A new head is one this lane sees replace the head it last recorded for the PR, one the conductor did not judge the park on, or the resolver's own fix-round push (measured from the push). The first sighting of a PR with no push evidence settles nothing, so a PR red twice on its current head is superseded as before. A lead/human verdict standing on the head, or a HOLD on its ticket, keeps the PR whatever this says. An unreadable value while a window is in force declines the supersede (fail closed). 0 = no window. Read by bin/blocked-resolver.sh with no literal."
+    },
+    {
+      "env": "BR_SUPERSEDE_DECLINE_ALERT_SECS",
+      "type": "int",
+      "default": 3600,
+      "min": 0,
+      "max": 604800,
+      "unit": "seconds",
+      "zero_means": null,
+      "required": true,
+      "note": "BH-1642 (review N1): how long the rebuild rung's supersede guard may keep declining the same (PR, head, reason) before it raises ONE lane-alert. A resolver-owned park never pages and this lane only alerts on ABANDONED, so without this a verdict, an unreadable verdicts table or an unreadable window knob would strand a PR silently. `hold` is exempt: it is the ticket's own instruction. Said once per (PR, head, reason); a new head or a new reason starts again. 0 (or an unreadable value) pages on the first decline. 3600 is twice the default settle window. Read by bin/blocked-resolver.sh with no literal."
+    },
+    {
+      "env": "BR_MAX_FIXROUNDS",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 10,
+      "unit": "rounds",
+      "zero_means": null,
+      "note": "Fix-agent rounds per ticket."
+    },
+    {
+      "env": "BR_REVIEW_FIX_ROUNDS",
+      "type": "int",
+      "default": 2,
+      "min": 0,
+      "max": 10,
+      "unit": "rounds",
+      "zero_means": null,
+      "note": "Fix rounds a review verdict gets per ticket before the lane escalates instead."
+    },
+    {
+      "env": "BR_PRS_CACHE_SECS",
+      "type": "int",
+      "default": 300,
+      "min": 0,
+      "max": 3600,
+      "unit": "seconds",
+      "zero_means": "off",
+      "note": "How long one tick's open-PR list (br_open_prs) may be reused by the lane's other readers — the review-verdict source and the contested competitor scan share one `pulls?state=open` page per repo."
+    },
+    {
+      "env": "BR_MAX_MECHANICAL",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 10,
+      "unit": "rounds",
+      "zero_means": null,
+      "note": "Mechanical-fix rounds per ticket."
+    },
+    {
+      "env": "BR_MAX_FIXROUNDS_SMALL",
+      "type": "int",
+      "default": 2,
+      "min": 0,
+      "max": 10,
+      "unit": "rounds",
+      "zero_means": null,
+      "note": "Fix-agent rounds per ticket on the SMALL shape (a measured conflict of at most RESOLVER_SMALL_CONFLICT_LINES lines). The contested bonus round rides on top of this."
+    },
+    {
+      "env": "BR_MAX_REBUILDS_SMALL",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 20,
+      "unit": "rebuilds",
+      "zero_means": null,
+      "note": "Rebuild rungs per ticket on the SMALL shape — a small conflict is worth another agent round, not three rebuilds."
+    },
+    {
+      "env": "RESOLVER_SMALL_CONFLICT_LINES",
+      "type": "int",
+      "default": 300,
+      "min": 0,
+      "max": 100000,
+      "unit": "lines",
+      "zero_means": "off",
+      "note": "Largest MEASURED conflict still called small. An unmeasured conflict and a measured 0 are always large. 0 puts every ticket back on the large ladder."
+    },
+    {
+      "env": "CONTESTED_PR_SCAN_MAX",
+      "type": "int",
+      "default": 40,
+      "min": 0,
+      "max": 500,
+      "unit": "PRs",
+      "zero_means": "off",
+      "note": "Cached file lists one contested-hold creation may read, on top of the single open-PR list. PRs past the cap are logged and NOT parked; 0 parks nobody."
+    },
+    {
+      "env": "CONTESTED_TTL",
+      "read_in": "bin/lib/mc/rebase.sh",
+      "type": "int",
+      "default": 21600,
+      "min": 300,
+      "max": 604800,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "The contested hold's window. Stamped into each hold at write time, so a live hold keeps the window it was written under."
+    },
+    {
+      "env": "BR_NOVERDICT_MAX",
+      "type": "int",
+      "default": 5,
+      "min": 1,
+      "max": 50,
+      "unit": "attempts",
+      "zero_means": null,
+      "note": "Attempts before a no-verdict ticket is parked."
+    },
+    {
+      "env": "BR_LANEFAIL_MAX",
+      "type": "int",
+      "default": 5,
+      "min": 1,
+      "max": 50,
+      "unit": "failures",
+      "zero_means": null,
+      "note": "Consecutive lane failures before the lane backs off."
+    },
+    {
+      "env": "BR_DL_UNREADABLE_MAX",
+      "type": "int",
+      "default": 3,
+      "min": 1,
+      "max": 50,
+      "unit": "ticks",
+      "zero_means": null,
+      "note": "BH-4926: held ticks in a row on a data-lane park whose review cannot be read (reviewed sha, diff or file) before one escalation (br_dl_escalate, deduped on the fp). The row stays held. It protects against a park that waits forever with nobody told; each firing costs one warn page."
+    },
+    {
+      "env": "BR_DL_FETCH_MISS_S",
+      "type": "int",
+      "default": 600,
+      "min": 0,
+      "max": 86400,
+      "unit": "seconds",
+      "zero_means": "off",
+      "note": "BH-4926: after a git fetch could not find a data-lane park's reviewed sha, that sha is not fetched again for this many seconds (a miss stamp in state/blocked-resolver/.dl-fetch-miss/). It protects the tick from a fetch per parked row per tick; a firing costs a delay of at most this long before a force-pushed sha is seen again. 0 = fetch every time."
+    },
+    {
+      "env": "BR_LADDER",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "Master switch for the escalation ladder."
+    },
+    {
+      "env": "BR_REGEN_RUNG",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "Whether the plan-regeneration rung is offered."
+    },
+    {
+      "env": "BR_FIX_AGENT_TIMEOUT",
+      "type": "int",
+      "default": 3600,
+      "min": 300,
+      "max": 21600,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "Wall clock for one fix-agent call."
+    },
+    {
+      "env": "BR_FIX_LANE_TIMEOUT",
+      "type": "int",
+      "default": 5400,
+      "min": 300,
+      "max": 21600,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "Wall clock for the whole fix lane."
+    },
+    {
+      "env": "BR_FIX_HOP_MARGIN",
+      "read_in": "bin/fix-round-claim.sh",
+      "type": "int",
+      "default": 300,
+      "min": 120,
+      "max": 3600,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "The stale-claim margin bin/fix-round-claim.sh adds to BR_FIX_LANE_TIMEOUT before a claimed fix_round_jobs row is re-offered to a box: stale_min = ceil((BR_FIX_LANE_TIMEOUT + BR_FIX_HOP_MARGIN) / 60) (BH-2672, BH-2674). The box bounds its own round at BR_FIX_LANE_TIMEOUT with timeout -k 60, so this must exceed 60 or a round that was about to answer is re-offered. The hub no longer hops to the box; it reads this only to page a claimed row older than BR_FIX_LANE_TIMEOUT + BR_FIX_HOP_MARGIN (a dead box's claim is re-offered to no other box)."
+    },
+    {
+      "env": "BR_ADJ_TIMEOUT",
+      "type": "int",
+      "default": 1200,
+      "min": 120,
+      "max": 7200,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "Wall clock for the adjudication review call."
+    },
+    {
+      "env": "BR_CI_LOG_BYTES",
+      "type": "int",
+      "default": 6000,
+      "min": 500,
+      "max": 200000,
+      "unit": "bytes",
+      "zero_means": null,
+      "note": "CI log bytes fed to the model."
+    },
+    {
+      "env": "BR_CI_LOG_RUNS",
+      "type": "int",
+      "default": 3,
+      "min": 1,
+      "max": 20,
+      "unit": "runs",
+      "zero_means": null,
+      "note": "CI runs whose logs are fed to the model."
+    },
+    {
+      "env": "BR_HANDOFF_MAX_AGE_SECS",
+      "type": "int",
+      "default": 172800,
+      "min": 3600,
+      "max": 1209600,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "Oldest conductor hand-off this lane will still act on."
+    },
+    {
+      "env": "BR_UNMAPPED_WINDOW_S",
+      "type": "int",
+      "default": 21600,
+      "min": 600,
+      "max": 604800,
+      "unit": "seconds",
+      "zero_means": null,
+      "read_in": "bin/blocked-resolver.sh",
+      "note": "Seconds between repeat unmapped-reason/provenance-skip log lines for one PR, and between warn alerts for one unmapped reason family (BH-3630)."
+    },
+    {
+      "env": "BR_STARVE_ALERT_SECS",
+      "type": "int",
+      "default": 3600,
+      "min": 300,
+      "max": 86400,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "Silence on a project before the starvation alert fires."
+    },
+    {
+      "env": "BR_REVIEW_LOOKBACK_SECS",
+      "type": "int",
+      "default": 172800,
+      "min": 300,
+      "max": 604800,
+      "unit": "seconds",
+      "zero_means": null,
+      "note": "How recently a PR must have been updated for its reviews to be read at all."
+    },
+    {
+      "env": "EXECUTE_MODEL",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "note": "Empty by default since BH-1510: the model is a database row, model_routes role 'build.execute.fallback' (per project), read by bin/blocked-resolver.sh after this env var. Set this only to override that row; no reviewed min/max, nothing is clamped."
+    },
+    {
+      "env": "REVIEW_MODEL",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "note": "Empty by default since BH-1510: the model is a database row, model_routes role 'build.review' (per project), read by bin/blocked-resolver.sh after this env var. Set this only to override that row; no reviewed min/max, nothing is clamped."
+    },
+    {
+      "env": "LLM_LANE_ENABLED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "0 makes this lane call no model at all. bin/lib/llm-gate.sh refuses BEFORE the vendor call and writes a zero-cost row_source=refused row, so the stop is visible in the ledger rather than being a lane that went quiet."
+    },
+    {
+      "env": "LLM_RUNNER_ALLOWED",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Comma/space list of the ONLY ladder rungs this lane may reach. Empty is every rung, i.e. today's ladder unchanged. A rung outside the list is refused before the call, so a cliff or a failure on the standing lane cannot descend into one that costs ~100x (#1141, the $793 descent)."
+    },
+    {
+      "env": "LLM_USD_CAP_DAY",
+      "type": "float",
+      "default": 0,
+      "min": 0,
+      "max": 10000,
+      "unit": "usd",
+      "zero_means": "unlimited",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Dollars this lane may spend in the current UTC day, summed from D1 cost_rows through GET /api/metrics/llm-spend — never from the box's own logs/cost.csv. A second, project-scoped ceiling is the lane.<id>.<project>.llm_usd_cap_day row, which is read only when somebody wrote it."
+    },
+    {
+      "env": "BR_MAX_REGEN",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 10,
+      "unit": "regenerates",
+      "zero_means": "off",
+      "required": true,
+      "note": "Landed regenerates per ticket (the regen counter moves only when an arm pushed or handed the branch to the pool). 0 means no regenerate ever lands. Read by bin/blocked-resolver.sh as a bare $BR_MAX_REGEN since BH-1940; was ${BR_MAX_REGEN:-1}."
+    },
+    {
+      "env": "BR_FIXROUND_PREFLIGHT",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "note": "BH-1794: before a fix round spends, read the PR's live head, the CI on that exact sha (actions/runs + check-runs; a refused read is 'unreadable', never red) and the findings' own head. Findings on an older sha with green CI at the new head go to a re-review, a moved head whose CI is unfinished waits, a red-CI park that is green at head is skipped, and a verdict whose only blocker is stale PR-body evidence gets the live-CI block rewritten and one re-review instead of a round; every round that does run is briefed with the live head and check states. 0 = fix rounds run exactly as before."
+    },
+    {
+      "env": "BR_PREFLIGHT_WAIT_MAX",
+      "type": "int",
+      "default": 6,
+      "min": 0,
+      "max": 1000,
+      "unit": "ticks",
+      "zero_means": "off",
+      "note": "BH-1992: how many ticks the fix-round preflight may answer wait or skip on ONE head (counted on the park record, restarted when the head moves) before the fix round runs anyway, so a check-run stuck pending cannot park a PR for ever. 0 = no cap."
+    },
+    {
+      "env": "BR_PREFLIGHT_NOCI_S",
+      "type": "int",
+      "default": 1800,
+      "min": 0,
+      "max": 604800,
+      "unit": "seconds",
+      "zero_means": "off",
+      "note": "BH-1992: a head with no CI at all (no workflow run, no check-run) this long after the preflight first waited on it reads as unreadable, so the fix round runs. 0 = no timeout."
+    },
+    {
+      "env": "BR_PREFLIGHT_DEFER_S",
+      "type": "int",
+      "default": 1800,
+      "min": 0,
+      "max": 86400,
+      "unit": "seconds",
+      "zero_means": "off",
+      "note": "BH-1992: after the preflight asks bin/review-prs.sh for a re-review of a review-lane park, the fix round is deferred (nothing spent) until a verdict author has reviewed the head since the request or this long has passed. Default is one :07/:37 review cadence. 0 = never defer."
+    },
+    {
+      "env": "BR_HANDOFF_SILENT_PAGE_S",
+      "type": "int",
+      "default": 1800,
+      "min": 0,
+      "max": 86400,
+      "unit": "seconds",
+      "zero_means": "off",
+      "note": "BH-5125: how long a hand-off to this lane (every candidate a tick sees, and every BLOCK bin/review-rescue.sh hands over) may sit with no tick acting on it, dispatching it or finding its key lock held before it counts as silent. One sweep sends at most one critical br-handoff-silent page, with the count and at most 10 claims named; a claim made during the swept tick is never silent at its end. The clock starts at the later of the claim and its floor (a rescued REVIEW_BLOCKED record is not offered for 90 minutes). Every tick that does not dispatch a claimed row still writes a HANDOFF-WAIT line saying why. 0 = never page; the lines are still written."
+    },
+    {
+      "env": "BR_DIRECTIVE_MAX_CHARS",
+      "type": "int",
+      "default": 4000,
+      "min": 0,
+      "max": 20000,
+      "unit": "chars",
+      "zero_means": "off",
+      "note": "BH-5125: the cap on the DIRECTIVE a fix round's brief carries, which is the newest comment a project principal wrote on the ticket (never a harness or [bot] comment), wrapped as untrusted ticket text. Longer comments are cut with a closing truncation note. 0 = no DIRECTIVE, so the brief is today's."
+    }
+  ],
+  "stats": {
+    "cost_stage": [
+      "execute",
+      "review"
+    ],
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/blocked-resolver.log"
+  },
+  "factory_stop": "launch"
+}

@@ -1,0 +1,57 @@
+{
+  "id": "lane-reaper",
+  "name": "Stale-lane reaper",
+  "scope": "box",
+  "script": "bin/lane-reaper.sh",
+  "cadence": "*/10 * * * *",
+  "boxes": [
+    "project-4",
+    "hub",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-10",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-lane-reaper",
+    "aliases": [
+      {
+        "name": "lane-reaper-off",
+        "off_when": "present"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "LANE_REAP_DEADLINE_SECS",
+      "type": "int",
+      "default": 16200,
+      "min": 1800,
+      "max": 172800,
+      "unit": "seconds",
+      "zero_means": null,
+      "project_scoped": true,
+      "note": "BH-1770. How long a run-build.sh lane may live (from job.json's started_at) before bin/lane-reaper.sh kills it as ABANDONED_TIMEOUT. PER BUILD LANE: set lane.lane-reaper.<project>.lane_reap_deadline_secs for one project's builds (bin/harness-ctl.sh set lane-reaper LANE_REAP_DEADLINE_SECS <secs> <project>), or the lane-wide row for every other. Read by bin/lane-reaper.sh through lane_knob with the build's project; a row is clamped to min/max. 16200 is the old flat 4h30m (LANE_EXPECTED_SECS 14400 + LANE_REAP_GRACE_SECS 1800), and a box that tuned that pair keeps its sum as the env tier. A reaped run is relaunched by bin/blocked-resolver.sh, never by the sweep."
+    },
+    {
+      "env": "LANE_REAP_KILL_WAIT_S",
+      "type": "int",
+      "default": 30,
+      "zero_means": null,
+      "note": "Seconds between the SIGTERM and the SIGKILL of a lane that is past its deadline. Read by bin/lane-reaper.sh as ${LANE_REAP_KILL_WAIT_S:-30}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/lane-reaper.log"
+  }
+}

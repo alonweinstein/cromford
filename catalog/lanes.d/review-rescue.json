@@ -1,0 +1,109 @@
+{
+  "id": "review-rescue",
+  "name": "Review rescue",
+  "scope": "hub",
+  "script": "bin/review-rescue.sh",
+  "cadence": "7,37 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-review-rescue",
+    "aliases": [
+      {
+        "name": "review-rescue-disabled",
+        "off_when": "present"
+      }
+    ]
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "REVIEW_MODEL",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Empty by default since BH-1510: the model is a database row, model_routes role 'rescue.review', read by bin/review-rescue.sh after this env var. Set this only to override that row; no reviewed min/max, nothing is clamped."
+    },
+    {
+      "env": "VERDICT_BACKFILL_MAX",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/review-rescue.sh as ${VERDICT_BACKFILL_MAX:-}. Registered by BH-1165 so it is visible and settable; no reviewed min/max yet, so nothing is clamped."
+    },
+    {
+      "env": "RESCUE_PER_TICK",
+      "type": "int",
+      "default": 3,
+      "min": 1,
+      "max": 50,
+      "unit": "candidates",
+      "zero_means": null,
+      "required": true,
+      "note": "How many stranded builds one tick picks up, oldest first. Read by bin/review-rescue.sh as a bare $RESCUE_PER_TICK since BH-1940; was ${RESCUE_PER_TICK:-3}."
+    },
+    {
+      "env": "RESCUE_PARALLEL",
+      "type": "int",
+      "default": 0,
+      "min": 0,
+      "max": 20,
+      "unit": "candidates",
+      "zero_means": "unlimited",
+      "required": true,
+      "note": "How many of the tick's candidates run at once. 0 starts every candidate now. Read by bin/review-rescue.sh as a bare $RESCUE_PARALLEL since BH-1940; was ${RESCUE_PARALLEL:-0}."
+    },
+    {
+      "env": "RESCUE_LEDGER_LOOKBACK_H",
+      "type": "int",
+      "default": 168,
+      "min": 1,
+      "max": 720,
+      "unit": "hours",
+      "zero_means": null,
+      "required": true,
+      "note": "BH-4437: how far back the ledger pass looks for a REVIEW_BLOCKED build with no verdict and no dir on the hub (its pool box was reaped), to rebuild its record as builds/pool-<build_dir>/ and rescue it. A read window, not a prune: the first tick does not materialize every historic row. Read by bin/review-rescue.sh as a bare $RESCUE_LEDGER_LOOKBACK_H."
+    },
+    {
+      "env": "LLM_LANE_ENABLED",
+      "type": "int",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "unit": null,
+      "zero_means": "off",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "0 makes this lane call no model at all. bin/lib/llm-gate.sh refuses BEFORE the vendor call and writes a zero-cost row_source=refused row, so the stop is visible in the ledger rather than being a lane that went quiet."
+    },
+    {
+      "env": "LLM_RUNNER_ALLOWED",
+      "type": "string",
+      "default": "",
+      "min": null,
+      "max": null,
+      "unit": null,
+      "zero_means": null,
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Comma/space list of the ONLY ladder rungs this lane may reach. Empty is every rung, i.e. today's ladder unchanged. A rung outside the list is refused before the call, so a cliff or a failure on the standing lane cannot descend into one that costs ~100x (#1141, the $793 descent)."
+    },
+    {
+      "env": "LLM_USD_CAP_DAY",
+      "type": "float",
+      "default": 0,
+      "min": 0,
+      "max": 10000,
+      "unit": "usd",
+      "zero_means": "unlimited",
+      "read_in": "bin/lib/llm-gate.sh",
+      "note": "Dollars this lane may spend in the current UTC day, summed from D1 cost_rows through GET /api/metrics/llm-spend — never from the box's own logs/cost.csv. A second, project-scoped ceiling is the lane.<id>.<project>.llm_usd_cap_day row, which is read only when somebody wrote it."
+    }
+  ],
+  "stats": {
+    "cost_stage": "review",
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/review-rescue.log"
+  }
+}

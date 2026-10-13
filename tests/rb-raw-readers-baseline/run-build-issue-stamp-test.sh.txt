@@ -1,0 +1,1 @@
+BH-557. It EXECUTES the driver the same way queue-producers-test.sh does, and copies bin/lib/rb/*.sh into its scratch $HARNESS too: an executing suite must have the real driver AND the real modules.

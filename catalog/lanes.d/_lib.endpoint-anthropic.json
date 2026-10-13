@@ -1,0 +1,20 @@
+{
+  "libs": [
+    {
+      "id": "endpoint-anthropic",
+      "file": "bin/lib/cred-probe.sh",
+      "note": "BH-2558 (BH-2549.0, canaries without inference). The base URL of the Anthropic API, resolved by endpoint_url anthropic (bin/lib/endpoints.sh). bin/lib/cred-probe.sh maps the claude runner to it in _CRED_PROBE_ENDPOINTS; no consumer calls it yet, the #2549 sibling slices wire the probe.",
+      "knobs": [
+        {
+          "env": "ENDPOINT_ANTHROPIC",
+          "type": "string",
+          "default": "https://api.anthropic.com",
+          "zero_means": null,
+          "required": true,
+          "settable": false,
+          "note": "Base URL of the Anthropic API; the API path stays in code. settable:false (BH-1165): a URL a root lane sends a credential to is set by the operator's env, never by a settings row; no row can override it."
+        }
+      ]
+    }
+  ]
+}

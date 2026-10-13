@@ -1,0 +1,95 @@
+{
+  "data": {
+    "issue": {
+      "id": "00000000-0000-0000-0000-100000000002",
+      "identifier": "CRO-2",
+      "title": "Fee toggle",
+      "description": "Remove the discount toggle.",
+      "url": "https://linear.app/crosstest/issue/CRO-2/fee-toggle",
+      "state": {
+        "id": "00000000-0000-0000-0000-500000000002",
+        "name": "Todo"
+      },
+      "labels": {
+        "nodes": [
+          {
+            "id": "00000000-0000-0000-0000-b00000000001",
+            "name": "ai-build"
+          }
+        ]
+      },
+      "team": {
+        "id": "00000000-0000-0000-0000-7000000000c0",
+        "key": "CRO",
+        "states": {
+          "nodes": [
+            {
+              "id": "00000000-0000-0000-0000-500000000006",
+              "name": "Doing",
+              "type": "started",
+              "position": 5
+            },
+            {
+              "id": "00000000-0000-0000-0000-500000000001",
+              "name": "Backlog",
+              "type": "backlog",
+              "position": 0
+            },
+            {
+              "id": "00000000-0000-0000-0000-500000000002",
+              "name": "Todo",
+              "type": "unstarted",
+              "position": 1
+            },
+            {
+              "id": "00000000-0000-0000-0000-500000000003",
+              "name": "In Progress",
+              "type": "started",
+              "position": 2
+            },
+            {
+              "id": "00000000-0000-0000-0000-500000000004",
+              "name": "In Review",
+              "type": "started",
+              "position": 3
+            },
+            {
+              "id": "00000000-0000-0000-0000-500000000005",
+              "name": "Code Review",
+              "type": "started",
+              "position": 4
+            },
+            {
+              "id": "00000000-0000-0000-0000-500000000007",
+              "name": "Done",
+              "type": "completed",
+              "position": 6
+            },
+            {
+              "id": "00000000-0000-0000-0000-500000000008",
+              "name": "Canceled",
+              "type": "canceled",
+              "position": 7
+            }
+          ]
+        }
+      },
+      "comments": {
+        "nodes": [
+          {
+            "body": "How does the rep set the fee?",
+            "createdAt": "2026-10-01T01:00:00.000Z",
+            "user": {
+              "name": "the operator",
+              "displayName": "operator"
+            },
+            "botActor": null
+          }
+        ],
+        "pageInfo": {
+          "hasNextPage": false
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,4 @@
+POST re:/^\/api\/jobs\/([^/]+)\/phases\/close$/
+POST re:/^\/api\/jobs\/([^/]+)\/phases$/
+GET re:/^\/api\/jobs\/([^/]+)\/phases$/
+PATCH re:/^\/api\/phases\/(\d+)$/

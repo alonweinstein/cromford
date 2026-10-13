@@ -1,0 +1,15 @@
+
+# ── WARN-BATCH FLUSH (2026-09-24) ───────────────────────────────────────────
+# Every 30 min, on EVERY box: drain this box's own warn spool
+# (state/alert-warn-batch.jsonl) into ONE Telegram message. A warn spools on
+# the box that raised it, so a hub-only flush would leave every project box
+# (review-prs, triage, call-guard) on the inline dead-man alone. Not behind the
+# hub lease: each box drains only its own spool. Deterministic jq/awk, no LLM;
+# an empty spool sends nothing. Same flock as the inline dead-man in
+# bin/lib/alert-state.sh, so the two never double-send.
+# OFF-SWITCH CAVEAT: flags/lane-off-alert-warn-flush (or flags/all-off) also
+# stops that inline dead-man, which runs the same --warn-batch. While it is set
+# this box delivers NO warn; the spool silently trims oldest-first at
+# ALERT_WARN_BATCH_MAX (60). Clearing it delivers what is left next tick.
+# tests/alert-warn-batch-cron-test.sh.
+*/30 * * * * /root/harness/bin/alert-warn-flush.sh >> /root/harness/logs/alert-digest.log 2>&1

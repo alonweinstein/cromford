@@ -1,0 +1,10 @@
+diff --git a/src/app/api/invoices/[id]/route.ts b/src/app/api/invoices/[id]/route.ts
+--- a/src/app/api/invoices/[id]/route.ts
++++ b/src/app/api/invoices/[id]/route.ts
+@@ -4,6 +4,9 @@ import { prisma } from "@/lib/db"
+ export async function GET(req: Request, { params }: { params: { id: string } }) {
+   const { id } = params
++  const invoice = await prisma.invoice.findUnique({ where: { id } })
++  if (!invoice) return new Response("not found", { status: 404 })
++  return Response.json(invoice)
+ }

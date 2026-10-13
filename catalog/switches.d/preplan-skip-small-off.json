@@ -1,0 +1,1 @@
+{"name":"preplan-skip-small-off","readers":["bin/lib/preplan-lib.sh"],"box_scoped":true,"what":"stops the pre-plan tick skipping small tickets, so every candidate is pre-planned as before"}

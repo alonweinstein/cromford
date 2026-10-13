@@ -1,0 +1,5 @@
+# The requester answered last, the turn is team, no PR or branch exists and a
+# slot
+# is free. SOP: project-4.md:34 (requester answered, turn back to team, mechanism
+# confirmed -> BUILDABLE) and :54 (launch detached, one build per free slot).
+TK-7315 :: launch

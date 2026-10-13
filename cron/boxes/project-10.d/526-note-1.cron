@@ -1,0 +1,14 @@
+# NO model-prices-sync line, deliberately: the box is STOPPED, so nothing on
+# it prices a row and there is no table to keep fresh (BH-1032).
+# NO cost-rows-push line, deliberately: same reason as the tracker below — a
+# stopped box has no cost.csv growing, and the enrollment test asks for the
+# absence to be declared rather than silent.
+# NO extra-usage tracker line, deliberately. The box is STOPPED (the operator,
+# 2026-08-25) and was dropped from cost-rollup's collection map in d676fed —
+# this side was left behind, so the committed cron said "poll" while the rollup
+# said "do not collect". The set-equality test caught the half-applied change.
+# If the box comes back, BOTH lines return together; that pairing is the whole
+# point of asserting the two sets are equal.
+# NO quota-poll line, deliberately, for the same reason: the account-routing
+# poller has nothing to poll on a stopped box. It returns with the tracker.
+

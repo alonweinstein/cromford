@@ -1,0 +1,31 @@
+{
+  "libs": [
+    {
+      "id": "plan-hotspot",
+      "file": "bin/plan-after.sh",
+      "note": "BH-4988 (BH-4975.3). How the planner treats a plan that needs a file an in-flight build claims. bin/plan-overlap.sh exempts collisions on fragment paths (a path the target repo's `## Generated files` table declares, or a fragment directory below and a path under it) and logs `PLAN_HOTSPOT <KEY> choice=build ... fragment-only`. Any other collision defers, and bin/plan-after.sh records `After: <OTHER>`: the free pre-PLAN gate in bin/lib/rb/gates.sh then holds the ticket until OTHER has no claim, no live build dir, no job_claims row and no open PR. The hold is read from the box-local marker file, or, when the box has none (every Fly pool re-offer), from the key's newest overlap_defer job artifact (choice=after); with neither, the ten-minute not-before floor is all that is left. Every choice is one PLAN_HOTSPOT line in the build's pipeline.log and logs/plan-hotspot.log. Both scripts call lib_env_apply plan-hotspot <project>.",
+      "knobs": [
+        {
+          "env": "PLAN_OVERLAP_FRAGMENT_DIRS",
+          "read_in": "bin/plan-overlap.sh",
+          "type": "string",
+          "default": "catalog/lanes.d cron/lanes docs/verification-map/entries worker/jobs/schema.d",
+          "zero_means": null,
+          "required": false,
+          "note": "Space-separated fragment directories, a trailing / stripped. A bare entry on one side against a path under it on the other, or the bare entry on both sides, is not held. The same FILE inside one on both sides still defers. Read as a settings row, then env, then env/global.env, then this default."
+        },
+        {
+          "env": "PLAN_AFTER_MAX_MIN",
+          "read_in": "bin/plan-after.sh",
+          "type": "int",
+          "default": 360,
+          "min": 0,
+          "unit": "minutes",
+          "zero_means": "off",
+          "required": false,
+          "note": "Ceiling on an After: hold, and the window the fleet overlap_defer read looks back over. A marker this old is removed and logged choice=expired, and the ticket goes on to PLAN, where plan-overlap judges it again. 0 = never expire. Read as a settings row, then env, then env/global.env, then 360."
+        }
+      ]
+    }
+  ]
+}

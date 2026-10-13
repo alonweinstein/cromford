@@ -1,0 +1,1 @@
+{"name":"cost-rows-from-db-off","readers":["bin/lib/cost-rows-read.sh"],"box_scoped":true,"what":"stops cost lanes reading the harness-jobs cost_rows table"}

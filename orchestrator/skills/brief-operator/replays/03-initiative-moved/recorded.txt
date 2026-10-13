@@ -1,0 +1,6 @@
+I'd pause decomposed slicing for a week. Rework on those tickets went from 12.5% to 18.0% over the last 40 PRs.
+
+https://github.com/example-org/cromford/issues/3966
+
+Reply: Archie approve I1 / Archie change I1 <what> / Archie drop I1
+VERDICT: send

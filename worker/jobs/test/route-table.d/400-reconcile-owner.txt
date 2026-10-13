@@ -1,0 +1,5 @@
+# BH-1607 (BH-1595.0): the reconcile-prs owner + memory contract stubs,
+# spliced in directly under the hub lease, the same place src/index.js puts them.
+POST /api/reconcile-prs/beat
+GET /api/reconcile-prs/owner
+PATCH /api/reconcile-prs/owner/alert

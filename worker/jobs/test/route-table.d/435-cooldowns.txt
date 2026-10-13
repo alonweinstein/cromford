@@ -1,0 +1,3 @@
+POST /api/cooldowns
+POST /api/cooldowns/clear
+GET /api/cooldowns

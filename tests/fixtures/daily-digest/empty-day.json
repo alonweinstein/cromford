@@ -1,0 +1,55 @@
+{
+  "day": "2026-09-29",
+  "from": "2026-09-29T00:00:00Z",
+  "to": "2026-09-30T00:00:00Z",
+  "as_of": "2026-09-30T07:00:05Z",
+  "empty": true,
+  "throughput": {
+    "ok": true,
+    "merged": 0,
+    "by_project": [],
+    "filing_to_merge": { "p50_s": null, "measured_n": 0, "unmeasured_n": 0 }
+  },
+  "spend": {
+    "ok": true,
+    "usd": 0,
+    "calls": 0,
+    "unpriced_calls": 0,
+    "usd_per_merged_pr": null,
+    "top_tickets": { "rows": [], "truncated": false }
+  },
+  "autonomy": {
+    "ok": true,
+    "batch_dequeues": { "n": 0, "basis": "merge-queue dequeue events and batch-resolve ejections", "rows": [], "truncated": false },
+    "manual_requeues": { "n": 0, "rows": [], "truncated": false },
+    "rebuild_loops": { "n": 0, "abandoned": 0, "rows": [], "truncated": false },
+    "human_interventions": {
+      "n": 0,
+      "by_table": {
+        "config_changes": 0, "model_route_changes": 0, "routing_changes": 0, "cost_cap_changes": 0,
+        "route_rule_changes": 0, "flaky_quarantine_changes": 0, "alert_actions": 0, "stage_events": 0,
+        "pauses": 0, "verdicts": 0, "ticket_hold": 0
+      }
+    }
+  },
+  "tripwires": { "ok": true, "n": 0, "rows": [], "truncated": false },
+  "self_heals": { "ok": true, "n": 0, "by_source": {}, "rows": [], "truncated": false },
+  "holds": {
+    "ok": true,
+    "n": 0,
+    "basis": "D1 holds only (console holds, BLOCKED_HUMAN PRs, triage-seen waiting-on-human)",
+    "rows": [],
+    "truncated": false
+  },
+  "human_verdict_prs": { "ok": true, "n": 0, "rows": [], "truncated": false },
+  "model_watch": { "ok": true, "rows": [], "truncated": false },
+  "spotcheck_candidates": { "ok": true, "rows": [], "truncated": false },
+  "factory": {
+    "ok": true,
+    "factory_stop": { "set": false, "value": null, "actor": null, "updated_at": null },
+    "all_off": { "set": false, "actor": null, "since": null },
+    "fleet_pauses": []
+  },
+  "pr_health": { "ok": true, "rows": [], "skipped": 0 },
+  "past_sla": { "ok": true, "total": 0, "by_state": {}, "as_of": "2026-09-29T23:55:00Z", "stale": false }
+}

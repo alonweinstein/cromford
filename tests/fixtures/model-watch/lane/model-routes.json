@@ -1,0 +1,4 @@
+{"project":null,"roles":[
+  {"role":"stage.plan","source":"hub","ladder":[{"position":0,"model":"claude-lyra-5-5","runner":"claude"},{"position":1,"model":"claude-vega-3","runner":"claude"}]},
+  {"role":"stage.review","source":"hub","ladder":[{"position":0,"model":"claude-vega-3","runner":"claude"}]}
+],"gaps":[],"runners":["claude","codex"],"as_of":"2026-09-29T00:00:00Z"}

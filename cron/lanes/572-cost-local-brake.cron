@@ -1,0 +1,1 @@
+3,13,23,33,43,53 * * * * /root/harness/bin/cost-local-brake.sh >/dev/null 2>&1 # every 10 min: while harness-jobs is unreachable, judge this box's own projects against the cost breaker from its own logs/cost.csv and pause the ones that trip it here (BH-2599; silent while the worker answers)

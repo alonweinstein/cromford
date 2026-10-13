@@ -1,0 +1,5 @@
+FINDING: 3 pool machines are idle for 85 min while builds wait.
+CAUSE: unknown
+LEVER: probe logs/fly-pool.log and the pool claim rows for why no build took a machine
+SAY: none
+VERDICT: probe

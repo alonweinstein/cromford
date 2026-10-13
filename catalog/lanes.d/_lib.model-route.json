@@ -1,0 +1,22 @@
+{
+  "libs": [
+    {
+      "id": "model-route",
+      "file": "bin/lib/model-route.sh",
+      "note": "BH-1928. bin/lib/model-route.sh's model_routes_bundle (the route bundle bin/fly-pool.sh and bin/fly-dispatch.sh ship to a builder) reads this through lib_env_apply model-route. Not required: the lib keeps 15 as its documented fallback, and an env value that is not a positive integer is never used.",
+      "knobs": [
+        {
+          "env": "MODEL_ROUTES_BUNDLE_DEADLINE_S",
+          "type": "int",
+          "default": 15,
+          "min": 1,
+          "max": 120,
+          "unit": "seconds",
+          "zero_means": null,
+          "required": false,
+          "note": "BH-1928. One total deadline for building the route bundle, across every build role. Each worker ask gets the smaller of MODEL_ROUTES_BUNDLE_TIMEOUT_S (4) and what is left; once it is spent the remaining roles are served from this box's cache and model-route.log says so. A healthy worker answers the 17 roles in about 5 s; without it a slow one added about 68 s to every pool tick."
+        }
+      ]
+    }
+  ]
+}

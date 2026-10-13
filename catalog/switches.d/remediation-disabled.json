@@ -1,0 +1,1 @@
+{"name":"remediation-disabled","readers":["bin/remediate-agent.sh","bin/beat.sh"],"box_scoped":true,"what":"kills remediation: remediate-agent.sh (tier 2) stops on the row or the file, beat.sh (tier 1) on the file only"}

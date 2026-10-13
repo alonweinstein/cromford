@@ -1,0 +1,34 @@
+{
+  "id": "alert-warn-flush",
+  "name": "Alert warn-batch flush (per-box spool)",
+  "scope": "box",
+  "script": "bin/alert-warn-flush.sh",
+  "cadence": "*/30 * * * *",
+  "boxes": [
+    "project-4",
+    "hub",
+    "project-6",
+    "project-6-os",
+    "project-1",
+    "project-3",
+    "project-10",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-alert-warn-flush",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/alert-digest.log"
+  },
+  "note": "Drains THIS box's warn spool (state/alert-warn-batch.jsonl) via bin/alert-warn-flush.sh (which runs bin/alert-digest.sh --warn-batch). The switch (flags/lane-off-alert-warn-flush, or flags/all-off) also stops the inline dead-man in bin/lib/alert-state.sh, because that path runs the same --warn-batch: while it is off NO warn is delivered from this box, the spool keeps growing and silently trims oldest-first at ALERT_WARN_BATCH_MAX (60). Clearing it delivers what is left on the next tick. tests/alert-warn-batch-cron-test.sh W9."
+}

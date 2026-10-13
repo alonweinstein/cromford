@@ -1,0 +1,5 @@
+# registry export (BH-5651): nightly snapshot of the D1 fleet registry under
+# state/registry/export/<stamp>/ (registry.json, import.json for
+# bin/registry-seed.sh --from-export, fleet.conf, cost-accounts.json); keeps
+# REGISTRY_EXPORT_KEEP (14). Off via flags/lane-off-registry-export.
+41 3 * * * /root/harness/bin/registry-export.sh --snapshot /root/harness/state/registry/export >/dev/null 2>&1

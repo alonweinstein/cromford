@@ -1,0 +1,5 @@
+# triageVerdict=needs_clarification + waitingOn=client. The newest comment is
+# OUR question, not their answer, so the mechanism is unconfirmed. Building here
+# is exactly the early-engagement incident. Only a skip is correct — not a launch,
+# not a queue entry, and not a comment restating the question we just asked.
+TK-4830 :: skip

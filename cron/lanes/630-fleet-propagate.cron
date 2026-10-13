@@ -1,0 +1,10 @@
+# @hub-lanes
+
+# fleet-propagate (operator line, outside managed blocks; the operator 2026-09-14 "Yes sync
+# and rebake on every bin change"). Every 5 minutes: if origin/main moved and the
+# diff touches a path the fleet actually runs (bin/, prompts/, fly/, rules/,
+# skills/, cron/, catalog/, checks/, guardrails/, worker/, fleet.conf,
+# vercel.conf), sync the hub, ssh every fleet.conf box through update-runners.sh,
+# and rebake every pool image — so a merge reaches the fleet in minutes instead of
+# at tomorrow's 05:17Z. The 05:17Z and 05:40Z lines above stay as the backstop.
+*/5 * * * * /root/harness/bin/hub-lease.sh check && /root/harness/bin/fleet-propagate.sh >> /root/harness/logs/fleet-propagate-cron.log 2>&1

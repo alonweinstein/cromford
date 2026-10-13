@@ -1,0 +1,10 @@
+diff --git a/docs/EVENTS.md b/docs/EVENTS.md
+index 1111111..2222222 100644
+--- a/docs/EVENTS.md
++++ b/docs/EVENTS.md
+@@ -2,5 +2,4 @@
+ 
+-<!-- changes:begin -->
+ > pointer line
+ <!-- changes:end -->
+ 

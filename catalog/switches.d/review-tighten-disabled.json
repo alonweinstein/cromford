@@ -1,0 +1,1 @@
+{"name":"review-tighten-disabled","readers":["bin/review-tighten.sh"],"box_scoped":true,"what":"stops review-tighten.sh measuring the revert/reopen rate and parking or releasing a repo's auto-merge"}

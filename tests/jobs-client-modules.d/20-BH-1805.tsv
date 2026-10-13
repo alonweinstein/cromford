@@ -1,0 +1,5 @@
+# tests/jobs-client-modules.d/20-BH-1805.tsv — the split-watchdog ledger verbs (BH-1805, BH-1793.0).
+split-watchdog	sw_record
+split-watchdog	sw_seen
+split-watchdog	sw_list
+split-watchdog	sw_actions_today

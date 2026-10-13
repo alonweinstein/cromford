@@ -1,0 +1,4 @@
+# tests/mc/expected-map.d/BH-6005.tsv — BH-6005.3: the schema-drop check in the
+# rebase lane (rebase, beside mc_resolve_deleted_ignored, its only caller);
+# origin=lib because it is a new module function.
+rebase	mc_schema_drop_safe	lib

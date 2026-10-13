@@ -1,0 +1,35 @@
+{
+  "id": "pr-state-reconcile",
+  "name": "PR gate facts reconcile sweep",
+  "scope": "hub",
+  "script": "bin/pr-state-reconcile.sh",
+  "cadence": "*/15 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-pr-state-reconcile",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "PR_STATE_RECONCILE_MAX_PER_SWEEP",
+      "type": "int",
+      "default": 30,
+      "min": 1,
+      "max": 500,
+      "unit": "corrections",
+      "zero_means": null,
+      "required": true,
+      "note": "BH-4954: at most this many correcting gate events a sweep. The first sweep against an empty gate table (a cold backfill) would otherwise write every fact of every open PR at once; the rest are deferred and seen again next sweep, never dropped."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/pr-state-reconcile.log"
+  }
+}

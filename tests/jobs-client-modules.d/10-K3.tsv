@@ -1,0 +1,5 @@
+# tests/jobs-client-modules.d/10-K3.tsv — the pre-call guard's client verbs (K3).
+cost	call_guard_claim
+cost	call_guard_settle
+cost	call_guard_list
+cost	call_guard_reset

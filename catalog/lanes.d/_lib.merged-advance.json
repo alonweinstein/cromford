@@ -1,0 +1,44 @@
+{
+  "libs": [
+    {
+      "id": "merged-advance",
+      "file": "bin/merged-ticket-advance.sh",
+      "note": "BH-3927 (BH-3921 part 5). Moves an in-app ticket on once its newest build's PR passed the post-merge deploy audit: one comment, then a move to done (system-filed) or review (client-filed). Called from inapp_released_lines (bin/lib/rt/scope.sh) before the in-app parent close. Doc: docs/verification-map/board-dependencies.md.",
+      "knobs": [
+        {
+          "env": "MERGED_ADVANCE_MAX",
+          "type": "int",
+          "default": 10,
+          "min": 0,
+          "max": 100,
+          "unit": "tickets",
+          "zero_means": "off",
+          "required": false,
+          "note": "Ticket records one run reads (a GET each, then at most a comment and a move). The rest wait for the next run and the lane logs MERGED_ADVANCE_CAPPED with how many. Read as ${MERGED_ADVANCE_MAX:-10}."
+        },
+        {
+          "env": "MERGED_ADVANCE_COOLDOWN_S",
+          "type": "int",
+          "default": 600,
+          "min": 0,
+          "max": 86400,
+          "unit": "seconds",
+          "zero_means": "no cooldown",
+          "required": false,
+          "note": "How long a --cooled run (the in-app tick) waits after the last one before reading the board again. A hand run is never held. Read as ${MERGED_ADVANCE_COOLDOWN_S:-600}."
+        },
+        {
+          "env": "MERGED_ADVANCE_MOVE_TRIES",
+          "type": "int",
+          "default": 3,
+          "min": 1,
+          "max": 20,
+          "unit": "attempts",
+          "zero_means": null,
+          "required": false,
+          "note": "How many runs retry a move that failed (no 2xx echo of the target status) before the lane gives up on that ticket and audit with one MERGED_ADVANCE_GAVE_UP line and one alert. The comment stands; the ticket is moved by hand. 0, a non-number or empty reads 3. Read as ${MERGED_ADVANCE_MOVE_TRIES:-3}."
+        }
+      ]
+    }
+  ]
+}

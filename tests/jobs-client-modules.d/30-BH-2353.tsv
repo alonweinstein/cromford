@@ -1,0 +1,4 @@
+# tests/jobs-client-modules.d/30-BH-2353.tsv — the fleet cooldown verbs (BH-2353).
+machines	cooldown_put
+machines	cooldown_clear
+machines	cooldown_list

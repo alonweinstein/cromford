@@ -1,0 +1,12 @@
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T05:09:24.3447792Z --- tests/client-court-gate-test.sh rc=0 1s
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T05:09:24.6635122Z --- tests/clock-sync-test.sh rc=0 0s
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T05:09:25.5604583Z --- tests/closed-settle-guard-test.sh rc=0 1s
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T05:09:25.7266441Z --- tests/config-detail-console.bh-2379-test.sh rc=0 0s
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T05:09:25.7975172Z --- tests/cost-caps-contract.bh-2563-test.sh rc=0 0s
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T05:09:26.5046070Z --- tests/cost-live-rollup.bh-3499-test.sh rc=1 1s
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T05:09:26.5050940Z FAIL: R5: worker/jobs/test/cost-live.bh-3499.test.js is red: not ok 1 - test/cost-live.bh-3499.test.js
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T05:09:26.5051500Z cost-live-rollup.bh-3499: PASS=24 FAIL=1
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T05:09:26.6086521Z EXIT 1 cost-live-rollup.bh-3499-test.sh
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T05:09:27.5593604Z --- tests/cost-rollup-db-first.bh-2312-test.sh rc=0 1s
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T05:09:28.6493222Z --- tests/daily-digest-render.bh-3688-test.sh rc=0 1s
+Tests, traced (shard 0/8)	UNKNOWN STEP	2026-10-02T05:09:29.4133485Z --- tests/dequeue-watch-act.bh-3719-test.sh rc=0 1s

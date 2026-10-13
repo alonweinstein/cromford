@@ -1,0 +1,1 @@
+Part 5 of the App-token rollout: metrics — scripts that scrape GitHub state into reports and invariant checks. Its three `gh api rate_limit` reads MEASURE whichever identity is active, so arming it changes what the budget reports — a decision for the slice that converts it, not a line to sneak in here. The parent #425 closed on 2026-09-22 without making it; BH-2006 owns it now.

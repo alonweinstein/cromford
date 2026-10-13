@@ -1,0 +1,1 @@
+{"name":"overlap-guard-off","readers":["bin/overlap-guard.sh"],"box_scoped":true,"what":"stops overlap-guard.sh holding back a ticket whose files overlap builds already in flight, fleet-wide (flags/overlap-guard-off-<project> stays a file)"}

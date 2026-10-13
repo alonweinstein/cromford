@@ -1,0 +1,6 @@
+# TRIAGE-STATE: the per-ticket triage state the pre-check reads before a tick
+# spends a token, at the END of the table after route-rules, where
+# src/index.js puts it. The /:project/:key GET sits above the bare list GET.
+GET re:/^\/api\/triage-state\/([^/]+)\/([^/]+)$/
+GET /api/triage-state
+PUT /api/triage-state

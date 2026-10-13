@@ -1,0 +1,6 @@
+[
+  {"fingerprint": "a1b2c3d4e5f60718", "key_kind": "file", "key_value": "bin/rebase.sh", "item_ids": ["i0", "i1"],
+   "target": "harness", "project": "cromford", "title": "Rebase lane gives up on the same file — twice",
+   "cause": "The rebase lane stops after 3 rounds — the conflict is always in bin/rebase.sh.",
+   "proposed_fix": "Teach the rebase lane to resolve the generated hunk."}
+]

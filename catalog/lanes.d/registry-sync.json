@@ -1,0 +1,41 @@
+{
+  "id": "registry-sync",
+  "name": "Registry sync",
+  "scope": "box",
+  "script": "bin/registry-sync.sh",
+  "cadence": "*/5 * * * *",
+  "boxes": [
+    "project-4",
+    "hub",
+    "project-6",
+    "project-1",
+    "project-3",
+    "project-10",
+    "project-9",
+    "small",
+    "project-2",
+    "project-5"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-registry-sync",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "REGISTRY_SYNC_CHECKOUT",
+      "type": "string",
+      "default": "/root/harness-checkout",
+      "zero_means": null,
+      "note": "BH-5650: the checkout bin/registry-sync.sh renders the crontab from (bin/render-crontab.sh --root <it>), the same root bin/update-runners.sh uses. Read as ${REGISTRY_SYNC_CHECKOUT:-/root/harness-checkout}. NOT settable from the control plane: it is a path a root lane executes from, so only env/global.env on the box moves it.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/registry-sync.log"
+  }
+}

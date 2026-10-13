@@ -1,0 +1,6 @@
+# tests/mc/expected-map.d/BH-3777.tsv — BH-3777: the withheld-lead-verdict gate
+# (classify: the reason, the gate the conductor runs before classifying a READY
+# Mergify row, and the stacked child's parent note); origin=lib, new functions.
+classify	mc_nhv_reason	lib
+classify	mc_nhv_gate	lib
+classify	mc_nhv_parent_note	lib

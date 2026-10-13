@@ -1,0 +1,5 @@
+# tmp sweep (BH-5007, BH-5608, BH-6041): every 15 min, remove the suite and prototype leftovers and the
+# builder/reviewer checkouts at the top of /tmp (pb*-proto, scratch.*, rv*, wt*, r[0-9]*, bh[0-9]*, pr[0-9]*, lr[0-9]*, ...)
+# that nothing has written for MIN_AGE_MIN (180) minutes, no live process holds and no job claim names;
+# warn when /tmp is still over TMP_ALERT_PCT (85). Knobs on the tmp-sweep lane. Off via flags/lane-off-tmp-sweep.
+8,23,38,53 * * * * /root/harness/bin/tmp-sweep.sh >/dev/null 2>&1

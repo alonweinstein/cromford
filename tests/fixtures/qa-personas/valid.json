@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "personas": [
+    {
+      "id": "admin",
+      "role": "qa-admin",
+      "sign_in": "clerk-ticket",
+      "apps": ["admin"],
+      "out_of_bounds": ["/admin/users/delete"],
+      "flows": [
+        {
+          "id": "users",
+          "title": "See the user list",
+          "route": "/admin/users",
+          "observable": "the users table renders",
+          "production_safe": true,
+          "steps": [
+            { "goto": "/admin/users" },
+            { "expect": { "selector": "role=table" } }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "owner",
+      "role": "qa-owner",
+      "sign_in": "clerk-ticket",
+      "apps": ["web"],
+      "out_of_bounds": ["/billing", "/settings/danger"],
+      "flows": [
+        {
+          "id": "dashboard",
+          "title": "See the dashboard",
+          "route": "/dashboard",
+          "observable": "the scans table renders",
+          "production_safe": true,
+          "steps": [
+            { "goto": "/dashboard" },
+            { "expect": { "selector": "role=table" } }
+          ]
+        },
+        {
+          "id": "new-scan",
+          "title": "Start a scan",
+          "route": "/scans/new",
+          "observable": "a queued scan row appears",
+          "production_safe": false,
+          "cleanup": "delete the queued scan named qa-smoke",
+          "steps": [
+            { "goto": "/scans/new" },
+            { "fill": { "selector": "input[name=name]", "value": "qa-smoke" } },
+            { "click": "button:has-text(\"Start scan\")" },
+            { "expect": { "selector": "role=row", "text": "qa-smoke" } }
+          ]
+        }
+      ]
+    }
+  ]
+}

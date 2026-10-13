@@ -1,0 +1,5 @@
+# tests/mc/expected-map.d/SWEEPSTALL-CONDUCTOR.tsv — 2026-09-27: the READY arm
+# records why it did not merge (mc_ready_why) and the STUCK READY page reads it
+# back (mc_ready_why_last); origin=lib because both are new module functions.
+classify	mc_ready_why	lib
+classify	mc_ready_why_last	lib

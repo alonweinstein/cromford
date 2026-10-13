@@ -1,0 +1,1 @@
+{"name":"triage-registry-off","readers":["bin/alert-triage.sh"],"box_scoped":true,"what":"stops alert-triage running the alert family scripts registry pass"}

@@ -1,0 +1,1 @@
+@reboot mkdir -p /dev/net /run/sshd && (mknod /dev/net/tun c 10 200 2>/dev/null; true) && /usr/sbin/sshd && setsid /usr/sbin/tailscaled --tun=userspace-networking --state=/var/lib/tailscale/tailscaled.state --socket=/var/run/tailscale/tailscaled.sock >/var/log/tailscaled.log 2>&1

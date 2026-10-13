@@ -1,0 +1,23 @@
+{
+  "id": "fly-results-ingest",
+  "name": "Fly results ingest",
+  "scope": "hub",
+  "script": "bin/fly-results-ingest.sh",
+  "cadence": "*/2 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-fly-results-ingest",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/fly-results-ingest.log"
+  }
+}

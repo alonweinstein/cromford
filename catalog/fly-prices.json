@@ -1,0 +1,28 @@
+{
+  "_comment": [
+    "catalog/fly-prices.json — the price table bin/vendor-spend-pull.sh multiplies",
+    "Fly machine-seconds by. Fly has NO public billing/usage API (probed",
+    "2026-09-14: api.fly.io/graphql answers \"Field 'billables' doesn't exist on",
+    "type 'Organization'\" and the same for 'invoices'), so the Fly row is",
+    "kind=computed and this file is what makes the number reproducible.",
+    "",
+    "DB-DRIVEN, code constant only as a documented fallback (global rules). Edit",
+    "THIS file when Fly's list prices move — bin/vendor-spend-pull.sh reads it and",
+    "carries no rates of its own except the same-shaped fallback in its header,",
+    "used only when this file is missing or unparseable. A row priced from that",
+    "fallback says so in its note, so a stale catalog is visible rather than",
+    "silently assumed. catalog/model-prices.json is the same pattern one vendor over.",
+    "",
+    "seconds_per_month is 730h, which is the basis Fly's own per-second rates are",
+    "quoted against. Volumes are billed on PROVISIONED size, not used bytes."
+  ],
+  "updated_at": "2026-09-14",
+  "source": "https://fly.io/docs/about/pricing/ — published list prices, read by hand",
+  "seconds_per_month": 2628000,
+  "cpu_usd_per_core_month": {
+    "shared": 2.0,
+    "performance": 31.0
+  },
+  "memory_usd_per_gb_month": 5.0,
+  "volume_usd_per_gb_month": 0.15
+}

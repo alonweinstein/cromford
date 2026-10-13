@@ -1,0 +1,19 @@
+{
+  "libs": [
+    {
+      "id": "main-red-gate",
+      "file": "bin/lib/main-red-gate.sh",
+      "note": "BH-1939 (BH-1511.2). The main-red freeze every merge lane reads, sourced through bin/lib/merge-conductor-lib.sh. Applied by main-red-gate.sh at file scope, in a subshell. With nothing resolved the exemption is refused (an empty path list exempts nothing). The label is not this lib's knob: it is BH-1770's lib.main-red-label.mc_main_red_label (catalog/lanes.d/_lib.json).",
+      "knobs": [
+        {
+          "env": "MC_MAIN_RED_TEST_PATHS",
+          "type": "string",
+          "default": "tests/* worker/*/test/*",
+          "zero_means": null,
+          "required": true,
+          "note": "The case globs (space-separated) a PR's files must all match to merge through a red-main freeze as test-only. Was ${MC_MAIN_RED_TEST_PATHS:-tests/* worker/*/test/*}."
+        }
+      ]
+    }
+  ]
+}

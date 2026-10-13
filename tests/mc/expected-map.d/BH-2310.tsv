@@ -1,0 +1,5 @@
+# tests/mc/expected-map.d/BH-2310.tsv — BH-2310: the same-patch fallback of the
+# patch-id rebind (settle, beside mc_patch_id); origin=lib because they are new
+# module functions. mc_patch_wt is the checkout mc_patch_id now shares.
+settle	mc_patch_wt	lib
+settle	mc_patch_same	lib

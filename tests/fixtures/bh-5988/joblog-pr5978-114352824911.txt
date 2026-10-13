@@ -1,0 +1,50 @@
+2026-10-11T00:41:02.1180000Z Current runner version: '2.328.0'
+2026-10-11T00:41:02.1180000Z ##[group]Runner Image Provisioner
+2026-10-11T00:41:02.1180000Z Hosted Compute Agent
+2026-10-11T00:41:02.1180000Z ##[endgroup]
+2026-10-11T00:41:19.4410000Z ##[group]Run FAIL=0
+2026-10-11T00:41:19.4410000Z [36;1mFAIL=0[0m
+2026-10-11T00:41:19.4410000Z [36;1mfor f in bin/*.sh bin/gh-rest-shim bin/lib/*.sh bin/lib/rb/*.sh bin/lib/rt/*.sh bin/lib/mc/*.sh bin/remediations/*.sh fly/*.sh \[0m
+2026-10-11T00:41:19.4410000Z [36;1m         guardrails/*/check.sh guardrails/lib/*.sh \[0m
+2026-10-11T00:41:19.4410000Z [36;1m         checks/*/check.sh; do[0m
+2026-10-11T00:41:19.4410000Z [36;1m  [ -f "$f" ] || continue[0m
+2026-10-11T00:41:19.4410000Z [36;1m  bash -n "$f" || { echo "SYNTAX: $f"; FAIL=1; }[0m
+2026-10-11T00:41:19.4410000Z [36;1mdone[0m
+2026-10-11T00:41:19.4410000Z [36;1mexit $FAIL[0m
+2026-10-11T00:41:19.4410000Z shell: /usr/bin/bash -e {0}
+2026-10-11T00:41:19.4410000Z ##[endgroup]
+2026-10-11T00:41:24.0020000Z ##[group]Run bin/ci-merge-reuse.sh
+2026-10-11T00:41:24.0020000Z [36;1mbin/ci-merge-reuse.sh[0m
+2026-10-11T00:41:24.0020000Z shell: /usr/bin/bash -e {0}
+2026-10-11T00:41:24.0020000Z env:
+2026-10-11T00:41:24.0020000Z   MR_ACTION: synchronize
+2026-10-11T00:41:24.0020000Z   MR_BASE_REF: main
+2026-10-11T00:41:24.0020000Z   CI_REPO: example-org/cromford
+2026-10-11T00:41:24.0020000Z ##[endgroup]
+2026-10-11T00:41:24.0020000Z merge-reuse: mode=full reason=knob PR_CI_MERGE_REUSE is off
+2026-10-11T00:41:24.0020000Z ##[notice]mode=full reason=knob PR_CI_MERGE_REUSE is off
+2026-10-11T00:44:51.7730000Z ##[group]Run set +e
+2026-10-11T00:44:51.7730000Z [36;1mset +e[0m
+2026-10-11T00:44:51.7730000Z [36;1mo="$RUNNER_TEMP/fast-lints"; mkdir -p "$o"[0m
+2026-10-11T00:44:51.7730000Z [36;1mHARNESS_TEST_SANDBOX=1 bin/rules-pack.sh --runner local --base "origin/$BASE_REF" --skip determinism --out "$o/rp"; prc=$?[0m
+2026-10-11T00:44:51.7730000Z [36;1mHARNESS_TEST_SANDBOX=1 bin/fast-lints.sh --run --out "$o" --skip-suites "$o/rp/suites.txt"; frc=$?[0m
+2026-10-11T00:44:51.7730000Z [36;1mHARNESS_TEST_SANDBOX=1 bin/fast-lints.sh --assert-budget "$o/timings.tsv"; brc=$?[0m
+2026-10-11T00:44:51.7730000Z [36;1mcat "$o/timings.tsv"[0m
+2026-10-11T00:44:51.7730000Z [36;1mecho "rules-pack rc=$prc  fast-lints rc=$frc  budget rc=$brc"[0m
+2026-10-11T00:44:51.7730000Z [36;1m[ "$prc" = 0 ] && [ "$frc" = 0 ][0m
+2026-10-11T00:44:51.7730000Z shell: /usr/bin/bash -e {0}
+2026-10-11T00:44:51.7730000Z env:
+2026-10-11T00:44:51.7730000Z   BASE_REF: main
+2026-10-11T00:44:51.7730000Z ##[endgroup]
+2026-10-11T00:46:30.2050000Z fast-lints: done tests/render-rules-test.sh rc=0 4s
+2026-10-11T00:46:30.2050000Z fast-lints: done tests/lanes-registry-test.sh rc=1 9s
+2026-10-11T00:46:30.2050000Z --- tests/lanes-registry-test.sh ---
+2026-10-11T00:46:30.2050000Z FAIL: section 7: knob note differs from the code default
+2026-10-11T00:46:30.2050000Z --- tests/lanes-registry-test.sh ---
+2026-10-11T00:46:30.2050000Z tests/render-rules-test.sh	4	0
+2026-10-11T00:46:30.2050000Z tests/lanes-registry-test.sh	9	1
+2026-10-11T00:46:30.2050000Z rules-pack rc=0  fast-lints rc=1  budget rc=0
+2026-10-11T00:46:30.2050000Z ##[error]Process completed with exit code 1.
+2026-10-11T00:46:31.0090000Z Post job cleanup.
+2026-10-11T00:46:31.0090000Z ##[warning]Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4.
+2026-10-11T00:46:31.0090000Z Cleaning up orphan processes

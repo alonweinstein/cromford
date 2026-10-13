@@ -1,0 +1,4 @@
+GET /api/verdict
+# BH-1024: added after the split, in the position the table puts it —
+# directly below GET /api/verdict, whose resolution it shares.
+GET /api/verdict/history

@@ -1,0 +1,1 @@
+{"name":"triage-close-off","readers":["bin/alert-triage.sh"],"box_scoped":true,"what":"stops alert-triage closing the D1 alert rows it retires or settles"}

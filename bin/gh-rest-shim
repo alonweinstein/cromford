@@ -1,0 +1,476 @@
+#!/bin/bash
+# bin/gh-rest-shim — the `gh` entry point that turns a handful of gh CLI calls
+# into single REST requests (#769, chunk 1 of 5: THE CONTRACT).
+#
+# NOT INSTALLED ANYWHERE YET: nothing names this file and no symlink puts it on
+# a PATH. This chunk ships the dispatcher and the shared gshim_* helpers; the verb
+# handlers (pr, issue, run, repo) land in bin/lib/gh-shim/*.sh in the four
+# sibling chunks and are sourced by step 6. With no handler file present the
+# shim is a pass-through: every call reaches real gh with its argv untouched.
+#
+# WHY IT EXISTS. One PAT is one 5000/h REST bucket for every lane on every box,
+# and `gh pr view` spends several GraphQL points where the same answer costs one
+# REST call. The shim translates the calls we make most, passes the rest through.
+#
+# OPERATOR KNOBS (env, or a flag file) — on/off switches for an executable, not
+# business config:
+#   GH_SHIM_OFF=1                pass everything through, translate nothing
+#   $HARNESS/flags/gh-shim-off   the same switch as a file (or the
+#                                `switch.gh-shim-off` settings row)
+#   GH_REAL                      the real gh binary, when PATH cannot find it
+#   GH_SHIM_FALLBACK             last-resort absolute path (default /usr/bin/gh)
+#   GH_SHIM_LIB                  directory the verb handlers are sourced from
+#   GH_SHIM_MAX_PAGES            page ceiling for gshim_paginate (default 10)
+#
+# EXIT CODES: 75 = REST rate limited (EX_TEMPFAIL: back off, the request was
+# fine), 127 = no real gh binary / shim loop, 1 = the call failed, anything else
+# is the real binary's own code.
+#
+# HELPERS THAT EXIT RATHER THAN RETURN: gshim_api, gshim_paginate, gshim_passthru,
+# gshim_slug, gshim_fields_ok, gshim_limit_ok. Handlers write
+# `out=$(gshim_api …) || exit $?` — the exit ends the substitution and the
+# `|| exit $?` propagates it; called outside one, they end the shim.
+#
+# TWO DELIBERATE DEVIATIONS FROM THE #787 TICKET TEXT, so the sibling chunks
+# #788-#791 are written against what is here and not against the spec:
+#   1. Real-binary resolution skips any PATH dir holding `_fence.sh` instead of
+#      walking only the PATH entries after this script's own dir. The ticket's
+#      "first gh that is not me" picks the lane fence, which picks this shim
+#      again; see step 2. There is no GSHIM_DIR0 global.
+#   2. GH_REST_SHIM_DEPTH carries a COUNTER, not a bare 1, and step 3 refuses at
+#      3. A legitimate nest four `gh` calls deep (gh -> credential helper -> gh
+#      -> gh) therefore exits 127 where the ticket's design passed through
+#      forever. Nothing in the fleet nests that far today; raise the ceiling in
+#      step 3 if something does, and keep the counter — a bare 1 cannot tell a
+#      loop from a nest at all.
+#
+# Never `set -e`: every exit in here is written out on purpose.
+set -u
+
+HARNESS="${HARNESS:-/root/harness}"
+GSHIM_SELF=$(readlink -f "$0")
+GSHIM_LIB="${GH_SHIM_LIB:-$(dirname "$GSHIM_SELF")/lib/gh-shim}"
+GSHIM_ARGV=("$@")
+
+# Parsed by gshim_parse, read by the handlers. Seeded here so a handler that
+# touches one before parsing does not trip `set -u`.
+GSHIM_REPO=""; GSHIM_FIELDS=""; GSHIM_JQ=""; GSHIM_LIMIT=30; GSHIM_REST=()
+GSHIM_SLUG=""; GSHIM_NUM=""
+GSHIM_TMPDIR=""
+
+# ── step 2: the real binary, resolved once ───────────────────────────────────
+# A PATH dir holding _fence.sh is bin/lane-shims/, whose own `gh` execs us with
+# that dir STILL first on PATH: "the first gh that is not me" would pick the
+# fence, which picks us, forever. Skipping fence dirs is the fix; the depth
+# ceiling in step 3 is the net under it.
+gshim_resolve_real() {
+  local dirs=() d cand
+  if [ -n "${GH_REAL:-}" ] && [ -x "${GH_REAL:-}" ]; then
+    printf '%s\n' "$GH_REAL"; return 0
+  fi
+  IFS=: read -r -a dirs <<<"$PATH"
+  for d in "${dirs[@]}"; do
+    [ -n "$d" ] || d=.
+    cand="$d/gh"
+    [ -x "$cand" ] || continue
+    [ -e "$d/_fence.sh" ] && continue
+    [ "$(readlink -f "$cand")" = "$GSHIM_SELF" ] && continue
+    printf '%s\n' "$cand"; return 0
+  done
+  cand="${GH_SHIM_FALLBACK:-/usr/bin/gh}"
+  if [ -x "$cand" ] && [ "$(readlink -f "$cand")" != "$GSHIM_SELF" ]; then
+    printf '%s\n' "$cand"; return 0
+  fi
+  return 1
+}
+
+GH_REAL_RESOLVED=$(gshim_resolve_real) || {
+  echo "gh-rest-shim: real gh binary not found" >&2
+  exit 127
+}
+GH_REAL="$GH_REAL_RESOLVED"
+
+# ── step 3: recursion guard ──────────────────────────────────────────────────
+GSHIM_DEPTH="${GH_REST_SHIM_DEPTH:-0}"
+case "$GSHIM_DEPTH" in ''|*[!0-9]*) GSHIM_DEPTH=0 ;; esac
+
+# gshim_tmp — a fresh temp file under one per-call directory an EXIT trap removes,
+# so handlers never clean up after themselves. The dir and the trap come from
+# gshim_tmp_init on the DISPATCH path, not lazily in here: handlers call this as
+# `f=$(gshim_tmp)`, and a trap set in that subshell never fires for the parent.
+gshim_tmp_cleanup() {
+  [ -n "$GSHIM_TMPDIR" ] || return 0
+  rm -rf "$GSHIM_TMPDIR"
+}
+gshim_tmp_init() {
+  [ -z "$GSHIM_TMPDIR" ] || return 0
+  GSHIM_TMPDIR=$(mktemp -d "${TMPDIR:-/tmp}/gh-rest-shim.XXXXXX") || return 1
+  trap gshim_tmp_cleanup EXIT
+}
+gshim_tmp() {
+  gshim_tmp_init || return 1
+  mktemp "$GSHIM_TMPDIR/f.XXXXXX"
+}
+
+# Exec the real binary, one depth deeper. The temp dir goes HERE because exec
+# replaces this process and the EXIT trap never fires: a pass-through decided
+# after a handler asked for a temp file would leak a directory per call.
+gshim_exec_real() {
+  gshim_tmp_cleanup
+  export GH_REST_SHIM_DEPTH=$((GSHIM_DEPTH + 1))
+  exec "$GH_REAL" "$@"
+}
+
+if [ -n "${GH_REST_SHIM_DEPTH:-}" ]; then
+  if [ "$GSHIM_DEPTH" -ge 3 ]; then
+    echo "gh-rest-shim: shim loop resolving the real gh binary" >&2
+    exit 127
+  fi
+  # Already inside a shim call: no parse, no log, straight through.
+  gshim_exec_real "$@"
+fi
+
+# ── step 4: kill switch, before any parsing ──────────────────────────────────
+# Exactly `1`, and the flag file. Anything else is NOT off.
+# shellcheck source=bin/lib/lane-switch.sh
+command -v lane_switch >/dev/null 2>&1 || . "$(dirname "$GSHIM_SELF")/lib/lane-switch.sh" 2>/dev/null || lane_switch() { [ -e "${HARNESS:-${H:-/root/harness}}/flags/$1" ]; }
+if [ "${GH_SHIM_OFF:-}" = "1" ] || LANE_GATE_CACHE_S=2147483647 lane_switch gh-shim-off file 2>/dev/null; then
+  gshim_exec_real "$@"
+fi
+
+# ── step 5: the calls we never log ───────────────────────────────────────────
+# `api` IS the REST path this shim exists to produce and `auth` is local; both
+# would bury the pass-through log in the traffic it must not report.
+case "${1:-}" in
+  api|auth|--version|version|help|-h|--help|'') gshim_exec_real "$@" ;;
+esac
+
+# ─────────────────────────────────────────────────────────────────────────────
+# The shared helpers. Every sibling chunk's handlers are written against these.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# gshim_passthru <reason> — record one line, then hand the ORIGINAL argv to the
+# real binary. EXECS: nothing after a call to this runs. Reasons used fleet-wide:
+# untranslated, field:<name>, no-slug, flag:<flag>.
+#
+# The line goes down BEFORE the exec: afterwards this process is gone, and an
+# unlogged pass-through is indistinguishable from a call that never happened.
+# The write is guarded — a read-only log dir costs one observation and must
+# never cost the caller their command.
+#
+# WHAT GOES IN THE LINE: argv[0..2] (subcommand words), the pid, and the NAME
+# of the parent program. Body text never reaches argv (gshim_bodyfile and
+# gshim_input put it in a temp file), and the first three words of a `gh` command
+# are subcommand names.
+#
+# The parent's COMMAND LINE is not in the line and must not be: a lane that
+# runs `gh ... --token ghp_...` through `bash -c` would write that token into a
+# log that lives on the box (iron law 3). Truncating at 80 bytes does not help
+# — it publishes a token prefix instead of a token. gshim_caller names the
+# program, which is the only part an operator reading the log needs.
+gshim_caller() {
+  local w0="" w1="" tok n=0
+  [ -r "/proc/$PPID/cmdline" ] || { printf '%s' "-"; return 0; }
+  while IFS= read -r -d '' tok; do
+    case "$n" in
+      0) w0="$tok" ;;
+      1) w1="$tok" ;;
+    esac
+    n=$((n + 1))
+    [ "$n" -ge 2 ] && break
+  done <"/proc/$PPID/cmdline"
+  [ -n "$w0" ] || { printf '%s' "-"; return 0; }
+  # `bash /root/harness/bin/foo.sh` and `bash -c '…'` are both "bash" by argv[0];
+  # the first says which lane, the second says nothing we are allowed to print.
+  case "${w0##*/}" in
+    bash|sh|dash|zsh|ksh)
+      case "$w1" in
+        ''|-*) ;;
+        *) w0="$w1" ;;
+      esac
+      ;;
+  esac
+  w0="${w0##*/}"
+  # One field, always: a name with whitespace in it would split the log line.
+  w0="${w0//[[:space:]]/_}"
+  printf '%s' "$w0" | head -c 80
+}
+
+gshim_passthru() {
+  local reason="${1:-untranslated}" ts caller
+  ts=$(date -u +%FT%TZ 2>/dev/null) || ts="-"
+  caller=$(gshim_caller)
+  [ -n "$caller" ] || caller="-"
+  {
+    mkdir -p "$HARNESS/logs" &&
+      printf '%s %s %s %s pid=%s caller=%s reason=%s\n' \
+        "$ts" "${GSHIM_ARGV[0]:-}" "${GSHIM_ARGV[1]:-}" "${GSHIM_ARGV[2]:-}" \
+        "$PPID" "$caller" "$reason" >>"$HARNESS/logs/gh-passthrough.log"
+  } >/dev/null 2>&1 || true
+  gshim_exec_real "${GSHIM_ARGV[@]}"
+}
+
+# gshim_api <gh api args…> — one REST call through the real binary. On success the
+# body is printed raw and untouched (`cat` of the buffer: a .diff body and its
+# trailing newline both survive). On failure NOTHING reaches stdout.
+#
+# Both streams are buffered, not just stderr. Real `gh api` answers a failing
+# call on BOTH: its own message on stderr AND the error body on stdout, so
+# `{"message":"Not Found"}` would flow through to a caller that had already
+# been told to treat an empty stdout as the only failure signal. rc 0 -> return
+# 0, EXITS 75 when GitHub rate-limited us, EXITS 1 on any other failure.
+gshim_api() {
+  local outf errf rc err reset when
+  outf=$(gshim_tmp) || { echo "gh-rest-shim: cannot create a temp file" >&2; exit 1; }
+  errf=$(gshim_tmp) || { echo "gh-rest-shim: cannot create a temp file" >&2; exit 1; }
+  GH_REST_SHIM_DEPTH=$((GSHIM_DEPTH + 1)) "$GH_REAL" api "$@" >"$outf" 2>"$errf"
+  rc=$?
+  if [ "$rc" -eq 0 ]; then
+    cat "$outf"
+    return 0
+  fi
+
+  err=$(cat "$errf" 2>/dev/null)
+  # BOTH halves required. A 403 is far more often "not accessible by
+  # integration" than a rate limit, and 75 tells every caller "your request was
+  # fine, come back later" — a wrong positive turns a real 404/422 into a retry.
+  if printf '%s' "$err" | grep -qE 'HTTP (403|429)' &&
+     printf '%s' "$err" | grep -qiE 'rate limit|abuse detection'; then
+    # Unmetered by GitHub's own rules, so reading it costs us nothing.
+    reset=$(GH_REST_SHIM_DEPTH=$((GSHIM_DEPTH + 1)) "$GH_REAL" api rate_limit \
+              -q .resources.core.reset 2>/dev/null | tr -d '[:space:]')
+    case "$reset" in
+      ''|*[!0-9]*) when="unknown" ;;
+      *) when=$(date -u -d "@$reset" +%H:%M:%SZ 2>/dev/null) || when="unknown" ;;
+    esac
+    [ -n "$when" ] || when="unknown"
+    echo "gh-rest-shim: REST rate limited (resets $when)" >&2
+    exit 75
+  fi
+  # A failure that said nothing still has to name itself: a bare "gh-rest-shim:"
+  # tells the operator only that something broke.
+  err=$(head -n1 "$errf" 2>/dev/null)
+  [ -n "$err" ] || err="gh api exited $rc"
+  echo "gh-rest-shim: $err" >&2
+  exit 1
+}
+
+# gshim_parse <args…> — UNIVERSAL flags only, both spellings of each; everything
+# else, positionals and verb flags alike, lands in GSHIM_REST in arrival order.
+# Verb flags stay unparsed on purpose: --comment is a boolean on `pr review` and
+# takes a value on `pr close`, so only a handler can know.
+gshim_parse() {
+  GSHIM_REPO=""; GSHIM_FIELDS=""; GSHIM_JQ=""; GSHIM_LIMIT=30; GSHIM_REST=()
+  local n
+  while [ $# -gt 0 ]; do
+    if [ $# -ge 2 ]; then n=2; else n=1; fi
+    case "$1" in
+      -R|--repo)  GSHIM_REPO="${2:-}"; shift "$n" ;;
+      --repo=*)   GSHIM_REPO="${1#--repo=}"; shift ;;
+      --json)     GSHIM_FIELDS="${GSHIM_FIELDS:+$GSHIM_FIELDS,}${2:-}"; shift "$n" ;;
+      --json=*)   GSHIM_FIELDS="${GSHIM_FIELDS:+$GSHIM_FIELDS,}${1#--json=}"; shift ;;
+      -q|--jq)    GSHIM_JQ="${2:-}"; shift "$n" ;;
+      --jq=*)     GSHIM_JQ="${1#--jq=}"; shift ;;
+      -L|--limit) GSHIM_LIMIT="${2:-}"; gshim_limit_ok; shift "$n" ;;
+      --limit=*)  GSHIM_LIMIT="${1#--limit=}"; gshim_limit_ok; shift ;;
+      *)          GSHIM_REST+=("$1"); shift ;;
+    esac
+  done
+}
+
+# A --limit we cannot honour is the real binary's to reject: reading `--limit
+# abc` as 30 answers a question the caller did not ask, and a caller who asked
+# for 0 and got 30 gets results they meant to suppress. EXECS on pass-through.
+gshim_limit_ok() {
+  case "$GSHIM_LIMIT" in ''|*[!0-9]*) gshim_passthru "flag:--limit" ;; esac
+  [ "$GSHIM_LIMIT" -ge 1 ] || gshim_passthru "flag:--limit"
+}
+
+# gshim_slug [arg] — settle GSHIM_SLUG (owner/repo) and GSHIM_NUM. A URL beats -R,
+# which is what gh itself does. No slug anywhere = no REST path to build, so the
+# whole call passes through (and never returns).
+gshim_slug() {
+  local a="${1:-}" origin=""
+  if [[ "$a" =~ ^https://github\.com/([^/]+)/([^/]+)/(pull|issues)/([0-9]+) ]]; then
+    GSHIM_SLUG="${BASH_REMATCH[1]}/${BASH_REMATCH[2]}"
+    GSHIM_NUM="${BASH_REMATCH[4]}"
+  elif [[ "$a" =~ ^[0-9]+$ ]]; then
+    GSHIM_NUM="$a"
+  fi
+  [ -n "$GSHIM_SLUG" ] || GSHIM_SLUG="$GSHIM_REPO"
+  if [ -z "$GSHIM_SLUG" ]; then
+    origin=$(git remote get-url origin 2>/dev/null) || origin=""
+    case "$origin" in
+      git@github.com:*)     GSHIM_SLUG="${origin#git@github.com:}" ;;
+      ssh://git@github.com/*) GSHIM_SLUG="${origin#ssh://git@github.com/}" ;;
+      https://github.com/*) GSHIM_SLUG="${origin#https://github.com/}" ;;
+    esac
+    GSHIM_SLUG="${GSHIM_SLUG%.git}"
+    GSHIM_SLUG="${GSHIM_SLUG%/}"
+  fi
+  # Exactly owner/repo or nothing. An origin the three cases above do not fully
+  # normalise (an org URL, a /tree/<branch> suffix, an Enterprise host) and a -R
+  # that is not a slug would otherwise become repos/<junk>/... — a request that
+  # can never succeed, spent from the same 5000/h bucket this shim defends, and
+  # answered to the caller as a 404 that reads like a missing record. Discard it
+  # and let the real binary, which knows those forms, have the call.
+  [[ "$GSHIM_SLUG" =~ ^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$ ]] || GSHIM_SLUG=""
+  # `.` and `..` are nothing but legal repo-name characters, so the class above
+  # admits them: `-R ../x` became `repos/../x/pulls/1`, a path pointing at a
+  # repo the caller never named. Neither component may be a dot component.
+  case "$GSHIM_SLUG" in .|..|./*|../*|*/.|*/..) GSHIM_SLUG="" ;; esac
+  [ -n "$GSHIM_SLUG" ] || gshim_passthru no-slug
+}
+
+# gshim_fields_ok <mappable-csv> — a --json field this handler cannot map sends
+# the whole call to the real binary. Never invent a value for a field we did not
+# fetch: absent is not zero and not false. EXECS when it passes through.
+gshim_fields_ok() {
+  local mappable=",${1:-}," f fields=()
+  [ -n "$GSHIM_FIELDS" ] || return 0
+  IFS=, read -r -a fields <<<"$GSHIM_FIELDS"
+  for f in "${fields[@]}"; do
+    [ -n "$f" ] || continue
+    case "$mappable" in
+      *",$f,"*) ;;
+      *) gshim_passthru "field:$f" ;;
+    esac
+  done
+  return 0
+}
+
+# gshim_emit <json> — print a REST body the way gh would have: the --json fields
+# picked out of an object or of every element of an array, THEN -q/--jq over
+# that (raw, because gh prints strings unquoted), else compact. EVERY requested
+# key is emitted; one the body did not carry comes out `null`, which is what gh
+# does, and dropping it would surprise a caller that asked for the field.
+# Assignment and not `// null`: false is a value, and REST bodies are full of
+# `"mergeable": false`.
+#
+# ORDER IS THE CONTRACT: gh applies --jq to what --json selected. Running -q on
+# the whole response instead let `--json state -q 'keys'` answer with fields the
+# caller had asked gh to drop, and a REST body carries far more of them than
+# gh's own field set does.
+gshim_emit() {
+  local json="${1:-}" picked
+  if [ -n "$GSHIM_FIELDS" ]; then
+    picked=$(printf '%s' "$json" | jq -c --arg f "$GSHIM_FIELDS" '
+      ($f | split(",") | map(select(length > 0))) as $keys
+      | def pick: . as $o | reduce $keys[] as $k ({}; .[$k] = $o[$k]);
+        if type == "array" then map(pick) else pick end')
+  else
+    picked="$json"
+  fi
+  if [ -n "$GSHIM_JQ" ]; then
+    printf '%s' "$picked" | jq -r "$GSHIM_JQ"
+  else
+    printf '%s' "$picked" | jq -c .
+  fi
+}
+
+# gshim_bodyfile <text> <file> — path of a temp file holding the body, or nothing
+# when neither was given. Body text never travels in argv. An unreadable
+# --body-file is an ERROR, not a pass-through: gh fails on the same path anyway,
+# and handing it over buries our message under gh's.
+gshim_bodyfile() {
+  local text="${1:-}" file="${2:-}" out
+  if [ -n "$text" ]; then
+    out=$(gshim_tmp) || return 1
+    printf '%s' "$text" >"$out"
+  elif [ "$file" = "-" ]; then
+    out=$(gshim_tmp) || return 1
+    cat >"$out"
+  elif [ -n "$file" ]; then
+    out=$(gshim_tmp) || return 1
+    if ! cat "$file" >"$out" 2>/dev/null; then
+      echo "gh-rest-shim: cannot read $file" >&2
+      return 1
+    fi
+  else
+    return 0
+  fi
+  printf '%s\n' "$out"
+}
+
+# gshim_input <jq -n args…> — build a request body with jq and print its path:
+#   --input "$(gshim_input --rawfile body "$bf" --arg t "$t" '{title:$t,body:$body}')"
+# A body carrying |, ', $( … ) or non-ASCII goes in through --rawfile and is
+# never interpolated into a command line. Compact, so a body with newlines stays
+# one line in anything that echoes the request. jq's own parse error is
+# swallowed: it names a line of a program the caller never wrote.
+gshim_input() {
+  local out
+  out=$(gshim_tmp) || return 1
+  if ! jq -n -c "$@" >"$out" 2>/dev/null; then
+    echo "gh-rest-shim: could not build request body" >&2
+    return 1
+  fi
+  printf '%s\n' "$out"
+}
+
+# gshim_paginate <endpoint[?query]> [limit] [jq-path-to-array] — a JSON array of
+# at most <limit> items, paging EXPLICITLY (never --paginate, so every page is a
+# call we can see and count). Two failures are loud rather than plausible: a page
+# that is not a list, and a query too wide for the page cap. Both EXIT non-zero
+# with nothing on stdout — `[]` is never printed for an error, and a truncated
+# array is never returned as if it were the whole answer.
+gshim_paginate() {
+  local ep="${1:-}" limit="${2:-$GSHIM_LIMIT}" path="${3:-.}"
+  local maxp="${GH_SHIM_MAX_PAGES:-10}"
+  # gshim_limit_ok already passed a bad --limit through; this is the floor for a
+  # handler that calls in with its own number.
+  case "$limit" in ''|*[!0-9]*) limit=30 ;; esac
+  [ "$limit" -ge 1 ] || limit=30
+  case "$maxp" in ''|*[!0-9]*) maxp=10 ;; esac
+  [ "$maxp" -ge 1 ] || maxp=10
+
+  # PAGES NEVER TRAVEL IN ARGV OR IN A SHELL VARIABLE. One page of 100 pull
+  # requests is ~200 KB; `jq --argjson acc "$acc"` on that is E2BIG, which bash
+  # reports on stderr and jq exits non-zero for, leaving an EMPTY stdout with
+  # rc 0 — "no open PRs" to every caller. Each page goes to its own temp file,
+  # only the counts live in the shell, and one final `jq -s` joins them.
+  local per="$limit"; [ "$per" -gt 100 ] && per=100
+  local page=1 sep pf itf cnt total=0
+  local pages=()
+  while :; do
+    if [ "$page" -gt "$maxp" ]; then
+      echo "gh-rest-shim: more than $maxp pages — narrow the query" >&2
+      exit 1
+    fi
+    case "$ep" in *\?*) sep='&' ;; *) sep='?' ;; esac
+    pf=$(gshim_tmp) || { echo "gh-rest-shim: cannot create a temp file" >&2; exit 1; }
+    itf=$(gshim_tmp) || { echo "gh-rest-shim: cannot create a temp file" >&2; exit 1; }
+    gshim_api "${ep}${sep}per_page=${per}&page=${page}" >"$pf" || exit $?
+    jq -c "$path" "$pf" >"$itf" 2>/dev/null
+    if ! jq -e 'type == "array"' "$itf" >/dev/null 2>&1; then
+      echo "gh-rest-shim: unexpected response (not a list)" >&2
+      exit 1
+    fi
+    cnt=$(jq 'length' "$itf")
+    pages+=("$itf")
+    total=$((total + cnt))
+    [ "$cnt" -lt "$per" ] && break
+    [ "$total" -ge "$limit" ] && break
+    page=$((page + 1))
+  done
+  jq -c -s --argjson limit "$limit" 'add // [] | .[:$limit]' "${pages[@]}"
+}
+
+# ── step 6: the verb handlers, if any are installed ──────────────────────────
+shopt -s nullglob
+for GSHIM_F in "$GSHIM_LIB"/*.sh; do
+  # shellcheck disable=SC1090
+  . "$GSHIM_F"
+done
+shopt -u nullglob
+
+# ── step 7: dispatch ─────────────────────────────────────────────────────────
+# Handlers take no positional arguments; they read the parsed globals.
+GSHIM_FN="gshim_cmd_${1}_${2:-}"
+if declare -F "$GSHIM_FN" >/dev/null 2>&1; then
+  gshim_tmp_init
+  gshim_parse "${@:3}"
+  "$GSHIM_FN"
+  exit $?
+fi
+gshim_passthru untranslated

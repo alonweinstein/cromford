@@ -1,0 +1,48 @@
+{
+  "id": "gh-pat-charge-alert",
+  "name": "GitHub PAT charge alert",
+  "scope": "hub",
+  "script": "bin/gh-pat-charge-alert.sh",
+  "cadence": "17 * * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-gh-pat-charge-alert",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "GH_PAT_CHARGE_ALERT",
+      "type": "int",
+      "default": 1,
+      "zero_means": "off",
+      "note": "Read by bin/gh-pat-charge-alert.sh as ${GH_PAT_CHARGE_ALERT:-1}; 0 stops the lane before it reads the ledger or writes anything."
+    },
+    {
+      "env": "GH_PAT_CHARGE_ALERT_MIN",
+      "type": "int",
+      "default": 1,
+      "min": 1,
+      "unit": "calls",
+      "zero_means": null,
+      "note": "Read by bin/gh-pat-charge-alert.sh as ${GH_PAT_CHARGE_ALERT_MIN:-1}: the fewest COUNTED calls one box charged to one PAT bucket (pat-* or graphql-pat-*) in the last complete UTC hour before that pair gets its once-a-day ALERTS.log line. 0 or non-numeric falls back to 1."
+    },
+    {
+      "env": "GH_PAT_CHARGE_ALERT_HOUR",
+      "type": "string",
+      "default": "",
+      "zero_means": null,
+      "note": "Read by bin/gh-pat-charge-alert.sh as ${GH_PAT_CHARGE_ALERT_HOUR:-}: the UTC hour (YYYY-MM-DDTHH) to check instead of the last complete one. A re-check / test seam, so NOT settable from the control plane.",
+      "settable": false
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/gh-pat-charge-alert.log"
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "id": "cache-hit-report",
+  "name": "Cache-hit report",
+  "scope": "hub",
+  "script": "bin/cache-hit-report.sh",
+  "cadence": "0 5 * * *",
+  "boxes": [
+    "hub"
+  ],
+  "switch": {
+    "kind": "flag",
+    "name": "lane-off-cache-hit-report",
+    "aliases": []
+  },
+  "wired": true,
+  "knobs": [
+    {
+      "env": "CACHE_HIT_RATE_MIN",
+      "type": "float",
+      "default": 0.9,
+      "min": 0,
+      "max": 1,
+      "zero_means": null,
+      "note": "The trailing-20-PR cache-hit rate under which the lane alerts. Was the literal 0.90; read by bin/cache-hit-report.sh as ${CACHE_HIT_RATE_MIN:-0.9}."
+    },
+    {
+      "env": "CACHE_HIT_DROP_MAX",
+      "type": "float",
+      "default": 0.03,
+      "min": 0,
+      "max": 1,
+      "zero_means": null,
+      "note": "How far the trailing-20-PR hit rate may fall below the prior window before the lane alerts. Was the literal 0.03; read as ${CACHE_HIT_DROP_MAX:-0.03}."
+    },
+    {
+      "env": "CACHE_WRITE_SHARE_MAX",
+      "type": "float",
+      "default": 0.85,
+      "min": 0,
+      "max": 1,
+      "zero_means": "off",
+      "note": "P1. Per-lane alert: a stage whose last CACHE_WRITE_SHARE_CALLS claude calls spent more than this share of their dollars on cache WRITES gets one ALERTS line a day. 0.85 sits above the pre-profile baseline (sampled rows ran 0.60-0.82), so it pages on a broken prefix today; lower it toward 0.5 once the session profile is fleet-wide and logs/cache-lane.csv shows the new baseline. Read as ${CACHE_WRITE_SHARE_MAX:-0.85}."
+    },
+    {
+      "env": "CACHE_WRITE_SHARE_CALLS",
+      "type": "int",
+      "default": 20,
+      "min": 1,
+      "max": 1000,
+      "unit": "calls",
+      "zero_means": null,
+      "note": "P1. The per-lane window: each stage's most recent N claude cost rows. A stage with fewer rows is recorded in logs/cache-lane.csv but never alerts. Read as ${CACHE_WRITE_SHARE_CALLS:-20}."
+    }
+  ],
+  "stats": {
+    "cost_stage": null,
+    "cost_project_filter": null,
+    "lanes_row": false,
+    "log": "logs/cache-hit-report.log"
+  }
+}

@@ -1,0 +1,6 @@
+# BH-1381 (BH-1201.0): the conductor's held-pages contract. Added to BOTH
+# lists as the comment above says — directly under the hub lease, which is
+# where src/index.js splices the family (next to lanes/hub-lease).
+PUT /api/conductor/held
+GET /api/conductor/held
+POST /api/conductor/held/release

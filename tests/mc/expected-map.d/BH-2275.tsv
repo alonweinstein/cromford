@@ -1,0 +1,8 @@
+# tests/mc/expected-map.d/BH-2275.tsv — BH-2275: the unreadable-probe alert and the
+# lead-CR dequeue (queue, beside mc_queue_inactive_alert and mc_dequeue_label);
+# origin=lib because they are new module functions.
+queue	mc_queue_unknown_alert	lib
+queue	mc_cr_dequeue	lib
+queue	mc_provider_key	lib
+queue	mc_provider_recorded	lib
+queue	mc_provider_record	lib

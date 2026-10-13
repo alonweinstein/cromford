@@ -1,0 +1,30 @@
+# catalog/pr-self-check.tsv — the pre-review self-check's rules (BH-5798).
+# bin/lib/pr-self-check.sh reads one row per rule; a rule with no row is off.
+# Columns (tab-separated):
+#   id      the rule bin/lib/pr-self-check.sh knows by this name
+#   mode    refuse (a finding blocks the lead review request) | note (said, never
+#           blocks) | off
+#   param   comma-separated globs of paths the rule ignores, or `-`
+#   what    one line for the operator
+#   match   (body-* rules only, BH-5790) what the PR body must show, as
+#           `;`-separated alternatives: `section=<ERE>` (a heading matching the
+#           ERE, case-insensitive, with 3 or more words under it), `line=<ERE>`
+#           (a body line matching it) or `table` (a markdown table).
+# For the body-* rules, param is WHEN the rule applies, as `;`-separated
+# triggers: `always`, `added=<globs>` (the diff adds a matching file),
+# `touched=<globs>` (the diff changes one), `knob` (the diff adds an "env" knob in
+# catalog/lanes.d/*.json) or `ticket=<ERE>` (the linked issue's Done when or
+# acceptance section matches; no ticket text = a NOTE, never a refusal).
+# The body-* rows are #5790's PR-body section lint. body-mutation and body-d1
+# are `note` (2026-10-10): they would have held 18 of the last 24 merged PRs, so
+# they go into the lead review notes instead and hold nothing. Promote a row to
+# `refuse` from data if the block-learning loop (#5794) shows the category still
+# causes BLOCKs.
+closes-not-met	refuse	-	"Closes/Fixes/Resolves #N" while an acceptance item is marked not met (- [ ], "not met", REFUTED)
+evidence-head	refuse	docs/notes/*,docs/verification-map/entries/*,.harness/specs/*	an evidence sha in the body that is not the head, or an ancestor whose PR files changed after it
+plan-files	refuse	docs/notes/*,docs/verification-map/entries/*,.harness/specs/*,tests/mc/expected-map.d/*	a diff file the plan's "Files to touch" does not name, with no line under "## Files outside the plan"
+body-why	refuse	always	a `## Why` section that says why the change exists	section=^#+[[:space:]]+why
+body-acceptance	refuse	always	an acceptance-test section or a gate table	section=^#+[[:space:]]+.*(acceptance|gate|evidence|verification);table
+body-mutation	note	added=tests/*-test.sh,tests/*.test.*,tests/*/*-test.sh	mutation or red-first evidence for each new test suite	line=mutation|red[- ]first|red on|went red|[0-9]+ (passed|pass), [0-9]+ fail|fail(s|ed)? (first|before)
+body-d1	note	touched=bin/merge-conductor.sh,bin/lib/mc/*,bin/merge-sweep.sh,bin/pr-owner-sweep.sh,bin/lib/pr-owner/*,bin/lead-review-land.sh,bin/lib/ticket-ownership.sh,bin/lib/merge-conductor-lib.sh,.mergify.yml;knob	a D1 / kill-knob callout: what turns this off with no deploy	line=kill[- ]?(switch|knob)|D1[^A-Za-z0-9]+(call-?out|kill)
+body-live-probe	refuse	ticket=probe	the live probe output the ticket names	section=probe;line=probe.*rc=|rc=[0-9]+
