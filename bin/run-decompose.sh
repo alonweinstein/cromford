@@ -308,6 +308,16 @@ case "$TICKET" in
 esac
 LANE=board
 [ "$BOARD_PREFIX" = "-" ] && LANE=issues
+# A LINEAR PROJECT sits at column 4 `-` too, but CRO-12 is not issue #12: its
+# children are Linear sub-issues (bin/lib/fc-linear.sh). bin/run-build.sh
+# exports RB_LINEAR; a run by hand asks bin/lib/linear-build.sh.
+if [ "$LANE" = issues ]; then
+  if [ -n "${RB_LINEAR:-}" ]; then LANE=linear
+  elif . "$HARNESS/bin/lib/linear-build.sh" 2>/dev/null; then
+    _DL=0; lb_on "$PROJECT" 2>/dev/null || _DL=$?
+    [ "$_DL" = 1 ] || LANE=linear
+  fi
+fi
 # THE BOARD LANE FILES FROM A SPEC TOO (BH-3965) unless this switch is on.
 FILER_OFF=0
 [ "$LANE" = board ] && lane_switch decompose-board-filer-off file && FILER_OFF=1
@@ -329,6 +339,8 @@ if [ "$LANE" = issues ] || [ "$FILER_OFF" = 0 ]; then
   [ "$DRY" = 1 ] && DRYNOTE=" (DRY RUN, nothing is written)" || DRYNOTE=""
   if [ "$LANE" = issues ]; then
     LOG "decompose lane: GitHub issues (${GH_REPO:-no repo}, parent #${ISSUE:-?})$DRYNOTE"
+  elif [ "$LANE" = linear ]; then
+    LOG "decompose lane: Linear sub-issues of $KEY$DRYNOTE"
   else
     LOG "decompose lane: board, filed by the harness (parent $TICKET)$DRYNOTE"
   fi
@@ -363,7 +375,11 @@ if [ "$LANE" = issues ] || [ "$FILER_OFF" = 0 ]; then
   [ "$LANE" != issues ] || [ "$DRY" = 1 ] || command -v gh >/dev/null 2>&1 || FAIL "gh is not on this box"
   # The three phrases of the spec prompt that name the lane. The issues values
   # are the text this prompt has always carried.
-  if [ "$LANE" = issues ]; then
+  if [ "$LANE" = linear ]; then
+    DCP_SUBJECT="Ticket $KEY (a Linear issue)"
+    DCP_READ="Read the issue's FULL thread (\`/root/harness/bin/tracker-cli.sh $PROJECT read $KEY\`), the project's board rules in /root/harness/prompts/$PROJECT.md, and the oversized plan at $BUILD/plan.md."
+    DCP_NOFILE="Do not create an issue, do not comment, do not touch a label or a status, do not change any code. This harness files the children itself as sub-issues, because the ordering and handoff lines it writes ('Part of', 'Order:', 'Blocked-by:', 'CONTRACT:', 'DEPENDS:') and the blocking relations have to be exact for the launcher to read them."
+  elif [ "$LANE" = issues ]; then
     DCP_SUBJECT="Ticket $KEY (GitHub issue #$ISSUE in $GH_REPO)"
     DCP_READ="Read the issue's FULL thread (\`gh issue view $ISSUE -R $GH_REPO --json title,body,comments,labels,state\`), the project's board rules in /root/harness/prompts/$PROJECT.md, and the oversized plan at $BUILD/plan.md."
     DCP_NOFILE="Do not create an issue, do not comment, do not touch a label, do not change any code. This harness files the children itself, because the ordering and handoff lines it writes ('Part of', 'Order:', 'Blocked-by:', 'CONTRACT:', 'DEPENDS:', the ai-build label) have to be exact for the launcher to parse them."

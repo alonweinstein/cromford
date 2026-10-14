@@ -401,13 +401,15 @@ file_children() {
     . "$trk"
     if fc_dry; then adapter=$(TRK_DRY=1 tracker_adapter "$project") || adapter=""
     else adapter=$(tracker_adapter "$project") || adapter=""; fi
+    # A dry run reads no row, so it takes column 4 (github-issues); a build
+    # bin/run-build.sh already found on Linear says so in RB_LINEAR.
+    [ "$adapter" = github-issues ] && [ -n "${RB_LINEAR:-}" ] && adapter=linear
     case "$adapter" in
       github-issues) lane=issues ;;
       board) lane=board ;;
       jira) fc_log "$build" "FILE_CHILDREN no child-filing lane for jira ($project)"; return 1 ;;
-      # A Linear project has no child-filing lane yet (BH-4077): file nothing,
-      # and say that, not "unresolved" — the row resolved fine.
-      linear) fc_log "$build" "FILE_CHILDREN no child-filing lane for linear ($project)"; return 1 ;;
+      # A Linear project files sub-issues of the parent (bin/lib/fc-linear.sh).
+      linear) lane=linear ;;
       *) fc_log "$build" "FILE_CHILDREN tracker adapter unresolved for $project"; return 1 ;;
     esac
   else

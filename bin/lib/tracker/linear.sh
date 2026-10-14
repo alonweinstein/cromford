@@ -176,11 +176,16 @@ _trk_linear_issue() {
 trk_linear_gate_raw() {
   local id="${1:-}" d
   [ -n "${TRK_LINEAR_TEAM:-}" ] && [[ "$id" =~ ^([A-Z][A-Z0-9]*)-[0-9]+$ ]] && [ "${BASH_REMATCH[1]}" = "$TRK_LINEAR_TEAM" ] || return 1
-  d=$(_trk_linear_gql 'query TrkGate($id: String!) { viewer { id } issue(id: $id) { identifier team { key } comments(first: 250) { nodes { createdAt user { id name displayName } botActor { name } } pageInfo { hasNextPage } } } }' \
+  d=$(_trk_linear_gql 'query TrkGate($id: String!) { viewer { id } issue(id: $id) { identifier team { key } inverseRelations(first: 50) { nodes { type issue { identifier state { type } } } } comments(first: 250) { nodes { createdAt user { id name displayName } botActor { name } } pageInfo { hasNextPage } } } }' \
     '{id: $id}' --arg id "$id") || return $?
+  # `blocked` is buildable_gate's dependency primitive: an issue that `blocks`
+  # this one (bin/lib/fc-linear.sh files the order that way) and is neither
+  # completed nor canceled holds it, and dependsOn names it.
   printf '%s' "$d" | jq -ce --arg team "$TRK_LINEAR_TEAM" '(.viewer.id // "") as $me
     | .issue | select(type == "object" and .team.key == $team and .comments.pageInfo.hasNextPage != true)
-    | {ticket: {key: .identifier, waitingOn: null, triageVerdict: null, ownUnknown: ($me == "")},
+    | [(.inverseRelations.nodes // [])[] | select(.type == "blocks" and ((.issue.state.type // "") | IN("completed", "canceled") | not))
+       | {key: .issue.identifier}] as $deps
+    | {ticket: {key: .identifier, waitingOn: null, triageVerdict: null, ownUnknown: ($me == ""), blocked: ($deps != []), dependsOn: $deps},
        comments: [(.comments.nodes // [])[] | {
          author: {name: (.user.displayName // .user.name // .botActor.name // ""), userId: (.user.id // "")},
          createdAt: (.createdAt // ""), isInternal: ($me != "" and (.user.id // "") == $me)}]}' 2>/dev/null || return 1

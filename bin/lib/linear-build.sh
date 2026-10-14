@@ -26,6 +26,11 @@
 #                                the merge close-out: once per (key, PR), then
 #                                done, or review when lb_partial says so;
 #                                rc 3 when the project is not on Linear
+#   lb_close_parent <key>        after a child moved to done: when every
+#                                sub-issue of its parent is completed or
+#                                canceled, the parent is commented and moved
+#                                to done too (rc 0 = closed, 1 = not yet or
+#                                not a child)
 #   lb_ticket_key <project> <build dir>
 #                                the ticket key in the record's name
 #                                ([pool-]<project>-<KEY>-<stamp>); nothing when
@@ -124,5 +129,26 @@ lb_close_merged() {
   lb_closeout "$key" "$url" "$to" "$f" || rc=$?
   rm -f "$f"
   [ "$rc" = 0 ] && { mkdir -p "$h/state" 2>/dev/null; : > "$m"; }
+  [ "$rc" = 0 ] && [ "$to" = done ] && [ "${LB_MOVED:-0}" = 1 ] && lb_close_parent "$key" 2>/dev/null
+  return "$rc"
+}
+
+# The master of a split (bin/lib/fc-linear.sh files its children as
+# sub-issues) closes when its last child does, as
+# bin/decompose-parent-close.sh does it on GitHub. More than 50 children, or a
+# parent of another team, is left alone.
+lb_close_parent() {
+  local d par f rc=0
+  d=$(_trk_linear_gql 'query TrkParentOf($id: String!) { issue(id: $id) { parent { identifier team { key } state { type } children(first: 50) { nodes { identifier state { type } } pageInfo { hasNextPage } } } } }' \
+    '{id: $id}' --arg id "${1:-}") || return 1
+  par=$(printf '%s' "$d" | jq -re --arg t "${TRK_LINEAR_TEAM:-}" '.issue.parent
+    | select(. != null and .team.key == $t and .children.pageInfo.hasNextPage != true
+             and ((.state.type // "") | IN("completed", "canceled") | not)
+             and all(.children.nodes[]; (.state.type // "") | IN("completed", "canceled")))
+    | .identifier') || return 1
+  f=$(mktemp "${TMPDIR:-/tmp}/linear-parent.XXXXXX") || return 1
+  printf 'Every part of this split has landed (the last was %s), so this closes too.\n' "$1" > "$f"
+  trk_linear_close_out "$par" "$f" done || rc=$?
+  rm -f "$f"
   return "$rc"
 }

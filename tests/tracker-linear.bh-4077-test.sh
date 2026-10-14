@@ -20,7 +20,7 @@
 #   L12 waiting_on never calls Linear (Linear Asks / triage inbox are out of scope)
 #   L13 sourcing the adapter twice under set -u is silent and inert
 #   L-P1 a settings row `linear` resolves through the real tracker_adapter
-#   L-P2 a `linear` row reaching the real file_children files nothing anywhere
+#   L-P2 a `linear` row reaching the real file_children with no Linear context files nothing anywhere
 #
 # No network. A `curl` stub plays api.linear.app/graphql from the hand-written
 # answers in tests/fixtures/tracker-linear/ (and the jobs worker for L-P1/L-P2),
@@ -301,7 +301,9 @@ B="$T/lp2"; mkdir -p "$B"; echo '[{"title":"a","after":[],"body":"b"}]' > "$B/ch
 rm -f "$T/ls/gh.log" "$T/ls/jobs.log"; s0=$(cat "$T/ls/seq")
 run_env bash -c '. "$1" || exit 9; file_children scoutish 552 TK-552 "$2" "$2/children.json"' _ "$DIR/bin/lib/file-children.sh" "$B" >/dev/null 2>&1; rc=$?
 [ "$rc" = 1 ] && ok || bad "L-P2 file_children on a linear row rc=$rc, want 1"
-grep -q 'FILE_CHILDREN no child-filing lane for linear (scoutish)' "$B/pipeline.log" 2>/dev/null && ok || bad "L-P2 pipeline.log: $(cat "$B/pipeline.log" 2>/dev/null)"
+# TEST-CHANGE (Linear children): a linear row now reaches bin/lib/fc-linear.sh,
+# which files nothing here because scoutish has no Linear context to load.
+grep -q 'the Linear context of scoutish did not load' "$B/pipeline.log" 2>/dev/null && ok || bad "L-P2 pipeline.log: $(cat "$B/pipeline.log" 2>/dev/null)"
 grep -q 'unresolved' "$B/pipeline.log" 2>/dev/null && bad "L-P2 a valid row logged as unresolved" || ok
 [ ! -s "$T/ls/gh.log" ] && [ "$(cat "$T/ls/seq")" = "$s0" ] && [ "$(grep -vc 'jobs.example/api/settings/' "$T/ls/jobs.log" 2>/dev/null)" = 0 ] \
   && ok || bad "L-P2 a tracker was called: $(cat "$T/ls/gh.log" 2>/dev/null) seq $s0 -> $(cat "$T/ls/seq")"

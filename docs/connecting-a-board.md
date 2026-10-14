@@ -131,8 +131,15 @@ refuted an acceptance item stays in review. A blocked build's notice goes on
 the Linear issue. A Linear close-out that fails after a merge is one log line;
 the merge is still recorded and is not retried.
 
-**Not yet:** child tickets (a split XL plan, a rollout's waves) and HOLD /
-RESUME comments are not read or filed on Linear. A `jira` row is still refused by `bin/run-build.sh`, and its close-out
+**Splits:** an XL plan is filed as Linear sub-issues of the ticket, each
+carrying the build label, and the ticket loses the label. A child that has to
+wait is `blocked by` the ones before it, and the launch check holds it until
+they are done, which is after their PRs merge, not when they open. The ticket
+closes when its last child does.
+
+**Not yet:** HOLD / RESUME comments are not read on Linear, and a ticket with
+a `## Rollout` section ends ROLLOUT_FAILED (the waves are read from GitHub). A
+`jira` row is still refused by `bin/run-build.sh`, and its close-out
 and needs-human lanes post nothing to GitHub; without that refusal they would
 treat `TK-142` as GitHub issue #142.
 
