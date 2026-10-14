@@ -1,0 +1,1 @@
+{"data": {"issues": {"nodes": [{"identifier": "CRO-3", "title": "Add dark mode", "description": "", "state": {"name": "Todo"}, "labels": {"nodes": [{"name": "ai-build"}, {"name": "area:web"}]}, "c0": {"nodes": []}, "c1": {"nodes": []}}], "pageInfo": {"hasNextPage": false, "endCursor": null}}}}

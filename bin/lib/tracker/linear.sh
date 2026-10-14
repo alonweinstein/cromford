@@ -186,6 +186,69 @@ trk_linear_gate_raw() {
          createdAt: (.createdAt // ""), isInternal: ($me != "" and (.user.id // "") == $me)}]}' 2>/dev/null || return 1
 }
 
+# trk_linear_fingerprint — bin/triage-gate.sh's board fingerprint for the
+# context's team, in the in-app shape that file and bin/gate-diff.sh already
+# read: {"<TEAM>": [ticket…]}, sorted by id. One ticket per open issue carrying
+# the build label: the identifier as id and key, the state name, the title, the
+# sorted label names, a 16-hex digest of the description, and lastActivityAt,
+# the newest updatedAt among comments NOT written by the key's own account
+# (isMe), so our own notes do not buy a tick. Both ends of the updatedAt order
+# are asked, so the answer does not depend on Linear's default direction.
+# Linear has no comment count: commentCount is null, and a deleted comment that
+# was not the newest moves nothing. A comment with no user (an integration's)
+# is not seen. More than 10 pages is rc 1, never a partial board.
+trk_linear_fingerprint() {
+  local d all='[]' after=null page=0 more=true f='{ user: { isMe: { eq: false } } }'
+  [[ "${TRK_LINEAR_TEAM:-}" =~ ^[A-Z][A-Z0-9]{0,9}$ ]] && [ -n "${TRK_LINEAR_TOKEN:-}" ] || return 1
+  command -v python3 >/dev/null 2>&1 || return 1
+  while [ "$more" = true ]; do
+    [ "$page" -lt 10 ] || { printf 'tracker: linear fingerprint for team %s still has pages after 10\n' "$TRK_LINEAR_TEAM" >&2; return 1; }
+    d=$(_trk_linear_gql "query TrkFingerprint(\$team: String!, \$label: String!, \$after: String) { issues(first: 100, after: \$after, filter: { team: { key: { eq: \$team } }, labels: { some: { name: { eqIgnoreCase: \$label } } }, state: { type: { nin: [\"completed\", \"canceled\"] } } }) { nodes { identifier title description state { name } labels(first: 20) { nodes { name } } c0: comments(first: 1, orderBy: updatedAt, filter: $f) { nodes { updatedAt } } c1: comments(last: 1, orderBy: updatedAt, filter: $f) { nodes { updatedAt } } } pageInfo { hasNextPage endCursor } } }" \
+      '{team: $team, label: $label, after: $after}' --arg team "$TRK_LINEAR_TEAM" --arg label "${TRK_LINEAR_LABEL:-ai-build}" --argjson after "$after") || return $?
+    all=$(printf '%s' "$d" | jq -ce --argjson a "$all" '.issues.nodes as $n | if ($n | type) == "array" then $a + $n else error end' 2>/dev/null) || return 1
+    more=$(printf '%s' "$d" | jq -r '.issues.pageInfo.hasNextPage == true')
+    after=$(printf '%s' "$d" | jq -c '.issues.pageInfo.endCursor // null')
+    [ "$more" = true ] && [ "$after" = null ] && return 1
+    page=$((page+1))
+  done
+  printf '%s' "$all" | python3 -c '
+import hashlib, json, sys
+team = sys.argv[1]
+rows = []
+for i in json.load(sys.stdin):
+    if not isinstance(i, dict) or not i.get("identifier"):
+        sys.exit(1)
+    acts = [n.get("updatedAt") or "" for k in ("c0", "c1") for n in ((i.get(k) or {}).get("nodes") or [])]
+    rows.append({"id": i["identifier"], "key": i["identifier"], "title": i.get("title") or "",
+                 "status": (i.get("state") or {}).get("name"), "waitingOn": None, "triageVerdict": None,
+                 "commentCount": None, "lastActivityAt": max(acts) if acts else "",
+                 "labels": sorted(n.get("name") or "" for n in ((i.get("labels") or {}).get("nodes") or [])),
+                 "body": hashlib.sha256((i.get("description") or "").encode()).hexdigest()[:16]})
+print(json.dumps({team: sorted(rows, key=lambda r: r["id"])}, sort_keys=True, separators=(",", ":")))
+' "$TRK_LINEAR_TEAM" 2>/dev/null
+}
+
+# trk_linear_thread_raw <identifier> — one issue's whole thread for
+# bin/triage-gate.sh --thread/--signal: {me: <the key's own user id>, ticket:
+# {key, title, description, status, priority, comments: [{id, author: {name,
+# userId}, body, createdAt}]}}, the ticket in the shape bin/triage-signal.py
+# --kind inapp reads. Same team guard as trk_linear_gate_raw. No viewer id, or
+# more than one page of comments, is rc 1, never a partial thread.
+trk_linear_thread_raw() {
+  local id="${1:-}" d
+  [ -n "${TRK_LINEAR_TEAM:-}" ] && [[ "$id" =~ ^([A-Z][A-Z0-9]*)-[0-9]+$ ]] && [ "${BASH_REMATCH[1]}" = "$TRK_LINEAR_TEAM" ] || return 1
+  d=$(_trk_linear_gql 'query TrkThread($id: String!) { viewer { id } issue(id: $id) { identifier title description priority state { name } team { key } comments(first: 250) { nodes { id body createdAt user { id name displayName } botActor { name } } pageInfo { hasNextPage } } } }' \
+    '{id: $id}' --arg id "$id") || return $?
+  printf '%s' "$d" | jq -ce --arg team "$TRK_LINEAR_TEAM" '(.viewer.id // "") as $me
+    | select($me != "") | .issue
+    | select(type == "object" and .team.key == $team and .comments.pageInfo.hasNextPage != true)
+    | {me: $me, ticket: {key: .identifier, title: (.title // ""), description: (.description // ""),
+        status: (.state.name // null), priority: .priority,
+        comments: [(.comments.nodes // []) | sort_by(.createdAt // "")[] | {id: (.id // ""),
+          author: {name: (.user.displayName // .user.name // .botActor.name // ""), userId: (.user.id // "")},
+          body: (.body // ""), createdAt: (.createdAt // "")}]}}' 2>/dev/null || return 1
+}
+
 trk_linear_list() {
   local d all after=null page=0 more=true
   [[ "${TRK_LINEAR_TEAM:-}" =~ ^[A-Za-z0-9_]{1,16}$ ]] && [ -n "${TRK_LINEAR_TOKEN:-}" ] || return 1
