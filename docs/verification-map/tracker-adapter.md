@@ -113,7 +113,7 @@ internal, which is what `BLOCKED newest-comment-system` reads. A thread past
 `BLOCKED token-unresolved`.
 
 **The fingerprint and the thread** take the same arm in every other mode, when
-the env file defines `LINEAR_API_KEY` (empty counts) and the row is `linear`.
+the project's env file has a `LINEAR_API_KEY=` line (empty counts; `global.env` does not) and the row is `linear`.
 `trk_linear_fingerprint` is `{"<TEAM>": [ticket…]}` in the in-app shape: open
 issues with the build label, each with its identifier as id and key, state,
 title, sorted labels, a description digest and `lastActivityAt`, the newest

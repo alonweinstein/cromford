@@ -197,6 +197,9 @@ printf 'LINEAR_API_KEY=%s\n' "$KEY" > "$T/h/env/linproj.env"
 # (ready_queue_rows is the ready-queue lib's own row, asked on every board.)
 fresh; "$GATE" ghp >/dev/null 2>&1
 ! grep -q '^tracker' "$S/settings.log" 2>/dev/null && [ "$(nreq)" = 0 ] && ok || bad "F9 a GitHub project paid a tracker settings call: $(cat "$S/settings.log" 2>/dev/null)"
+printf 'LINEAR_API_KEY=%s\n' "$KEY" > "$T/h/env/global.env"; fresh; "$GATE" ghp >/dev/null 2>&1
+! grep -q '^tracker' "$S/settings.log" 2>/dev/null && ok || bad "F9 a key in global.env makes a GitHub project pay a tracker row read"
+rm -f "$T/h/env/global.env"
 printf 'JIRA_BASE=https://jira.example\n' > "$T/h/env/jirap.env"; fresh; "$GATE" jirap >/dev/null 2>&1
 ! grep -q '^tracker' "$S/settings.log" 2>/dev/null && ok || bad "F9 Jira stays --buildable only: $(cat "$S/settings.log" 2>/dev/null)"
 

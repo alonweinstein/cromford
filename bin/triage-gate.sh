@@ -156,8 +156,8 @@ case "$PROJECT" in
     # malformed allowlist row, the settings worker down) is the token-unresolved
     # block the board arm gives. Every other project, and every other mode,
     # never gets here and pays no settings call.
-    # LINEAR, in EVERY mode, when the env file DEFINES LINEAR_API_KEY (an
-    # empty value counts: bin/load-project.sh --tracker linear writes one for
+    # LINEAR, in EVERY mode, when the project's env file has a LINEAR_API_KEY=
+    # line (an empty value counts: bin/load-project.sh --tracker linear writes one for
     # the operator to fill) AND the row is `linear`. --buildable reads the
     # thread through trk_linear_gate_raw, the fingerprint is
     # trk_linear_fingerprint, --thread/--signal trk_linear_thread_raw; each only
@@ -167,7 +167,11 @@ case "$PROJECT" in
     # token-unresolved in every mode, with one ALERTS line per project per day.
     JIRA_GATE=""; LINEAR_GATE=""; _BUILDABLE=""
     case "$MODE" in --buildable|--buildable-strict) _BUILDABLE=1 ;; esac
-    if { [ -n "$_BUILDABLE" ] && [ -n "${JIRA_BASE:-}" ]; } || [ -n "${LINEAR_API_KEY+set}" ]; then
+    # The PROJECT's env file, not the merged environment: a key in global.env
+    # is not this project's (trk_linear_context ignores it too), and reading
+    # it here would make every GitHub project on the box pay a row read a tick.
+    _LK=""; grep -q '^LINEAR_API_KEY=' "$HENV/$PROJECT.env" 2>/dev/null && _LK=1
+    if { [ -n "$_BUILDABLE" ] && [ -n "${JIRA_BASE:-}" ]; } || [ -n "$_LK" ]; then
       for _P in "$(dirname "$0")/lib/tracker.sh" "$HARNESS/bin/lib/tracker.sh"; do
         # shellcheck source=/dev/null
         [ -r "$_P" ] && { . "$_P"; break; }
@@ -179,7 +183,7 @@ case "$PROJECT" in
         else
           echo "BLOCKED token-unresolved"; exit 0
         fi
-      elif [ "$_TA" = linear ] && [ -n "${LINEAR_API_KEY+set}" ]; then
+      elif [ "$_TA" = linear ] && [ -n "$_LK" ]; then
         _LE=$(mktemp 2>/dev/null) || _LE=/dev/null
         if tracker_load linear && trk_linear_context "$PROJECT" 2>"$_LE"; then
           LINEAR_GATE=1; SELF_ACTORS=""; BASE=""; TOKEN=""; BP=""
