@@ -122,6 +122,8 @@ if [ "$PREFIX" = "-" ]; then
       rm -f "$BF"
       [ "$rc" = 0 ] || { say "the Linear close-out of $KEY failed (rc $rc)"; exit 1; }
       [ "${LB_MOVED:-0}" = 1 ] || { echo "POSTED $PROJECT/$KEY (status not moved)"; exit 0; }
+      # A split's last child closes its master (lb_close_parent), as on merge.
+      [ "$TO_STATUS" = done ] && lb_close_parent "$KEY" 2>/dev/null
       echo "POSTED $PROJECT/$KEY -> $TO_STATUS"
       exit 0
     fi

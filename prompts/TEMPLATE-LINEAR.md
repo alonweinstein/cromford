@@ -30,7 +30,9 @@ the spec; the newest comment is the latest word (THREAD RECENCY IS LAW).
 1. List `<LABEL>` issues; compare against `/root/harness/state/<PROJECT>.json`
    (key → {status, lastActivityAt}). Changed/new → full read. Update state at run end.
 2. An issue is **BUILDABLE** when: labelled `<LABEL>`, not in a completed or canceled
-   state, its `Blocked-by: <TEAM>-<n>` issues (if any) are all done, and no comment
+   state, its `Blocked-by: <TEAM>-<n>` issues (if any) are all done (`bin/triage-gate.sh
+   <PROJECT> --buildable <TEAM>-<n>` says `BLOCKED dependencies …` until they are, and
+   `bin/run-build.sh` refuses it with exit 3), and no comment
    from the operator says HOLD. If it is not buildable because the spec is unclear,
    ask the one question that unblocks it, as a comment on the issue.
 

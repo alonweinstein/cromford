@@ -105,6 +105,16 @@ if declare -F tracker_off_github >/dev/null 2>&1 && _RB_TRK=$(tracker_off_github
     _RB_LF=$(mktemp "${TMPDIR:-/tmp}/rb-linear.XXXXXX" 2>/dev/null) || _RB_LF=/dev/null
     if declare -F lb_on >/dev/null && lb_on "$PROJECT" 2>"$_RB_LF"; then
       RB_LINEAR=1; export RB_LINEAR
+      # A split's child waits for the issues that block it (bin/lib/fc-linear.sh):
+      # GitHub has bin/unblocked-children.sh for that order, Linear has the
+      # launch check, asked here so a launch from the triage session honours it.
+      _RB_GB=""; for _RB_G in "$HARNESS/bin/triage-gate.sh" "$(dirname "${BASH_SOURCE[0]}")/triage-gate.sh"; do
+        [ -x "$_RB_G" ] && { _RB_GB=$("$_RB_G" "$PROJECT" --buildable "$KEY" 2>/dev/null </dev/null); break; }
+      done
+      case "$_RB_GB" in "BLOCKED dependencies"*)
+        echo "run-build: $KEY waits on ${_RB_GB#BLOCKED dependencies } (blocked by on Linear) — nothing started, launch it once they are done" >&2
+        exit 3 ;;
+      esac
     else
       _RB_WHY="its Linear context did not load ($(head -1 "$_RB_LF" 2>/dev/null))"
     fi

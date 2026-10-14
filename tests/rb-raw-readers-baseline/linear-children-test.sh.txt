@@ -1,0 +1,1 @@
+L10 executes bin/run-build.sh against a scratch HARNESS with no stage modules, to show a Linear child whose blocker is open is refused at the tracker block and one whose blocker is done gets past it. The flatten is not runnable.
