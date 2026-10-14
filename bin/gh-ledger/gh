@@ -176,6 +176,22 @@ if [ "$_ghl_depth" = 0 ] && [ -z "${GH_TOKEN:-}" ] && [ -z "${GITHUB_TOKEN:-}" ]
   esac
 fi
 
+# ── NO ISSUE WRITE ON AN OFF-GITHUB PROJECT'S REPO (tracker_adapter) ────────
+# A project whose tickets moved to Jira or Linear still sits at fleet.conf
+# column 4 `-`, and the lanes that read that strip TK-12 to issue #12.
+# bin/lib/tracker-gh-guard.sh names the writes; a read never pays a lookup. The
+# one deliberate change to what gh returns: rc 1 and one stderr line, nothing sent.
+if [ "$_ghl_depth" = 0 ]; then
+  case "${1:-} ${2:-}" in
+    "issue "*|"api "*)
+      for _ghl_lib in "$_ghl_dir/../lib/tracker-gh-guard.sh" "${HARNESS:-/root/harness}/bin/lib/tracker-gh-guard.sh"; do
+        # shellcheck source=bin/lib/tracker-gh-guard.sh
+        [ -r "$_ghl_lib" ] && { . "$_ghl_lib" 2>/dev/null; break; }
+      done
+      command -v tgg_refuse >/dev/null 2>&1 && tgg_refuse "$_ghl_real" "$@" && exit 1 ;;
+  esac
+fi
+
 # ── the calls that go straight through, before anything else is spent ───────
 [ "$_ghl_depth" = 0 ] || _ghl_through "$@"
 [ "${GH_LEDGER_OFF:-}" != 1 ] || _ghl_through "$@"

@@ -185,3 +185,13 @@ tracker_list; tracker_read <KEY-n>; tracker_comment <KEY-n> f; tracker_link_pr <
 not recorded from a workspace; the list filter (`labels: { some: { name:
 { eqIgnoreCase } } }`) is the first thing to check if a live `tracker_list`
 comes back empty.
+
+**The `gh` guard** (`bin/lib/tracker-gh-guard.sh`, asked by `bin/gh-ledger/gh`
+at depth 0 before anything runs): `gh issue create|comment|close|reopen|edit|…
+-R <repo>` and `gh api` POST/PATCH/PUT/DELETE (or fields with no `-X`) on
+`repos/<repo>/issues…` exit 1 with one stderr and one ALERTS line, nothing sent,
+when every column-4 `-` project with that repo answers `tracker_off_github`. A
+numbered path whose number is a pull request goes through. Reads and `gh pr`
+pay no lookup. A settings outage, `GH_TRACKER_GUARD_OFF=1` or
+`flags/tracker-gh-guard-off` let the write through. Not seen: `gh issue` with no
+`-R`, GraphQL mutations, a `gh` run by absolute path.
