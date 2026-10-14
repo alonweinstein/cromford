@@ -72,13 +72,40 @@ Source: [bin/lib/tracker/linear.sh](../bin/lib/tracker/linear.sh).
   `done` or `closed` to one of your state names, for example
   `{"review":"QA"}`.
 
-To move a project from GitHub Issues to Linear:
+To load a new project on Linear:
+
+```bash
+bin/load-project.sh example-org/app --tracker linear --team TK [--label ai-build]
+```
+
+This renders the triage prompt from `prompts/TEMPLATE-LINEAR.md`, uses the
+team key as the ticket prefix and creates no GitHub label (create the Linear
+label yourself). On the box it adds an empty `LINEAR_API_KEY=` to the env file
+and writes the team, label and adapter rows, in that order, before the crons
+start. Fill in the key; until then every triage tick is `SKIP
+token-unresolved`. `--vmap-ticket` and `--arch-ticket` are refused with it,
+since they file GitHub issues.
+
+Once the key is in, check the first read on the box:
+`bin/triage-gate.sh <project> --seed` should print `SEEDED <n> tickets`.
+`SEED-FAILED` means the context did not load or Linear refused the query; the
+reason is in `logs/ALERTS.log`.
+
+To move an existing project from GitHub Issues to Linear, by hand:
 
 ```bash
 echo 'LINEAR_API_KEY=<key>' >> /etc/harness/env/<project>.env
 bin/jobs-client.sh setting-set tracker_linear.<project>.team TK
 bin/jobs-client.sh setting-set tracker_adapter.<project> linear
 ```
+
+then delete `prompts/<project>.md` and re-run `bin/load-project.sh` with
+`--tracker linear --team TK --no-bootstrap` to render the Linear prompt.
+
+The triage session reaches Linear through `bin/tracker-cli.sh <project> list |
+read <id> | comment <id> <file|-> | label-add | label-remove | transition`. It
+only accepts your team's keys, and refuses an issue Linear moved to another
+team before reading or writing it.
 
 Set `tracker_adapter.<project>` back to `github-issues`, or delete the row, to
 return to GitHub Issues. A project has one tracker at a time.
@@ -92,7 +119,8 @@ ticket whose newest comment is the key's own. Only issues of your team are
 ever read. An env file that sets `LINEAR_API_KEY` to nothing, or rows that do
 not load, make every tick `SKIP token-unresolved` with one ALERTS line a day.
 
-**Not yet:** a build can't run from a Linear issue. While the row says `linear`, `bin/run-build.sh` refuses the project, and
+**Not yet:** a build can't run from a Linear issue, and the Linear prompt
+tells the session not to launch one. While the row says `linear`, `bin/run-build.sh` refuses the project, and
 the close-out and needs-human lanes post nothing to GitHub. Without that
 refusal they would treat `TK-142` as GitHub issue #142. The same refusal
 applies to a `jira` row.

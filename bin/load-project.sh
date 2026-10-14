@@ -5,6 +5,16 @@
 #                   [--prefix <KEY>] [--base <branch>] [--context <file>]
 #                   [--no-bootstrap] [--vmap-ticket] [--arch-ticket] [--fly]
 #                   [--require-readiness <n>] [--repo-dir <checkout>]
+#                   [--tracker github-issues|linear --team <KEY> [--label <name>]]
+#
+# --tracker linear (default github-issues): the project's tickets live in the
+# Linear team <KEY>, not in GitHub Issues. The prompt is rendered from
+# prompts/TEMPLATE-LINEAR.md, the key prefix is the team key, no GitHub label
+# is created, and on the box the env stub gets an empty LINEAR_API_KEY= for
+# the operator to fill and the settings rows tracker_linear.<project>.team
+# (.label) and then tracker_adapter.<project> = linear are written, in that
+# order, before the crons start. --vmap-ticket and --arch-ticket file GitHub
+# issues, so they are refused with it. See docs/connecting-a-board.md.
 #
 # What it does (idempotent — re-running skips what exists):
 #   1. registry: appends a fleet.conf row (GitHub-Issues board: prefix "-",
@@ -62,6 +72,7 @@ shift
 PROJECT="" PROD="-" BOX="${HARNESS_BOX_PREFIX}small" PREFIX="" BASE="" CONTEXT_FILE="" BOOTSTRAP=1 VMAP_TICKET=0 ARCH_TICKET=0 FLY=0
 QUEUE="fly/onboard-queue.conf"
 REQUIRE_READINESS=0 REPO_DIR=""
+TRACKER=github-issues TEAM="" TLABEL=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --require-readiness) REQUIRE_READINESS="$2"; shift 2 ;;
@@ -76,9 +87,27 @@ while [ $# -gt 0 ]; do
     --vmap-ticket)  VMAP_TICKET=1; shift ;;
     --arch-ticket)  ARCH_TICKET=1; shift ;;
     --fly)          FLY=1; shift ;;
+    --tracker) TRACKER="$2"; shift 2 ;;
+    --team)    TEAM="$2"; shift 2 ;;
+    --label)   TLABEL="$2"; shift 2 ;;
     *) echo "unknown flag $1"; exit 2 ;;
   esac
 done
+
+# >>> tracker flags
+# Checked before anything is read or written, like the readiness gate below.
+case "$TRACKER" in
+  github-issues)
+    [ -z "$TEAM$TLABEL" ] || { echo "load-project: --team and --label go with --tracker linear"; exit 2; } ;;
+  linear)
+    [[ "$TEAM" =~ ^[A-Z][A-Z0-9]{0,9}$ ]] || { echo "load-project: --tracker linear needs --team <KEY>, the Linear team key (got '$TEAM')"; exit 2; }
+    [ -z "$TLABEL" ] || [[ "$TLABEL" =~ ^[A-Za-z0-9_.:-]{1,100}$ ]] || { echo "load-project: --label '$TLABEL' is not a label name"; exit 2; }
+    [ "$VMAP_TICKET$ARCH_TICKET" = 00 ] || { echo "load-project: --vmap-ticket and --arch-ticket file GitHub issues; a Linear project's tickets are not there"; exit 2; }
+    [ -z "$PREFIX" ] || [ "$PREFIX" = "$TEAM" ] || { echo "load-project: on Linear the key prefix is the team key ($TEAM), not '$PREFIX'"; exit 2; }
+    PREFIX="$TEAM" ;;
+  *) echo "load-project: --tracker takes github-issues or linear (got '$TRACKER')"; exit 2 ;;
+esac
+# <<< tracker flags
 
 # >>> readiness gate
 # BEFORE the first anything. Below this point the command appends a fleet.conf
@@ -171,7 +200,7 @@ if [ -z "$PREFIX" ]; then
   [ ${#PREFIX} -ge 2 ] || PREFIX=$(echo "$PROJECT" | cut -c1-2 | tr '[:lower:]' '[:upper:]')
 fi
 PREFIX_LC=$(echo "$PREFIX" | tr '[:upper:]' '[:lower:]')
-echo "project=$PROJECT slug=$SLUG base=$BASE prefix=$PREFIX box=$BOX prod=$PROD"
+echo "project=$PROJECT slug=$SLUG base=$BASE prefix=$PREFIX box=$BOX prod=$PROD tracker=$TRACKER"
 
 echo "== registry =="
 export FLEET_CONF="$ROOT/fleet.conf"
@@ -223,23 +252,31 @@ fi
 echo "== prompt =="
 if [ -f "prompts/$PROJECT.md" ]; then
   echo "prompts/$PROJECT.md exists — skipping"
+  # A prompt rendered for the other tracker would send the session to the
+  # wrong board. Re-rendering is the operator's call: delete it and re-run.
+  case "$TRACKER:$(head -1 "prompts/$PROJECT.md")" in
+    "linear:"*"(Linear board)"*|github-issues:*) ;;
+    *) echo "WARN: prompts/$PROJECT.md was not rendered for Linear — delete it and re-run to render prompts/TEMPLATE-LINEAR.md" ;;
+  esac
 else
   CONTEXT=""
   [ -n "$CONTEXT_FILE" ] && CONTEXT=$(cat "$CONTEXT_FILE")
   export CONTEXT
-  python3 - "$PROJECT" "$SLUG" "$PROD" "$PREFIX" "$PREFIX_LC" "$BASE" <<'PY'
+  python3 - "$PROJECT" "$SLUG" "$PROD" "$PREFIX" "$PREFIX_LC" "$BASE" "$TRACKER" "${TLABEL:-ai-build}" <<'PY'
 import sys, os
-project, slug, prod, prefix, prefix_lc, base = sys.argv[1:7]
-t = open('prompts/TEMPLATE-GH.md').read()
+project, slug, prod, prefix, prefix_lc, base, tracker, label = sys.argv[1:9]
+linear = tracker == 'linear'
+t = open('prompts/TEMPLATE-LINEAR.md' if linear else 'prompts/TEMPLATE-GH.md').read()
 # drop the template header note
 lines = t.split('\n')
-lines[0] = f'# Triage run — {project} (GitHub Issues board)'
+lines[0] = f'# Triage run — {project} (' + ('Linear board' if linear else 'GitHub Issues board') + ')'
 t = '\n'.join(lines)
 ctx = os.environ.get('CONTEXT','').strip()
 t = t.replace('<CONTEXT>', ctx if ctx else '')
 for a,b in [('<PROJECT>',project),('<REPO_SLUG>',slug),('<PROD_URL>',prod),
             ('<KEY_PREFIX_LC>',prefix_lc),('<key_prefix_lc>',prefix_lc),
-            ('<KEY_PREFIX>',prefix),('<BASE_BRANCH>',base)]:
+            ('<KEY_PREFIX>',prefix),('<BASE_BRANCH>',base),
+            ('<TEAM>',prefix),('<LABEL>',label)]:
     t = t.replace(a,b)
 open(f'prompts/{project}.md','w').write(t)
 PY
@@ -338,10 +375,16 @@ A failure lands as one [fly-onboard] line in /root/harness/logs/ALERTS.log namin
 FLYQ
 fi
 
+if [ "$TRACKER" = linear ]; then
+  # The adapter never creates a Linear label (bin/lib/tracker/linear.sh).
+  echo "== Linear label =="
+  echo "create the label '${TLABEL:-ai-build}' in Linear (workspace or team $TEAM) by hand; nothing is created on GitHub"
+else
 echo "== ai-build label =="
 gh label create ai-build -R "$SLUG" --color 1D76DB \
   --description "Harness-buildable: the board watcher acts on this" 2>/dev/null \
   && echo "label created" || echo "label exists"
+fi
 
 if [ "$VMAP_TICKET" = 1 ]; then
   echo "== verification-map ticket =="
@@ -445,7 +488,18 @@ if [ "${ARCH_TICKET:-0}" = 1 ]; then
 fi
 # --- ARCH TICKET (end) ---
 
-if [ "$BOOTSTRAP" = 0 ]; then echo "== done (bootstrap skipped) =="; exit 0; fi
+if [ "$BOOTSTRAP" = 0 ]; then
+  if [ "$TRACKER" = linear ]; then
+    # The box writes these itself on a bootstrap run. Team first: an adapter
+    # row with no team row is a context that does not load.
+    echo "== Linear: on $BOX, before the project's crons run =="
+    echo "  append LINEAR_API_KEY=<key> to the env file of $PROJECT"
+    echo "  /root/harness/bin/jobs-client.sh setting-set tracker_linear.$PROJECT.team $TEAM"
+    [ -z "$TLABEL" ] || echo "  /root/harness/bin/jobs-client.sh setting-set tracker_linear.$PROJECT.label $TLABEL"
+    echo "  /root/harness/bin/jobs-client.sh setting-set tracker_adapter.$PROJECT linear"
+  fi
+  echo "== done (bootstrap skipped) =="; exit 0
+fi
 
 echo "== box: $BOX =="
 # Run the block LOCALLY when the target box IS this machine. Loading project-7
@@ -461,11 +515,13 @@ if [ "$BOX" = "$(hostname 2>/dev/null)" ] \
   RUN_ON_BOX=(bash -s --)
 fi
 BOOT_RC=0
-"${RUN_ON_BOX[@]}" "$PROJECT" "$PROD" "$PREFIX" "$BASE" "$HARNESS_REPO" "$REG_MODE" <<'REMOTE' || BOOT_RC=$?
+"${RUN_ON_BOX[@]}" "$PROJECT" "$PROD" "$PREFIX" "$BASE" "$HARNESS_REPO" "$REG_MODE" "$TRACKER" "$TLABEL" <<'REMOTE' || BOOT_RC=$?
 set -euo pipefail
 PROJECT="$1"; PROD="$2"; PREFIX="$3"; BASE="$4"; HREPO="$5"
 # The registry mode (BH-5650). Absent (an older caller) = file.
 REG_MODE="${6:-file}"
+# The tracker (github-issues|linear) and the Linear label row. Absent = GitHub.
+TRACKER="${7:-github-issues}"; TLABEL="${8:-}"
 if [ "$REG_MODE" = db ]; then export REGISTRY_SOURCE=db; fi
 . /root/harness/bin/lib/env-path.sh 2>/dev/null || harness_env_dir() { printf '%s\n' /root/harness/env; }; E=$(harness_env_dir)
 # Preconditions: a provisioned fleet box (see docs/OPERATOR-SETUP.md).
@@ -531,6 +587,24 @@ if [ ! -f "$ENVF" ]; then
   [ -x /root/harness/bin/harden-state.sh ] && /root/harness/bin/harden-state.sh --rearm "$ENVF"
   echo "env stub written: $ENVF"
 fi
+if [ "$TRACKER" = linear ]; then
+  # DEFINED and empty: bin/triage-gate.sh takes the Linear arm on a defined
+  # key, so until the operator fills it every tick is SKIP token-unresolved
+  # with one ALERTS line a day, never a read of the app repo's GitHub issues.
+  if ! grep -q '^LINEAR_API_KEY=' "$ENVF"; then
+    [ -x /root/harness/bin/harden-state.sh ] && /root/harness/bin/harden-state.sh --release "$ENVF"
+    printf '%s\n' "# Linear personal API key for team $PREFIX (docs/connecting-a-board.md)" "LINEAR_API_KEY=" >> "$ENVF"
+    [ -x /root/harness/bin/harden-state.sh ] && /root/harness/bin/harden-state.sh --rearm "$ENVF"
+    echo "LINEAR_API_KEY= added to $ENVF — fill it in"
+  fi
+  # Team (and label) BEFORE the adapter row, and all of them before the crons.
+  JC=/root/harness/bin/jobs-client.sh
+  "$JC" setting-set "tracker_linear.$PROJECT.team" "$PREFIX" \
+    && { [ -z "$TLABEL" ] || "$JC" setting-set "tracker_linear.$PROJECT.label" "$TLABEL"; } \
+    && "$JC" setting-set "tracker_adapter.$PROJECT" linear \
+    || { echo "FATAL: could not write the tracker settings rows for $PROJECT — nothing is bootstrapped; re-run"; exit 1; }
+  echo "settings: tracker_adapter.$PROJECT = linear (team $PREFIX)"
+fi
 /root/harness/bin/bootstrap-machine.sh "$PROJECT"
 REMOTE
 # The remote block's rc is CAPTURED rather than left to `set -e`. It propagates
@@ -545,7 +619,11 @@ REMOTE
 
 echo
 echo "== LOADED: $PROJECT =="
-echo "hand it work: label an issue 'ai-build' on $SLUG (or use the /harness skill to file a plan)"
+if [ "$TRACKER" = linear ]; then
+  echo "hand it work: fill LINEAR_API_KEY in env/$PROJECT.env on $BOX, then label an issue '${TLABEL:-ai-build}' in Linear team $TEAM"
+else
+  echo "hand it work: label an issue 'ai-build' on $SLUG (or use the /harness skill to file a plan)"
+fi
 echo
 # ── THE DOORBELL (2026-09-16) ────────────────────────────────────────────────
 # Onboarding used to end here, and cromford is what that cost. docs/EVENTS.md
@@ -599,6 +677,9 @@ else
 BANNER
 fi
 # <<< doorbell banner
+# The doorbell above is GitHub's: it still wakes on this project's PRs, never on
+# a Linear issue. Without the Linear webhook the triage tick's poll is the intake.
+[ "$TRACKER" = linear ] && echo "Linear tickets wake the tick only by polling, unless the Linear webhook is set up (docs/connecting-a-board.md, Webhooks for Jira and Linear)"
 echo
 # Not "optional env" in a trailing list — a missing bypass secret does not fail
 # loudly, it silently makes EVERY pr tier-2 forever, because preview QA cannot
