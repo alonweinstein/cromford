@@ -83,12 +83,16 @@ bin/jobs-client.sh setting-set tracker_adapter.<project> linear
 Set `tracker_adapter.<project>` back to `github-issues`, or delete the row, to
 return to GitHub Issues. A project has one tracker at a time.
 
-**What works today:** the launch check (`bin/triage-gate.sh --buildable`)
-reads the Linear issue. It blocks a ticket whose newest comment is the key's
-own, and it only reads issues of your team.
+**What works today:** the triage gate reads your Linear team, not GitHub. Its
+board fingerprint is the open issues carrying the build label, so a new issue,
+a state or label change, a description edit or a new comment from a person
+wakes the triage tick, and the key's own comments do not. `--thread` and
+`--signal` read the Linear thread. The launch check (`--buildable`) blocks a
+ticket whose newest comment is the key's own. Only issues of your team are
+ever read. An env file that sets `LINEAR_API_KEY` to nothing, or rows that do
+not load, make every tick `SKIP token-unresolved` with one ALERTS line a day.
 
-**Not yet:** triage does not list Linear issues, and a build can't run from
-one. While the row says `linear`, `bin/run-build.sh` refuses the project, and
+**Not yet:** a build can't run from a Linear issue. While the row says `linear`, `bin/run-build.sh` refuses the project, and
 the close-out and needs-human lanes post nothing to GitHub. Without that
 refusal they would treat `TK-142` as GitHub issue #142. The same refusal
 applies to a `jira` row.

@@ -156,28 +156,48 @@ case "$PROJECT" in
     # malformed allowlist row, the settings worker down) is the token-unresolved
     # block the board arm gives. Every other project, and every other mode,
     # never gets here and pays no settings call.
-    # LINEAR, the same way and under the same two conditions: the env file
-    # sets LINEAR_API_KEY AND the row is `linear`. The read is
-    # bin/lib/tracker/linear.sh's trk_linear_gate_raw, which only ever asks for
-    # an issue of the team the tracker_linear.<project>.team row names.
-    JIRA_GATE=""; LINEAR_GATE=""
-    if { [ "$MODE" = "--buildable" ] || [ "$MODE" = "--buildable-strict" ]; } && [ -n "${JIRA_BASE:-}${LINEAR_API_KEY:-}" ]; then
+    # LINEAR, in EVERY mode, when the env file DEFINES LINEAR_API_KEY (an
+    # empty value counts: bin/load-project.sh --tracker linear writes one for
+    # the operator to fill) AND the row is `linear`. --buildable reads the
+    # thread through trk_linear_gate_raw, the fingerprint is
+    # trk_linear_fingerprint, --thread/--signal trk_linear_thread_raw; each only
+    # ever asks for issues of the team the tracker_linear.<project>.team row
+    # names. Falling through to the GitHub-Issues arm instead would read issue
+    # #12 of the app repo for CRO-12. A context that does not load is
+    # token-unresolved in every mode, with one ALERTS line per project per day.
+    JIRA_GATE=""; LINEAR_GATE=""; _BUILDABLE=""
+    case "$MODE" in --buildable|--buildable-strict) _BUILDABLE=1 ;; esac
+    if { [ -n "$_BUILDABLE" ] && [ -n "${JIRA_BASE:-}" ]; } || [ -n "${LINEAR_API_KEY+set}" ]; then
       for _P in "$(dirname "$0")/lib/tracker.sh" "$HARNESS/bin/lib/tracker.sh"; do
         # shellcheck source=/dev/null
         [ -r "$_P" ] && { . "$_P"; break; }
       done
       _TA=""; declare -F tracker_adapter >/dev/null 2>&1 && _TA=$(tracker_adapter "$PROJECT" 2>/dev/null)
-      if [ "$_TA" = jira ] && [ -n "${JIRA_BASE:-}" ]; then
+      if [ "$_TA" = jira ] && [ -n "$_BUILDABLE" ] && [ -n "${JIRA_BASE:-}" ]; then
         if tracker_load jira && trk_jira_context "$PROJECT" 2>/dev/null; then
           JIRA_GATE=1; SELF_ACTORS=""
         else
           echo "BLOCKED token-unresolved"; exit 0
         fi
-      elif [ "$_TA" = linear ] && [ -n "${LINEAR_API_KEY:-}" ]; then
-        if tracker_load linear && trk_linear_context "$PROJECT" 2>/dev/null; then
-          LINEAR_GATE=1; SELF_ACTORS=""
+      elif [ "$_TA" = linear ] && [ -n "${LINEAR_API_KEY+set}" ]; then
+        _LE=$(mktemp 2>/dev/null) || _LE=/dev/null
+        if tracker_load linear && trk_linear_context "$PROJECT" 2>"$_LE"; then
+          LINEAR_GATE=1; SELF_ACTORS=""; BASE=""; TOKEN=""; BP=""
+          [ "$_LE" = /dev/null ] || rm -f "$_LE"
         else
-          echo "BLOCKED token-unresolved"; exit 0
+          _LF="$HARNESS/state/linear-context-alerted-$PROJECT"
+          if [ "$(cat "$_LF" 2>/dev/null)" != "$(date -u +%F)" ]; then
+            date -u +%F > "$_LF" 2>/dev/null
+            "$HARNESS/bin/alert-line.sh" --project "$PROJECT" "[triage-gate] $PROJECT is a Linear project and its context did not load: $(head -1 "$_LE" 2>/dev/null)" >/dev/null 2>&1 </dev/null
+          fi
+          [ "$_LE" = /dev/null ] || rm -f "$_LE"
+          case "$MODE" in
+            --buildable|--buildable-strict) echo "BLOCKED token-unresolved" ;;
+            --pending|--signal|--thread) exit 1 ;;
+            --seed) echo "SEED-FAILED (the Linear context did not load)" ;;
+            *) echo "SKIP token-unresolved" ;;
+          esac
+          exit 0
         fi
       fi
     fi
@@ -235,6 +255,13 @@ esac
 # and fail-open to RUN, which then absorbs the new format — self-migrating.
 fetch_fingerprint() { # -> fingerprint on stdout, rc!=0 on any failure
   command -v jq >/dev/null || return 1
+  # Linear: the in-app shape, {"<TEAM>": [ticket…]}, so the diff, --pending
+  # and the ticket count read it unchanged (bin/lib/tracker/linear.sh). A read
+  # that fails is rc!=0, this file's fail-OPEN RUN.
+  if [ -n "${LINEAR_GATE:-}" ]; then
+    trk_linear_fingerprint 2>/dev/null
+    return
+  fi
   # GitHub-Issues boards (project-5): the fingerprint is the ai-build issue
   # list — number, state, title, comment count, updatedAt. Unchanged list =
   # nothing a fresh session could conclude differently ($148/day of paid
@@ -693,6 +720,12 @@ thread_doc() {
   local tid="${1:-}" n pg c sigd rc=0 apps
   command -v jq >/dev/null 2>&1 || return 1
   case "$tid" in ''|*[!A-Za-z0-9._-]*) return 1 ;; esac
+  # Linear: the in-app kind, with the key's own user id as the self actor.
+  if [ -n "${LINEAR_GATE:-}" ]; then
+    trk_linear_thread_raw "$tid" 2>/dev/null \
+      | jq -ce '{kind: "inapp", self_actors: .me, self_identities: "", self_apps: [], doc: {ticket: .ticket}}' 2>/dev/null
+    return
+  fi
   if [ -n "${GH_ISSUES_REPO:-}" ]; then
     command -v gh_rest >/dev/null 2>&1 || return 1
     if command -v _gh_rest_args_ok >/dev/null 2>&1; then _gh_rest_args_ok "$GH_ISSUES_REPO" || return 1; fi
@@ -728,8 +761,10 @@ signal_digest() {
   doc=$(thread_doc "${1:-}") || return 1
   [ -n "$doc" ] || return 1
   kind=$(printf '%s' "$doc" | jq -r '.kind' 2>/dev/null) || return 1
+  # The self actors the thread read resolved: $SELF_ACTORS for an in-app board,
+  # the key's own user id on Linear (the gh kind reads self_apps instead).
   printf '%s' "$doc" | jq -c '.doc' 2>/dev/null \
-    | SELF_ACTORS="$SELF_ACTORS" SELF_IDENTITIES="${TRIAGE_SIGNAL_SELF_IDENTITIES:-}" \
+    | SELF_ACTORS="$(printf '%s' "$doc" | jq -r '.self_actors // ""' 2>/dev/null)" SELF_IDENTITIES="${TRIAGE_SIGNAL_SELF_IDENTITIES:-}" \
       SELF_APPS_JSON="$(printf '%s' "$doc" | jq -c '.self_apps' 2>/dev/null)" python3 "$py" --kind "$kind"
 }
 # --thread <tid> (TRIAGE-STATE): the wrapper thread_doc prints, for
@@ -799,7 +834,7 @@ for _P in "$(dirname "$0")/lib/split-chain.sh" "$HARNESS/bin/lib/split-chain.sh"
   # shellcheck source=/dev/null
   [ -r "$_P" ] && { . "$_P"; break; }
 done
-if [ -z "${GH_ISSUES_REPO:-}" ] && command -v split_chain_gate >/dev/null 2>&1 && [ "$(split_chain_on "$HARNESS")" = 1 ]; then
+if [ -z "${GH_ISSUES_REPO:-}${LINEAR_GATE:-}" ] && command -v split_chain_gate >/dev/null 2>&1 && [ "$(split_chain_on "$HARNESS")" = 1 ]; then
   SC=$(split_chain_gate "$HARNESS" "$PROJECT" 2>/dev/null) || SC=""
   [ -n "$SC" ] && { echo "RUN split-ready"; exit 0; }
 fi
@@ -816,7 +851,7 @@ fi
 # older than the window is deleted unread. No file (the default: the scan is
 # dark at GATE_RELEASE_MAX_LAUNCHES=0) is today exactly.
 _GRK="$HARNESS/state/gate-reoffer-keys-$PROJECT"
-if [ -z "${GH_ISSUES_REPO:-}" ] && [ -e "$_GRK" ]; then
+if [ -z "${GH_ISSUES_REPO:-}${LINEAR_GATE:-}" ] && [ -e "$_GRK" ]; then
   for _P in "$(dirname "$0")/lib/gate-release.sh" "$HARNESS/bin/lib/gate-release.sh"; do
     # shellcheck source=/dev/null
     [ -r "$_P" ] && { . "$_P"; break; }
@@ -845,7 +880,7 @@ for _P in "$(dirname "$0")/lib/inapp-deps.sh" "$HARNESS/bin/lib/inapp-deps.sh"; 
   # shellcheck source=/dev/null
   [ -r "$_P" ] && { . "$_P"; break; }
 done
-if [ -z "${GH_ISSUES_REPO:-}" ] && declare -F inapp_deps_gate >/dev/null 2>&1 && [ "$(inapp_deps_on "$HARNESS")" = 1 ]; then
+if [ -z "${GH_ISSUES_REPO:-}${LINEAR_GATE:-}" ] && declare -F inapp_deps_gate >/dev/null 2>&1 && [ "$(inapp_deps_on "$HARNESS")" = 1 ]; then
   _inapp_deps_knobs
   _IDR=$(inapp_deps_ready_file "$HARNESS" "$PROJECT") || _IDR=""
   if [ -n "$_IDR" ] && [ -e "$_IDR" ] \
@@ -1109,7 +1144,9 @@ else
   # only by Bot-authored comments arrives here with its consumed values, so
   # reaching this line means something other than our own notes moved. The PAT
   # login is never absorbed there — it is also the operator's hand.
-  if [ -n "${GH_ISSUES_REPO:-}" ]; then
+  # Linear too: it has no in-app API for gate-selfwrite.py to ask, and its
+  # own comments were already left out of lastActivityAt (isMe).
+  if [ -n "${GH_ISSUES_REPO:-}${LINEAR_GATE:-}" ]; then
     echo "RUN board-changed"
     exit 0
   fi
