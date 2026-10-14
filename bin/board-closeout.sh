@@ -102,6 +102,13 @@ esac
 # bin/run-build.sh's CLOSE_ISSUE_AFTER_MERGE already own that transition, and a
 # second actor closing issues is how two lanes come to disagree about state.
 if [ "$PREFIX" = "-" ]; then
+  # Unless a settings row moved the project to jira or linear: then $KEY is not
+  # an issue of the app repo, and issue #<n> is somebody else's thread.
+  # shellcheck source=bin/lib/tracker.sh
+  . "$BIN/lib/tracker.sh" 2>/dev/null || true
+  if declare -F tracker_off_github >/dev/null 2>&1 && OFF=$(tracker_off_github "$PROJECT"); then
+    say "tickets live on $OFF (tracker_adapter.$PROJECT) — no GitHub issue comment, left for the sweep"; exit 4
+  fi
   REPO=$("$BIN/fleet-conf.sh" "$PROJECT" repo 2>/dev/null) || REPO=""
   ISSUE=$(sed -nE 's/^[A-Za-z]+-([0-9]+)$/\1/p' <<<"$KEY")
   [ -n "$REPO" ] && [ -n "$ISSUE" ] && command -v gh >/dev/null 2>&1 || { say "no repo/issue/gh for the issues lane"; exit 1; }

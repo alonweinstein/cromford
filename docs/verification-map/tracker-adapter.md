@@ -92,8 +92,32 @@ adapter turns into the comment request). `decompose-board.log` and
 
 Every call is one POST of `{query, variables}` to `TRK_LINEAR_API` (default
 `https://api.linear.app/graphql`), with `Authorization: <key>`: a personal API
-key, no `Bearer`. Nothing in the pipeline calls it yet: triage, run-build and
-close-out make their own calls, and `file_children` refuses a Linear project.
+key, no `Bearer`. One lane calls it: `bin/triage-gate.sh --buildable[-strict]`
+reads a Linear project's ticket with `trk_linear_gate_raw`. Triage, run-build
+and close-out still make their own GitHub calls, so they refuse a Linear
+project (`tracker_off_github`, below), and so does `file_children`.
+
+**A project's context** is `trk_linear_context <project>`: `LINEAR_API_KEY`
+from `<env dir>/<project>.env` only, and the settings rows
+`tracker_linear.<project>.team` (required), `.label` and `.states`. It blanks
+every `TRK_LINEAR_*` first. A missing key, no team row, a malformed row or a
+settings outage is rc 1 with one stderr line and a blank context.
+
+**The gate read** (`trk_linear_gate_raw <identifier>`) is one request for the
+viewer and the issue's comments. It sends only an identifier of the context's
+team and refuses an answer from another team (Linear answers a moved issue's
+old identifier with the new issue). A comment by the key's own account is
+internal, which is what `BLOCKED newest-comment-system` reads. A thread past
+250 comments is rc 1. The gate takes this arm only when the env file sets
+`LINEAR_API_KEY` and the row is `linear`; a context that does not load is
+`BLOCKED token-unresolved`.
+
+**`tracker_off_github <project>`** (in `bin/lib/tracker.sh`) answers rc 0 and
+the adapter when the row is `jira` or `linear`. Such a project still sits at
+fleet.conf column 4 `-`, and the GitHub-Issues lanes strip `TK-142` to issue
+#142. `bin/run-build.sh` exits 2 with an ALERTS line before it creates
+anything, `bin/board-closeout.sh` exits 4 and `bin/needs-human-hold.sh` exits 0,
+each without a GitHub call. A settings outage answers rc 1 (GitHub), as before.
 
 **Context:** `TRK_LINEAR_TOKEN` (the key, only on curl's argv),
 `TRK_LINEAR_TOKEN_VAR` (its name, which is what `TRK_LOG` shows),
@@ -133,12 +157,13 @@ Linear has no waiting-on-client turn, and its Asks / triage inbox are out of sco
 | what | how |
 |---|---|
 | the contract cases and the Linear-only cases, against hand-written GraphQL answers | `HARNESS_TEST_SANDBOX=1 bash tests/tracker-linear.bh-4077-test.sh` (answers in `tests/fixtures/tracker-linear/`) |
+| the project context, the gate arm and the three refusals | `HARNESS_TEST_SANDBOX=1 bash tests/tracker-linear-context-test.sh` (answers in `tests/fixtures/tracker-linear-context/`) |
 | live, against the test workspace (needs its key) | the block below |
 
 ```bash
-set -a; . /etc/harness/env/<project>.env; set +a
+export HARNESS=/root/harness
 . bin/lib/tracker.sh; tracker_load linear
-TRK_LINEAR_TOKEN="$LINEAR_API_KEY" TRK_LINEAR_TOKEN_VAR=LINEAR_API_KEY TRK_LINEAR_TEAM=<KEY>
+trk_linear_context <project>   # needs the tracker_linear.<project>.team row
 tracker_list; tracker_read <KEY-n>; tracker_comment <KEY-n> f; tracker_link_pr <KEY-n> <PR url>; tracker_close_out <KEY-n> f
 ```
 

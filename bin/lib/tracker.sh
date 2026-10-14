@@ -9,6 +9,8 @@
 # source time, safe under the caller's `set -u`. Sourcing it twice is inert.
 #
 #   tracker_adapter <project>           github-issues | board | jira | linear, or rc 1
+#   tracker_off_github <project>        rc 0 and the adapter when a settings row
+#                                       moved the project to jira or linear
 #   tracker_load <adapter>              sources bin/lib/tracker/<adapter>.sh, sets TRK_ADAPTER
 #   tracker_list                        JSON array of open tickets (no body/comments)
 #   tracker_read <id>                   one normalized ticket (below)
@@ -45,7 +47,10 @@
 #   TRK_LINEAR_TOKEN_VAR linear: its variable NAME, which is what a log shows
 #   TRK_LINEAR_TEAM      linear: the team key the list reads
 #   TRK_LINEAR_API / TRK_LINEAR_LABEL / TRK_LINEAR_STATES
-#                        linear: see bin/lib/tracker/linear.sh
+#                        linear: see bin/lib/tracker/linear.sh. A project's
+#                        token, team, label and states are set by
+#                        trk_linear_context <project> (LINEAR_API_KEY from the
+#                        project's env file, settings rows tracker_linear.*)
 #   TRK_STRICT           1 = tracker_waiting_on asks --buildable-strict
 #   TRK_JIRA_*           jira: set ONLY by trk_jira_context <project> (the
 #                        gateway base, credentials from the project's env file,
@@ -152,6 +157,21 @@ tracker_adapter() {
   [ -n "$prefix" ] || return 1
   if [ "$prefix" = "-" ]; then printf 'github-issues\n'; else printf 'board\n'; fi
   return 0
+}
+
+# tracker_off_github <project> — rc 0 and the adapter on stdout when the
+# project's settings row names jira or linear; rc 1 and nothing otherwise.
+# jira and linear only ever come from a row, and a project that has one still
+# sits at fleet.conf column 4 `-`, which every GitHub-Issues lane reads as "the
+# ticket is issue #<n> of the app repo". Those lanes strip TK-142 to 142, so a
+# lane that writes asks this first and posts nothing on a yes: #142 is some
+# other ticket, or nobody's. An outage answers 1 (the fleet.conf fallback says
+# GitHub), which is what those lanes did before there was a row to ask.
+tracker_off_github() {
+  local a
+  a=$(tracker_adapter "${1:-}" 2>/dev/null) || return 1
+  case "$a" in jira|linear) printf '%s\n' "$a"; return 0 ;; esac
+  return 1
 }
 
 # tracker_load <adapter> — the adapter beside this file wins, $HARNESS/bin/lib
