@@ -1,4 +1,5 @@
 #!/bin/bash
+# reads-run-build: raw — L10 EXECUTES the driver against a scratch $HARNESS to reach its tracker block (the blocked-child refusal), so it needs the real runnable path; the flatten is not runnable. See tests/rb-raw-readers-baseline/linear-children-test.sh.txt.
 # tests/linear-children-test.sh — a Linear project's split files its children
 # as Linear sub-issues (bin/lib/fc-linear.sh), in order, and a child waits for
 # the ones that block it; the master closes when its last child does.
@@ -16,6 +17,10 @@
 #       a completed one is OK, an issue with no relation is OK
 #   L8  bin/run-decompose.sh takes the linear lane (no `gh issue create`)
 #   L9  the master closes once every child is done, not before
+#   L11 bin/board-closeout.sh PR_MERGED (a build that merged its own PR) closes
+#       the master after the last child too
+#   L10 bin/run-build.sh refuses a child whose blocker is open (exit 3, nothing
+#       started), and gets past the tracker block once it is done
 #
 # No network: a `curl` stub plays api.linear.app/graphql and the settings route.
 #   HARNESS_TEST_SANDBOX=1 bash tests/linear-children-test.sh
@@ -142,7 +147,26 @@ lb_close_merged linproj CRO-21 https://github.com/example-org/lin/pull/6 x >/dev
 [ "$(nreq "TrkUpdate .* $DONE")" = 2 ] && grep -q 'Every part of this split has landed (the last was CRO-21)' "$S/comment-body" && ok \
   || bad "L9 the last child closes the master: $(cat "$S/reqs")"
 
-LEAK=$(grep -rlF -- "$LKEY" "$S" "$T/b" "$T/h/logs" "$T/out" 2>/dev/null)
+# --- L11 --------------------------------------------------------------------
+reset; po completed; mkdir -p "$T/b11"; echo 'PR_MERGED https://github.com/example-org/lin/pull/7' > "$T/b11/RESULT"
+out=$(BUILDER_DIRECT=1 bash "$DIR/bin/board-closeout.sh" linproj CRO-21 CRO-21 "$T/b11" 2>"$T/l11.err"); rc=$?
+[ "$rc" = 0 ] && [ "$(nreq "TrkUpdate .* $DONE")" = 2 ] && grep -q '^TrkParentOf CRO-21' "$S/reqs" && ok \
+  || bad "L11 PR_MERGED closes the master too (rc=$rc): $out $(cat "$T/l11.err") / $(cat "$S/reqs")"
+
+# --- L10 --------------------------------------------------------------------
+# A root with no stage modules: past the tracker block the module check stops it.
+H1="$T/h1"; mkdir -p "$H1/env" "$H1/logs"
+cp "$T/h/env/linproj.env" "$H1/env/"
+printf 'HARNESS_SECRET=fixture-secret\nJOBS_URL=https://jobs.example\n' > "$H1/env/global.env"
+l10() { HARNESS="$H1" REPOS_ROOT="$T/repos" timeout 60 bash "$DIR/bin/run-build.sh" linproj CRO-21 CRO-21 >"$T/l10.out" 2>&1; }
+reset; echo started > "$S/blocker"; l10; rc=$?
+[ "$rc" = 3 ] && grep -q 'CRO-21 waits on CRO-20' "$T/l10.out" && ! grep -q 'stage module' "$H1/logs/ALERTS.log" 2>/dev/null && ok \
+  || bad "L10 an open blocker refuses the build (rc=$rc): $(tail -3 "$T/l10.out")"
+reset; echo completed > "$S/blocker"; l10; rc=$?
+[ "$rc" != 3 ] && grep -q 'stage module' "$H1/logs/ALERTS.log" 2>/dev/null && ok || bad "L10 a done blocker gets past (rc=$rc): $(tail -3 "$T/l10.out")"
+rm -f "$S/blocker"
+
+LEAK=$(grep -rlF -- "$LKEY" "$S" "$T/b" "$T/h/logs" "$H1/logs" "$T/out" "$T/l10.out" 2>/dev/null)
 [ -z "$LEAK" ] && ok || bad "the key reached: $LEAK"
 
 echo "linear-children: $PASS passed, $FAIL failed"
