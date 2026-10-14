@@ -86,6 +86,11 @@ start. Fill in the key; until then every triage tick is `SKIP
 token-unresolved`. `--vmap-ticket` and `--arch-ticket` are refused with it,
 since they file GitHub issues.
 
+Once the key is in, check the first read on the box:
+`bin/triage-gate.sh <project> --seed` should print `SEEDED <n> tickets`.
+`SEED-FAILED` means the context did not load or Linear refused the query; the
+reason is in `logs/ALERTS.log`.
+
 To move an existing project from GitHub Issues to Linear, by hand:
 
 ```bash
