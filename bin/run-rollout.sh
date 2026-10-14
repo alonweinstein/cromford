@@ -69,7 +69,20 @@ HARNESS="${HARNESS:-/root/harness}"; FCS="$HARNESS/bin/fleet-conf.sh"
 PREFIX=$("$FCS" "$PROJECT" board_prefix 2>/dev/null || true)
 [ -n "$PREFIX" ] || fail_result "fleet-conf lookup failed"
 
-if [ "$PREFIX" = "-" ]; then
+# A LINEAR PROJECT (column 4 `-` too): the body is the Linear issue's
+# description, never GitHub issue #<n>.
+RO_LINEAR=""
+if [ "$PREFIX" = "-" ] && { [ -n "${RB_LINEAR:-}" ] \
+     || { . "$HARNESS/bin/lib/linear-build.sh" 2>/dev/null && { lb_on "$PROJECT" 2>/dev/null; [ $? != 1 ]; }; }; }; then
+  RO_LINEAR=1
+fi
+if [ -n "$RO_LINEAR" ]; then
+  { command -v trk_linear_read >/dev/null 2>&1 || { . "$HARNESS/bin/lib/tracker.sh" && tracker_load linear; }; } 2>/dev/null
+  if ! BODY=$({ trk_linear_context "$PROJECT" && trk_linear_read "$KEY"; } 2>/dev/null | jq -er '.body // ""'); then
+    fc_log "$BUILD" "ROLLOUT_FETCH_FAILED linear read $KEY"
+    fail_result "body fetch failed"
+  fi
+elif [ "$PREFIX" = "-" ]; then
   REPO=$("$FCS" "$PROJECT" repo 2>/dev/null || true)
   [ -n "$REPO" ] || fail_result "no repo"
   # THIS READ IS GraphQL-BACKED AND THAT IS DELIBERATE. `gh issue view --json`
