@@ -501,7 +501,8 @@ fi
 if [ -r "$(dirname "$0")/lib/issue-state-lib.sh" ]; then . "$(dirname "$0")/lib/issue-state-lib.sh" 2>/dev/null
 elif [ -r "$HARNESS/bin/lib/issue-state-lib.sh" ]; then . "$HARNESS/bin/lib/issue-state-lib.sh" 2>/dev/null
 fi
-if command -v issue_is_closed >/dev/null 2>&1 \
+# Not on Linear (RB_LINEAR): #<n> of the app repo is not the ticket.
+if command -v issue_is_closed >/dev/null 2>&1 && [ -z "${RB_LINEAR:-}" ] \
    && [ "$("$HARNESS/bin/fleet-conf.sh" "$PROJECT" board_prefix 2>/dev/null)" = "-" ]; then
   CI_N=$(printf '%s' "$KEY" | sed -nE 's/^[A-Za-z]+-([0-9]+)$/\1/p')
   CI_REPO="${GH_ISSUES_REPO:-$("$HARNESS/bin/fleet-conf.sh" "$PROJECT" repo 2>/dev/null || true)}"

@@ -571,7 +571,20 @@ mc_settle_merged() { # … <head> [merge-sha]
     && job_artifact_put merge_sha "$msha" "$(jq -nc --arg p "$url" '{by:"merge-conductor",pr:$p}')" "$job" >/dev/null 2>&1 || true
   # Issue-driven projects: comment + close the issue the PR was built for
   # (#262's "issue close after merge" rule; mc_issue_of derives the number).
-  if [ "$("$MC_H/bin/fleet-conf.sh" "$project" board_prefix 2>/dev/null)" = "-" ]; then
+  # A LINEAR project (bin/lib/linear-build.sh) moves its Linear issue instead,
+  # once per (key, PR); #<n> of the app repo is somebody else's issue, and
+  # bin/gh-ledger/gh would refuse that close anyway.
+  local _mc_lin=3
+  if [[ "$key" =~ ^[A-Z][A-Z0-9]*-[0-9]+$ ]] && { declare -F lb_close_merged >/dev/null 2>&1 \
+       || . "$MC_H/bin/lib/linear-build.sh" 2>/dev/null; }; then
+    lb_close_merged "$project" "$key" "$url" "merge conductor$note" "$rec" 2>/dev/null; _mc_lin=$?
+    case "$_mc_lin" in
+      0) mc_log "$key merged — Linear issue moved" ;;
+      3) ;;
+      *) mc_log "$key merged but the Linear issue could not be moved (rc $_mc_lin)" ;;
+    esac
+  fi
+  if [ "$_mc_lin" = 3 ] && [ "$("$MC_H/bin/fleet-conf.sh" "$project" board_prefix 2>/dev/null)" = "-" ]; then
     issue=$(mc_issue_of "$rec" "$br")
     # Comment, then close, then strip `ai-build`, in that order and never out of
     # it — mc_close_shipped answers 0 only after a fresh read says the issue

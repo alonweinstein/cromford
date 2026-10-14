@@ -114,7 +114,7 @@ fi
 # BH-4923: the DATA_LANE: field (dl_prompt_field_note) — same fail-open shape.
 [ -r "$HARNESS/bin/lib/data-lane.sh" ] && . "$HARNESS/bin/lib/data-lane.sh" 2>/dev/null || true
 NH_ISSUE=""; NH_SLUG=""
-if [ "$("$HARNESS/bin/fleet-conf.sh" "$PROJECT" board_prefix 2>/dev/null)" = "-" ]; then
+if [ -z "${RB_LINEAR:-}" ] && [ "$("$HARNESS/bin/fleet-conf.sh" "$PROJECT" board_prefix 2>/dev/null)" = "-" ]; then
   NH_ISSUE=$(sed -nE 's/^[A-Za-z]+-([0-9]+)$/\1/p' <<<"$KEY")
   NH_SLUG=$(git remote get-url origin 2>/dev/null | sed -E 's#(git@github.com:|https://github.com/)##; s#\.git$##')
 fi

@@ -13,7 +13,7 @@
 #       unreadable; a context that does not load is BLOCKED token-unresolved
 #   X6  no LINEAR_API_KEY costs no settings call; a non-linear row no Linear call
 #   X7  tracker_off_github: only a jira or linear row on the project
-#   X8  bin/run-build.sh refuses a Linear project before it creates anything,
+#   X8  bin/run-build.sh refuses a Jira project before it creates anything,
 #       launched bare (the worker's URL and secret only in global.env)
 #   X9  bin/board-closeout.sh and bin/needs-human-hold.sh post nothing to GitHub
 #
@@ -185,10 +185,12 @@ fi
 # the box's global.env. A guard that needs them handed down would never fire.
 printf 'HARNESS_SECRET=fixture-secret\nJOBS_URL=https://jobs.example\n' > "$T/h/env/global.env"
 bare() { env -u HARNESS_SECRET -u JOBS_URL "$@"; }
+# (Linear projects build since tests/linear-build-test.sh; a jira row still refuses.)
+row tracker_adapter.linproj jira
 fresh
 REPOS_ROOT="$T/repos" bare timeout 60 bash "$DIR"/bin/run-build.sh linproj CRO-1 CRO-1 >"$T/run/x8.out" 2>&1; rc=$?
-[ "$rc" = 2 ] && ok || bad "X8 run-build on a linear project rc=$rc, want 2: $(tail -3 "$T/run/x8.out")"
-grep -q '\[linproj/CRO-1\].*linear' "$T/h/logs/ALERTS.log" 2>/dev/null && ok || bad "X8 ALERTS says why: $(cat "$T/h/logs/ALERTS.log" 2>/dev/null)"
+[ "$rc" = 2 ] && ok || bad "X8 run-build on a jira project rc=$rc, want 2: $(tail -3 "$T/run/x8.out")"
+grep -q '\[linproj/CRO-1\].*jira' "$T/h/logs/ALERTS.log" 2>/dev/null && ok || bad "X8 ALERTS says why: $(cat "$T/h/logs/ALERTS.log" 2>/dev/null)"
 grep -q '^tracker_adapter.linproj$' "$S/settings.log" 2>/dev/null && ok || bad "X8 the row was never asked for"
 [ ! -d "$T/h/builds" ] && [ ! -s "$S/gh.log" ] && ok || bad "X8 a build dir or a gh call: $(ls "$T/h/builds" 2>/dev/null) $(cat "$S/gh.log" 2>/dev/null)"
 
@@ -198,8 +200,9 @@ cp "$DIR/bin/jobs-client.sh" "$T/h/bin/"; cp -R "$DIR/bin/lib/jobs" "$T/h/bin/li
 echo 'PR_CREATED https://github.com/o/l/pull/9' > "$T/b9/RESULT"
 fresh
 BUILDER_DIRECT=1 bare bash "$DIR/bin/board-closeout.sh" linproj CRO-1 CRO-1 "$T/b9" >"$T/run/x9.out" 2>&1; rc=$?
-[ "$rc" = 4 ] && grep -q 'linear' "$T/run/x9.out" && ok || bad "X9 board-closeout rc=$rc, want 4 and the reason: $(tail -2 "$T/run/x9.out")"
+[ "$rc" = 4 ] && grep -q 'jira' "$T/run/x9.out" && ok || bad "X9 board-closeout rc=$rc, want 4 and the reason: $(tail -2 "$T/run/x9.out")"
 [ ! -s "$S/gh.log" ] && ok || bad "X9 board-closeout called GitHub: $(cat "$S/gh.log")"
+row tracker_adapter.linproj linear
 fresh
 bare bash "$DIR/bin/needs-human-hold.sh" linproj 1 abc123 "apply the key" review >"$T/run/x9b.out" 2>&1; rc=$?
 [ "$rc" = 0 ] && grep -q 'linear' "$T/run/x9b.out" && ok || bad "X9 needs-human-hold rc=$rc, want 0 and the reason: $(tail -2 "$T/run/x9b.out")"

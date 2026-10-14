@@ -1,0 +1,1 @@
+B1 executes bin/run-build.sh against a scratch HARNESS with no stage modules, to show a linear project with its context gets past the tracker block and one without it is refused there. The flatten is not runnable.
