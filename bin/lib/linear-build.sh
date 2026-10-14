@@ -26,6 +26,15 @@
 #                                the merge close-out: once per (key, PR), then
 #                                done, or review when lb_partial says so;
 #                                rc 3 when the project is not on Linear
+#   lb_ticket_key <project> <build dir>
+#                                the ticket key in the record's name
+#                                ([pool-]<project>-<KEY>-<stamp>); nothing when
+#                                the name does not carry one
+#   lb_merge_lane <project> <build dir> <pr-url> <how>
+#                                what every merge lane calls before its GitHub
+#                                issue close: rc 3 = not Linear, close the issue
+#                                as before; anything else = this record's ticket
+#                                is on Linear, and #<n> of the app repo is not it
 
 _lb_dir() { dirname "${BASH_SOURCE[0]}"; }
 
@@ -75,6 +84,28 @@ lb_closeout() {
   if trk_linear_transition "$key" "$to"; then LB_MOVED=1
   else echo "linear: commented on $key, but the move to $to was refused" >&2; fi
   return 0
+}
+
+lb_ticket_key() {
+  basename "${2:-}" 2>/dev/null | sed -nE "s/^(pool-)?${1:-}-([A-Z][A-Z0-9]*-[0-9]+)-.*/\2/p"
+}
+
+# One arm for the conductor, the reviewed-merge sweep and the batch train, so
+# the three cannot drift. FAIL-OPEN like each lane's own close: a Linear outage
+# is one log line from the caller, never an unrecorded merge, because
+# lb_close_merged's (key, PR) marker already makes a later settle say nothing
+# twice and the merge itself is done. A record whose name carries no key is
+# rc 3 only when the project is not on Linear; on Linear it is rc 1, since #<n>
+# of the app repo is never the ticket there either.
+lb_merge_lane() {
+  local p="${1:-}" rec="${2:-}" url="${3:-}" how="${4:-}" k rc
+  k=$(lb_ticket_key "$p" "$rec")
+  if [ -z "$k" ]; then
+    lb_on "$p" 2>/dev/null; rc=$?
+    [ "$rc" = 1 ] && return 3
+    return 1
+  fi
+  lb_close_merged "$p" "$k" "$url" "$how" "$rec"
 }
 
 lb_close_merged() {

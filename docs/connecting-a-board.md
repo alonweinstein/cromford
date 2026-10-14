@@ -125,14 +125,14 @@ TK-142` as on GitHub. The planner reads the Linear issue through
 Linear, and the PR body says `Linear: TK-142` instead of `Closes #142`. When the
 build ends with a PR, `bin/board-closeout.sh` attaches the PR to the issue,
 comments, and moves it to review (or done when the build merged it itself). A
-later merge by the merge conductor comments and moves it to done. A build whose
-evidence refuted an acceptance item stays in review. A blocked build's notice
-goes on the Linear issue.
+later merge comments and moves it to done, whichever lane lands it: the merge
+conductor, the reviewed-merge sweep or a batch train. A build whose evidence
+refuted an acceptance item stays in review. A blocked build's notice goes on
+the Linear issue. A Linear close-out that fails after a merge is one log line;
+the merge is still recorded and is not retried.
 
 **Not yet:** child tickets (a split XL plan, a rollout's waves) and HOLD /
-RESUME comments are not read or filed on Linear, and merges by bin/merge-sweep.sh
-or bin/batch-resolve.sh do not move the Linear issue (only the merge conductor
-does). A `jira` row is still refused by `bin/run-build.sh`, and its close-out
+RESUME comments are not read or filed on Linear. A `jira` row is still refused by `bin/run-build.sh`, and its close-out
 and needs-human lanes post nothing to GitHub; without that refusal they would
 treat `TK-142` as GitHub issue #142.
 
