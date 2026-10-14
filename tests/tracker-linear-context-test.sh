@@ -13,7 +13,8 @@
 #       unreadable; a context that does not load is BLOCKED token-unresolved
 #   X6  no LINEAR_API_KEY costs no settings call; a non-linear row no Linear call
 #   X7  tracker_off_github: only a jira or linear row on the project
-#   X8  bin/run-build.sh refuses a Linear project before it creates anything
+#   X8  bin/run-build.sh refuses a Linear project before it creates anything,
+#       launched bare (the worker's URL and secret only in global.env)
 #   X9  bin/board-closeout.sh and bin/needs-human-hold.sh post nothing to GitHub
 #
 # No network. A `curl` stub plays api.linear.app/graphql from
@@ -180,10 +181,15 @@ if declare -F tracker_off_github >/dev/null; then
 fi
 
 # --- X8 -------------------------------------------------------------------
+# As cron launches it: nothing inherited, the worker's URL and secret only in
+# the box's global.env. A guard that needs them handed down would never fire.
+printf 'HARNESS_SECRET=fixture-secret\nJOBS_URL=https://jobs.example\n' > "$T/h/env/global.env"
+bare() { env -u HARNESS_SECRET -u JOBS_URL "$@"; }
 fresh
-REPOS_ROOT="$T/repos" timeout 60 bash "$DIR"/bin/run-build.sh linproj CRO-1 CRO-1 >"$T/run/x8.out" 2>&1; rc=$?
+REPOS_ROOT="$T/repos" bare timeout 60 bash "$DIR"/bin/run-build.sh linproj CRO-1 CRO-1 >"$T/run/x8.out" 2>&1; rc=$?
 [ "$rc" = 2 ] && ok || bad "X8 run-build on a linear project rc=$rc, want 2: $(tail -3 "$T/run/x8.out")"
 grep -q '\[linproj/CRO-1\].*linear' "$T/h/logs/ALERTS.log" 2>/dev/null && ok || bad "X8 ALERTS says why: $(cat "$T/h/logs/ALERTS.log" 2>/dev/null)"
+grep -q '^tracker_adapter.linproj$' "$S/settings.log" 2>/dev/null && ok || bad "X8 the row was never asked for"
 [ ! -d "$T/h/builds" ] && [ ! -s "$S/gh.log" ] && ok || bad "X8 a build dir or a gh call: $(ls "$T/h/builds" 2>/dev/null) $(cat "$S/gh.log" 2>/dev/null)"
 
 # --- X9 -------------------------------------------------------------------
@@ -191,11 +197,11 @@ mkdir -p "$T/h/bin/lib" "$T/b9"; cp "$DIR/bin/lib/builder-direct.sh" "$DIR/bin/l
 cp "$DIR/bin/jobs-client.sh" "$T/h/bin/"; cp -R "$DIR/bin/lib/jobs" "$T/h/bin/lib/" 2>/dev/null
 echo 'PR_CREATED https://github.com/o/l/pull/9' > "$T/b9/RESULT"
 fresh
-BUILDER_DIRECT=1 bash "$DIR/bin/board-closeout.sh" linproj CRO-1 CRO-1 "$T/b9" >"$T/run/x9.out" 2>&1; rc=$?
+BUILDER_DIRECT=1 bare bash "$DIR/bin/board-closeout.sh" linproj CRO-1 CRO-1 "$T/b9" >"$T/run/x9.out" 2>&1; rc=$?
 [ "$rc" = 4 ] && grep -q 'linear' "$T/run/x9.out" && ok || bad "X9 board-closeout rc=$rc, want 4 and the reason: $(tail -2 "$T/run/x9.out")"
 [ ! -s "$S/gh.log" ] && ok || bad "X9 board-closeout called GitHub: $(cat "$S/gh.log")"
 fresh
-bash "$DIR/bin/needs-human-hold.sh" linproj 1 abc123 "apply the key" review >"$T/run/x9b.out" 2>&1; rc=$?
+bare bash "$DIR/bin/needs-human-hold.sh" linproj 1 abc123 "apply the key" review >"$T/run/x9b.out" 2>&1; rc=$?
 [ "$rc" = 0 ] && grep -q 'linear' "$T/run/x9b.out" && ok || bad "X9 needs-human-hold rc=$rc, want 0 and the reason: $(tail -2 "$T/run/x9b.out")"
 [ ! -s "$S/gh.log" ] && ok || bad "X9 needs-human-hold called GitHub: $(cat "$S/gh.log")"
 
