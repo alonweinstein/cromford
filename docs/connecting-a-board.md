@@ -97,6 +97,13 @@ the close-out and needs-human lanes post nothing to GitHub. Without that
 refusal they would treat `TK-142` as GitHub issue #142. The same refusal
 applies to a `jira` row.
 
+Every other lane is stopped one level lower: `bin/gh-ledger/gh`, the `gh` first
+on every lane's PATH, refuses a GitHub issue write (create, comment, close,
+edit, labels, by `gh issue -R` or `gh api` on `repos/<repo>/issues…`) on the
+repo of a project whose row is `jira` or `linear`, with one ALERTS line. Writes
+on a pull request number still go through. `flags/tracker-gh-guard-off` turns
+it off.
+
 ## Webhooks for Jira and Linear
 
 Without webhooks, Cromford polls. With them, a real change wakes triage right
