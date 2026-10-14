@@ -5,10 +5,11 @@
 #
 #   G1  gh issue create|comment|close -R <repo> is refused, nothing reaches gh
 #   G2  gh api POST/PATCH/DELETE on repos/<repo>/issues…, fields with no -X too
-#   G3  a numbered path that is a pull request goes through (PRs stay on GitHub)
+#   G3  a pull request number goes through, by `gh api` or `gh issue comment`
 #   G4  reads, and `gh pr …`, go through and pay no settings call
 #   G5  a GitHub-Issues project's repo is untouched
 #   G6  fail-open: a settings outage, or the switch, lets the write through
+#   G7  a lane that never exported HARNESS is still covered (the shim's root)
 #
 # No network: the real `gh` and `curl` are stubs.
 #   HARNESS_TEST_SANDBOX=1 bash tests/tracker-gh-guard-test.sh
@@ -69,7 +70,7 @@ for args in "issue comment 12 -R o/l --body hi" "issue close 12 --repo o/l" "iss
   fresh
   # shellcheck disable=SC2086
   run $args; rc=$?
-  [ "$rc" = 1 ] && [ ! -s "$S/real.log" ] && grep -q 'refused' "$T/err" && ok || bad "G1 'gh $args' must be refused (rc=$rc): $(cat "$S/real.log" "$T/err" 2>/dev/null)"
+  [ "$rc" = 1 ] && ! grep -q '^issue' "$S/real.log" 2>/dev/null && grep -q 'refused' "$T/err" && ok || bad "G1 'gh $args' must be refused (rc=$rc): $(cat "$S/real.log" "$T/err" 2>/dev/null)"
 done
 grep -q 'tracker-gh-guard.*o/l.*linear' "$S/alerts" 2>/dev/null && ok || bad "G1 one ALERTS line names the repo and tracker: $(cat "$S/alerts" 2>/dev/null)"
 
@@ -86,6 +87,9 @@ done
 # --- G3 -------------------------------------------------------------------
 fresh; run api -X POST repos/o/l/issues/7/comments -f body=hi; rc=$?
 [ "$rc" = 0 ] && sent "api -X POST repos/o/l/issues/7/comments" && ok || bad "G3 a comment on PR #7 goes through (rc=$rc): $(cat "$S/real.log" 2>/dev/null)"
+
+fresh; run issue comment 7 -R o/l --body hi; rc=$?
+[ "$rc" = 0 ] && sent "issue comment 7 -R o/l" && ok || bad "G3 gh issue comment on PR #7 goes through (rc=$rc)"
 
 # --- G4 -------------------------------------------------------------------
 for args in "api repos/o/l/issues/12" "api -X GET repos/o/l/issues/12/comments" "issue view 12 -R o/l" "pr comment 5 -R o/l --body hi" "issue list -R o/l"; do
@@ -106,6 +110,16 @@ fresh; GH_TRACKER_GUARD_OFF=1 run issue comment 12 -R o/l --body hi; rc=$?
 [ "$rc" = 0 ] && [ ! -s "$S/settings.log" ] && ok || bad "G6 GH_TRACKER_GUARD_OFF=1 lets it through"
 fresh; : > "$T/h/flags/tracker-gh-guard-off"; run issue comment 12 -R o/l --body hi; rc=$?; rm -f "$T/h/flags/tracker-gh-guard-off"
 [ "$rc" = 0 ] && ok || bad "G6 flags/tracker-gh-guard-off lets it through"
+
+# --- G7 -------------------------------------------------------------------
+# A lane that never exported HARNESS: the shim's own root still finds the row.
+mkdir -p "$T/h/bin/gh-ledger" "$T/h/bin/lib"
+cp "$DIR/bin/gh-ledger/gh" "$T/h/bin/gh-ledger/"
+cp -R "$DIR/bin/lib/." "$T/h/bin/lib/"
+cp "$DIR/bin/jobs-client.sh" "$DIR/bin/fleet-conf.sh" "$T/h/bin/"
+fresh
+(unset HARNESS; PATH="$T/h/bin/gh-ledger:$T/real:${PATH#*:}" gh issue comment 12 -R o/l --body hi >/dev/null 2>&1); rc=$?
+[ "$rc" = 1 ] && ! grep -q '^issue' "$S/real.log" 2>/dev/null && ok || bad "G7 with HARNESS unset the write is still refused (rc=$rc): $(cat "$S/real.log" 2>/dev/null)"
 
 echo "tracker-gh-guard: $PASS passed, $FAIL failed"
 [ "$FAIL" = 0 ]

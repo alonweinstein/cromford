@@ -181,14 +181,18 @@ fi
 # column 4 `-`, and the lanes that read that strip TK-12 to issue #12.
 # bin/lib/tracker-gh-guard.sh names the writes; a read never pays a lookup. The
 # one deliberate change to what gh returns: rc 1 and one stderr line, nothing sent.
+# The root the shim derives for itself, NOT whatever the lane exported: a lane
+# that sets HARNESS without export would leave tracker_adapter no row to read,
+# and the guard would answer "GitHub" and let every write through.
+_ghl_gh="${HARNESS:-}"; [ -n "$_ghl_gh" ] || _ghl_gh="${_ghl_dir%/bin/gh-ledger}"
 if [ "$_ghl_depth" = 0 ]; then
   case "${1:-} ${2:-}" in
     "issue "*|"api "*)
-      for _ghl_lib in "$_ghl_dir/../lib/tracker-gh-guard.sh" "${HARNESS:-/root/harness}/bin/lib/tracker-gh-guard.sh"; do
+      for _ghl_lib in "$_ghl_dir/../lib/tracker-gh-guard.sh" "$_ghl_gh/bin/lib/tracker-gh-guard.sh"; do
         # shellcheck source=bin/lib/tracker-gh-guard.sh
         [ -r "$_ghl_lib" ] && { . "$_ghl_lib" 2>/dev/null; break; }
       done
-      command -v tgg_refuse >/dev/null 2>&1 && tgg_refuse "$_ghl_real" "$@" && exit 1 ;;
+      command -v tgg_refuse >/dev/null 2>&1 && HARNESS="$_ghl_gh" tgg_refuse "$_ghl_real" "$@" && exit 1 ;;
   esac
 fi
 
