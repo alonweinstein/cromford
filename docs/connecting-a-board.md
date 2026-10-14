@@ -64,9 +64,34 @@ Source: [bin/lib/tracker/linear.sh](../bin/lib/tracker/linear.sh).
   is an error.
 - **States:** mapped by Linear's state type (unstarted, started, completed,
   canceled). Review is the state named "In Review".
+- **Credential**, in the project's env file: `LINEAR_API_KEY`, a Linear
+  personal API key. A key in `global.env` is not used.
+- **Settings rows:** `tracker_linear.<project>.team` is your team key, such as
+  `TK`, and it is required. `label` (default `ai-build`) and `states` are
+  optional. `states` is a JSON object from `todo`, `in_progress`, `review`,
+  `done` or `closed` to one of your state names, for example
+  `{"review":"QA"}`.
 
-**Not yet:** the adapter is built and tested, but nothing in the pipeline
-loads a Linear key or calls it. A Linear board can't drive builds today.
+To move a project from GitHub Issues to Linear:
+
+```bash
+echo 'LINEAR_API_KEY=<key>' >> /etc/harness/env/<project>.env
+bin/jobs-client.sh setting-set tracker_linear.<project>.team TK
+bin/jobs-client.sh setting-set tracker_adapter.<project> linear
+```
+
+Set `tracker_adapter.<project>` back to `github-issues`, or delete the row, to
+return to GitHub Issues. A project has one tracker at a time.
+
+**What works today:** the launch check (`bin/triage-gate.sh --buildable`)
+reads the Linear issue. It blocks a ticket whose newest comment is the key's
+own, and it only reads issues of your team.
+
+**Not yet:** triage does not list Linear issues, and a build can't run from
+one. While the row says `linear`, `bin/run-build.sh` refuses the project, and
+the close-out and needs-human lanes post nothing to GitHub. Without that
+refusal they would treat `TK-142` as GitHub issue #142. The same refusal
+applies to a `jira` row.
 
 ## Webhooks for Jira and Linear
 

@@ -156,15 +156,26 @@ case "$PROJECT" in
     # malformed allowlist row, the settings worker down) is the token-unresolved
     # block the board arm gives. Every other project, and every other mode,
     # never gets here and pays no settings call.
-    JIRA_GATE=""
-    if { [ "$MODE" = "--buildable" ] || [ "$MODE" = "--buildable-strict" ]; } && [ -n "${JIRA_BASE:-}" ]; then
+    # LINEAR, the same way and under the same two conditions: the env file
+    # sets LINEAR_API_KEY AND the row is `linear`. The read is
+    # bin/lib/tracker/linear.sh's trk_linear_gate_raw, which only ever asks for
+    # an issue of the team the tracker_linear.<project>.team row names.
+    JIRA_GATE=""; LINEAR_GATE=""
+    if { [ "$MODE" = "--buildable" ] || [ "$MODE" = "--buildable-strict" ]; } && [ -n "${JIRA_BASE:-}${LINEAR_API_KEY:-}" ]; then
       for _P in "$(dirname "$0")/lib/tracker.sh" "$HARNESS/bin/lib/tracker.sh"; do
         # shellcheck source=/dev/null
         [ -r "$_P" ] && { . "$_P"; break; }
       done
-      if declare -F tracker_adapter >/dev/null 2>&1 && [ "$(tracker_adapter "$PROJECT" 2>/dev/null)" = jira ]; then
+      _TA=""; declare -F tracker_adapter >/dev/null 2>&1 && _TA=$(tracker_adapter "$PROJECT" 2>/dev/null)
+      if [ "$_TA" = jira ] && [ -n "${JIRA_BASE:-}" ]; then
         if tracker_load jira && trk_jira_context "$PROJECT" 2>/dev/null; then
           JIRA_GATE=1; SELF_ACTORS=""
+        else
+          echo "BLOCKED token-unresolved"; exit 0
+        fi
+      elif [ "$_TA" = linear ] && [ -n "${LINEAR_API_KEY:-}" ]; then
+        if tracker_load linear && trk_linear_context "$PROJECT" 2>/dev/null; then
+          LINEAR_GATE=1; SELF_ACTORS=""
         else
           echo "BLOCKED token-unresolved"; exit 0
         fi
@@ -172,7 +183,7 @@ case "$PROJECT" in
     fi
     BP_CONF=$("$HARNESS/bin/fleet-conf.sh" "$PROJECT" board_prefix 2>/dev/null || true)
     REPO_CONF=$("$HARNESS/bin/fleet-conf.sh" "$PROJECT" repo 2>/dev/null || true)
-    if [ -n "$JIRA_GATE" ]; then
+    if [ -n "$JIRA_GATE$LINEAR_GATE" ]; then
       :
     elif [ "$BP_CONF" = "-" ] && [ -n "$REPO_CONF" ]; then
       GH_ISSUES_REPO="$REPO_CONF"; SELF_ACTORS="$HARNESS_SELF_ACTORS"
@@ -547,6 +558,10 @@ buildable_gate() {
     # is not: the fields still decide, and only the newest-comment check that
     # needed it falls to $unread (ticket.ownUnknown, below).
     raw=$(trk_jira_gate_raw "$tid" 2>/dev/null) || { echo "$unread"; return 0; }
+  elif [ -n "${LINEAR_GATE:-}" ]; then
+    # Linear: one read, the same shape. Another team's key, an issue Linear
+    # answers from another team and a thread past one page are all unreadable.
+    raw=$(trk_linear_gate_raw "$tid" 2>/dev/null) || { echo "$unread"; return 0; }
   else
     [ -n "$BASE" ] && [ -n "$TOKEN" ] && [ -n "$BP" ] || { echo "$unread"; return 0; }
     local since=""
@@ -587,7 +602,7 @@ buildable_gate() {
   # first line is the answer; nothing, no lib, a failed temp file or
   # flags/inapp-deps-off falls through to the checks below, as today. The
   # function's rc never decides: a printed line is the answer either way.
-  if [ -z "$b" ] && [ -z "${GH_ISSUES_REPO:-}" ] && [ -z "${JIRA_GATE:-}" ]; then
+  if [ -z "$b" ] && [ -z "${GH_ISSUES_REPO:-}" ] && [ -z "${JIRA_GATE:-}${LINEAR_GATE:-}" ]; then
     for _P in "$(dirname "$0")/lib/inapp-deps.sh" "$HARNESS/bin/lib/inapp-deps.sh"; do
       # shellcheck source=/dev/null
       [ -r "$_P" ] && { . "$_P"; break; }

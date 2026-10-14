@@ -67,6 +67,9 @@ absent row is the documented default.
 | `tracker_jira.<project>.waiting_on_field` | `customfield_<n>` | waitingOn null | [tracker-jira.md](tracker-jira.md) |
 | `tracker_jira.<project>.triage_verdict_field` | `customfield_<n>` | triageVerdict null | [tracker-jira.md](tracker-jira.md) |
 | `tracker_jira.<project>.status_map` | `alias=Jira Status;alias=Jira Status` | status arguments are Jira status names | [tracker-jira.md](tracker-jira.md) |
+| `tracker_linear.<project>.team` | one Linear team key (`TK`) | the Linear context does not load: the launch check answers `BLOCKED token-unresolved` | [tracker-adapter.md](tracker-adapter.md) |
+| `tracker_linear.<project>.label` | the build label the Linear list filters on | `ai-build` | [tracker-adapter.md](tracker-adapter.md) |
+| `tracker_linear.<project>.states` | JSON object, `todo`\|`in_progress`\|`review`\|`done`\|`closed` to a Linear state name | states are picked by Linear state type (`review` = "In Review") | [tracker-adapter.md](tracker-adapter.md) |
 
 ## Box-local knobs that are NOT in this store
 

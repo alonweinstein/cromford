@@ -60,6 +60,13 @@ case "$bp:$slug" in
   -:*/*) ;;
   *) nhh_log "$P is not an issues board — nothing placed"; exit 0 ;;
 esac
+# A settings row that moved the project to jira or linear: issue #$N of the
+# app repo is not this project's ticket, whatever fleet.conf column 4 says.
+# shellcheck source=/dev/null
+. "$BIN/lib/tracker.sh" 2>/dev/null
+if declare -F tracker_off_github >/dev/null 2>&1 && off=$(tracker_off_github "$P"); then
+  nhh_log "$P tickets live on $off (tracker_adapter.$P), not on GitHub Issues — nothing placed"; exit 0
+fi
 
 # 3. the libraries
 for l in hold needs-human gh-app-auth; do

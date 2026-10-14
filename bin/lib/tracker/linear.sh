@@ -14,6 +14,19 @@
 #   TRK_LINEAR_LABEL      the label list filters on, default ai-build
 #   TRK_LINEAR_STATES     optional JSON {"<contract status>": "<state name>"}
 #
+# A PROJECT'S CONTEXT is loaded by trk_linear_context <project>. It first
+# blanks every TRK_LINEAR_*, so an inherited value never stands in, then reads:
+#   <env dir>/<project>.env   LINEAR_API_KEY (in a subshell; nothing else from
+#                             it survives). A key in global.env does not count:
+#                             one workspace's key must not read another project.
+#   settings rows tracker_linear.<project>.<name>:
+#     team     the team key (CRO). REQUIRED: it is what list reads, and the
+#              gate read refuses any issue outside it
+#     label    the build label list filters on (ai-build)
+#     states   TRK_LINEAR_STATES, the JSON object above
+# A malformed row, no team row, or a worker that did not answer fails the whole
+# context (rc 1, one stderr line, every TRK_LINEAR_* blank).
+#
 # IDS. A ticket id is the Linear identifier (CRO-12) or the issue UUID; id and
 # key are both the identifier. A mutation needs the UUID and the team's states
 # and labels, so every write reads the issue first (_trk_linear_issue). That
@@ -40,6 +53,70 @@ _TRK_LINEAR_STATUS_TYPE='{"todo":"unstarted","in_progress":"started","done":"com
 _trk_linear_ok() { # _trk_linear_ok <id> — a key to send and a well-formed id
   [ -n "${TRK_LINEAR_TOKEN:-}" ] || return 1
   [[ "${1:-}" =~ ^[A-Za-z0-9]+-[0-9]+$ || "${1:-}" =~ ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$ ]]
+}
+
+_trk_linear_dir() { dirname "${BASH_SOURCE[0]}"; }
+
+_trk_linear_blank() {
+  TRK_LINEAR_TOKEN=""; TRK_LINEAR_TOKEN_VAR=LINEAR_API_KEY; TRK_LINEAR_TEAM=""
+  TRK_LINEAR_LABEL=""; TRK_LINEAR_STATES=""
+}
+
+# trk_linear_context <project> — rc 0 with TRK_LINEAR_* set, or rc 1 with every
+# TRK_LINEAR_* blank and one stderr line saying why.
+trk_linear_context() {
+  local p="${1:-}" root="${HARNESS:-${H:-}}" d ep envd ef jc rows k v n tok team="" label=ai-build states=""
+  _trk_linear_blank
+  [[ "$p" =~ ^[a-z0-9_.-]+$ ]] || { printf 'linear: %s is not a project name\n' "$(_trk_sq "$p")" >&2; return 1; }
+  [ -n "$root" ] || { printf 'linear: no harness root (HARNESS) for %s\n' "$p" >&2; return 1; }
+  d=$(_trk_linear_dir)
+  ep="$d/../env-path.sh"; [ -r "$ep" ] || ep="$root/bin/lib/env-path.sh"
+  if [ -r "$ep" ]; then
+    # shellcheck source=/dev/null
+    envd=$( . "$ep" && harness_env_dir "$root" ) || envd=""
+  fi
+  [ -n "${envd:-}" ] || envd="$root/env"
+  ef="$envd/$p.env"
+  [ -r "$ef" ] || { printf 'linear: %s has no env file %s\n' "$p" "$ef" >&2; return 1; }
+  # shellcheck source=/dev/null
+  tok=$( unset LINEAR_API_KEY; . "$ef" >/dev/null 2>&1; printf '%s' "${LINEAR_API_KEY:-}" )
+  [ -n "$tok" ] || { printf 'linear: %s sets no LINEAR_API_KEY\n' "$ef" >&2; return 1; }
+
+  jc="$d/../../jobs-client.sh"; [ -r "$jc" ] || jc="$root/bin/jobs-client.sh"
+  [ -r "$jc" ] || { printf 'linear: no bin/jobs-client.sh to read the %s settings rows\n' "$p" >&2; return 1; }
+  # ONE subshell for every row, as trk_jira_context reads its own: a row that
+  # is there is `<name>\t<value>`, no row prints nothing, the first outage
+  # fails the read.
+  # shellcheck source=/dev/null
+  rows=$( HARNESS="$root"; . "$jc" >/dev/null 2>&1 || exit 1
+          for n in team label states; do
+            r=0; v=$(JOBS_ALERT=0 setting_get "tracker_linear.$p.$n" 2>/dev/null) || r=$?
+            case "$r" in
+              0) printf '%s\t%s\n' "$n" "$(printf '%s' "$v" | tr '\t\n' '  ')" ;;
+              2) ;;
+              *) exit 1 ;;
+            esac
+          done ) \
+    || { printf 'linear: the settings rows tracker_linear.%s.* could not be read\n' "$p" >&2; return 1; }
+  while IFS=$'\t' read -r k v; do
+    case "$k" in
+      team)
+        [[ "$v" =~ ^[A-Z][A-Z0-9]{0,9}$ ]] || { printf 'linear: settings row tracker_linear.%s.team holds %s, not one team key\n' "$p" "$(_trk_sq "$v")" >&2; return 1; }
+        team="$v" ;;
+      label)
+        [[ "$v" =~ ^[A-Za-z0-9_.:-]{1,100}$ ]] || { printf 'linear: settings row tracker_linear.%s.label is not a label\n' "$p" >&2; return 1; }
+        label="$v" ;;
+      states)
+        printf '%s' "$v" | jq -e 'type == "object" and length > 0 and all(to_entries[];
+            (.key | IN("todo", "in_progress", "review", "done", "closed")) and (.value | type == "string" and length > 0))' >/dev/null 2>&1 \
+          || { printf 'linear: settings row tracker_linear.%s.states is not a JSON object of todo|in_progress|review|done|closed to a state name\n' "$p" >&2; return 1; }
+        states="$v" ;;
+    esac
+  done <<<"$rows"
+  [ -n "$team" ] || { printf 'linear: no settings row tracker_linear.%s.team (the Linear team key)\n' "$p" >&2; return 1; }
+
+  TRK_LINEAR_TOKEN="$tok"; TRK_LINEAR_TEAM="$team"; TRK_LINEAR_LABEL="$label"; TRK_LINEAR_STATES="$states"
+  return 0
 }
 
 # _trk_linear_w <mutation> <detail> — the logged form of a write: the mutation,
@@ -88,6 +165,25 @@ _trk_linear_issue() {
   d=$(_trk_linear_gql 'query TrkIssueMeta($id: String!) { issue(id: $id) { id identifier state { id } labels(first: 250) { nodes { id name } } team { key states(first: 100) { nodes { id name type position } } } } }' \
     '{id: $id}' --arg id "$1") || return $?
   printf '%s' "$d" | jq -ce '.issue | select(type == "object" and (.id | type == "string" and length > 0))' 2>/dev/null || return 1
+}
+
+# trk_linear_gate_raw <identifier> — the board-shaped object bin/triage-gate.sh's
+# buildable_gate parses, in ONE request. Only an identifier of the context's
+# team is sent, and an answer from another team is refused: Linear answers a
+# moved issue's old identifier with the new issue, which may be another
+# project's. A comment by the key's own account (viewer) is ours, so internal.
+# A thread longer than one page is rc 1, never a partial read.
+trk_linear_gate_raw() {
+  local id="${1:-}" d
+  [ -n "${TRK_LINEAR_TEAM:-}" ] && [[ "$id" =~ ^([A-Z][A-Z0-9]*)-[0-9]+$ ]] && [ "${BASH_REMATCH[1]}" = "$TRK_LINEAR_TEAM" ] || return 1
+  d=$(_trk_linear_gql 'query TrkGate($id: String!) { viewer { id } issue(id: $id) { identifier team { key } comments(first: 250) { nodes { createdAt user { id name displayName } botActor { name } } pageInfo { hasNextPage } } } }' \
+    '{id: $id}' --arg id "$id") || return $?
+  printf '%s' "$d" | jq -ce --arg team "$TRK_LINEAR_TEAM" '(.viewer.id // "") as $me
+    | .issue | select(type == "object" and .team.key == $team and .comments.pageInfo.hasNextPage != true)
+    | {ticket: {key: .identifier, waitingOn: null, triageVerdict: null, ownUnknown: ($me == "")},
+       comments: [(.comments.nodes // [])[] | {
+         author: {name: (.user.displayName // .user.name // .botActor.name // ""), userId: (.user.id // "")},
+         createdAt: (.createdAt // ""), isInternal: ($me != "" and (.user.id // "") == $me)}]}' 2>/dev/null || return 1
 }
 
 trk_linear_list() {

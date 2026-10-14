@@ -82,6 +82,23 @@ if [ -n "${RESUME_BUILD:-}" ]; then
 fi
 ALERTS="$HARNESS/logs/ALERTS.log"
 STAMP() { date -u '+%Y-%m-%d %H:%M:%SZ'; }
+# >>> tracker off github
+# THIS PIPELINE BUILDS GITHUB-ISSUES AND IN-APP BOARD TICKETS ONLY. A project
+# whose settings row tracker_adapter.<project> is jira or linear still sits at
+# fleet.conf column 4 `-`, so everything below would read its ticket as issue
+# #<n> of the app repo: the plan would be written from some other issue's
+# thread, the PR body would say `Closes #<n>` and the merge would close it.
+# Refused here, before a build dir, a lock or a job row exists. Fail-open: no
+# bin/lib/tracker.sh, or a worker that did not answer, builds as before.
+# shellcheck source=bin/lib/tracker.sh
+. "$HARNESS/bin/lib/tracker.sh" 2>/dev/null || . "$(dirname "${BASH_SOURCE[0]}")/lib/tracker.sh" 2>/dev/null || true
+if declare -F tracker_off_github >/dev/null 2>&1 && _RB_TRK=$(tracker_off_github "$PROJECT"); then
+  echo "run-build: $PROJECT tickets live on $_RB_TRK (tracker_adapter.$PROJECT); this pipeline cannot build them yet — nothing started" >&2
+  mkdir -p "$HARNESS/logs" 2>/dev/null
+  echo "$(STAMP) [$PROJECT/$KEY] build refused: tracker_adapter.$PROJECT is $_RB_TRK, and run-build would read and close GitHub issue #${KEY##*-} instead of the $_RB_TRK ticket" >> "$ALERTS"
+  exit 2
+fi
+# <<< tracker off github
 # >>> result pr url ratchet
 # PR_CREATED IS A CLAIM THAT A PR EXISTS, and the whole fleet acts on it:
 # bin/board-closeout.sh:56 moves the ticket to `review` on `PR_CREATED http*`,
