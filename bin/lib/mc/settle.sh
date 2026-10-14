@@ -574,14 +574,17 @@ mc_settle_merged() { # … <head> [merge-sha]
   # A LINEAR project (bin/lib/linear-build.sh) moves its Linear issue instead,
   # once per (key, PR); #<n> of the app repo is somebody else's issue, and
   # bin/gh-ledger/gh would refuse that close anyway.
-  local _mc_lin=3
-  if [[ "$key" =~ ^[A-Z][A-Z0-9]*-[0-9]+$ ]] && { declare -F lb_close_merged >/dev/null 2>&1 \
+  # The ticket key is the build record's (<project>-<KEY>-<stamp>), not $key,
+  # which is the PR's owner/repo#n.
+  local _mc_lin=3 _mc_tk
+  _mc_tk=$(basename "${rec:-}" 2>/dev/null | sed -nE "s/^(pool-)?${project}-([A-Z][A-Z0-9]*-[0-9]+)-.*/\2/p")
+  if [ -n "$_mc_tk" ] && { declare -F lb_close_merged >/dev/null 2>&1 \
        || . "$MC_H/bin/lib/linear-build.sh" 2>/dev/null; }; then
-    lb_close_merged "$project" "$key" "$url" "merge conductor$note" "$rec" 2>/dev/null; _mc_lin=$?
+    lb_close_merged "$project" "$_mc_tk" "$url" "merge conductor$note" "$rec" 2>/dev/null; _mc_lin=$?
     case "$_mc_lin" in
-      0) mc_log "$key merged — Linear issue moved" ;;
+      0) mc_log "$key merged — Linear issue $_mc_tk closed out" ;;
       3) ;;
-      *) mc_log "$key merged but the Linear issue could not be moved (rc $_mc_lin)" ;;
+      *) mc_log "$key merged but Linear issue $_mc_tk could not be closed out (rc $_mc_lin)" ;;
     esac
   fi
   if [ "$_mc_lin" = 3 ] && [ "$("$MC_H/bin/fleet-conf.sh" "$project" board_prefix 2>/dev/null)" = "-" ]; then

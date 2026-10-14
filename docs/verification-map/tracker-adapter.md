@@ -129,9 +129,11 @@ board-changed` without gate-selfwrite.py, and the in-app-only steps 1c, 1d and
 **`tracker_off_github <project>`** (in `bin/lib/tracker.sh`) answers rc 0 and
 the adapter when the row is `jira` or `linear`. Such a project still sits at
 fleet.conf column 4 `-`, and the GitHub-Issues lanes strip `TK-142` to issue
-#142. `bin/run-build.sh` exits 2 with an ALERTS line before it creates
-anything, `bin/board-closeout.sh` exits 4 and `bin/needs-human-hold.sh` exits 0,
-each without a GitHub call. A settings outage answers rc 1 (GitHub), as before.
+#142. For a `jira` row (and a `linear` row whose context does not load)
+`bin/run-build.sh` exits 2 with an ALERTS line before it creates anything and
+`bin/board-closeout.sh` exits 4; `bin/needs-human-hold.sh` exits 0 for both,
+each without a GitHub call. A `linear` row with its context builds
+(`bin/lib/linear-build.sh`, entry LINEAR-BUILD). A settings outage answers rc 1 (GitHub), as before.
 
 **Context:** `TRK_LINEAR_TOKEN` (the key, only on curl's argv),
 `TRK_LINEAR_TOKEN_VAR` (its name, which is what `TRK_LOG` shows),

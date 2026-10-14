@@ -18,7 +18,9 @@
 #   lb_ticket_meta <key>         {title, labels:[{name}], body}, the shape
 #                                bin/kind-gate.sh reads; nothing on a failed read
 #   lb_closeout <key> <pr-url> <review|done> <bodyfile>
-#                                link the PR, comment, then move the state
+#                                link the PR (best-effort), comment, then move
+#                                the state; rc 0 once the comment posted, with
+#                                LB_MOVED=1 only when the move took
 #   lb_partial <build dir>       rc 0 when the evidence REFUTED an acceptance claim
 #   lb_close_merged <project> <key> <pr-url> <how> [<build dir>]
 #                                the merge close-out: once per (key, PR), then
@@ -58,15 +60,21 @@ lb_ticket_meta() {
 }
 
 lb_closeout() {
-  local key="${1:-}" url="${2:-}" to="${3:-review}" f="${4:-}" rc=0
+  local key="${1:-}" url="${2:-}" to="${3:-review}" f="${4:-}"
+  LB_MOVED=0
   [[ "$key" =~ ^${TRK_LINEAR_TEAM:-.}-[0-9]+$ ]] && [ -r "$f" ] || return 1
   # The team guard first: an issue Linear moved to another team gets nothing.
   trk_linear_gate_raw "$key" >/dev/null 2>&1 || return 1
-  # The attachment is de-duplicated by URL on Linear's side, so a retry is safe.
-  [ -n "$url" ] && { trk_linear_link_pr "$key" "$url" || rc=$?; }
+  # Best-effort: Linear de-duplicates the attachment by URL, the comment carries
+  # the link anyway, and a refused attach must not make a caller post twice.
+  [ -n "$url" ] && { trk_linear_link_pr "$key" "$url" || echo "linear: the PR could not be attached to $key" >&2; }
+  # THE COMMENT IS THE CLOSE-OUT: once it has posted, this answers 0 whatever
+  # the move does, so no caller retries it into a second comment (TK-88). A
+  # refused move (a team with no "In Review" and no states row) is LB_MOVED=0.
   trk_linear_comment "$key" "$f" || return $?
-  trk_linear_transition "$key" "$to" || return $?
-  return "$rc"
+  if trk_linear_transition "$key" "$to"; then LB_MOVED=1
+  else echo "linear: commented on $key, but the move to $to was refused" >&2; fi
+  return 0
 }
 
 lb_close_merged() {

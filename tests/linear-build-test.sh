@@ -11,8 +11,12 @@
 #   B3  the PR body: `Linear: <key>`, never `Closes #n`; a partial build says
 #       so; a GitHub-Issues project still gets `Closes #n`
 #   B4  bin/board-closeout.sh: PR attached, comment, then review (PR_CREATED)
-#       or done (PR_MERGED); a partial build stays in review; no gh call
-#   B5  lb_close_merged: once per (key, PR); rc 3 for a project not on Linear
+#       or done (PR_MERGED); a partial build stays in review; a refused attach
+#       or move still counts as posted (one comment); our own newest comment
+#       leaves it for the sweep; no gh call
+#   B5  lb_close_merged: once per (key, PR), a refused move included; rc 3 for
+#       a project not on Linear
+#   B6  the merge conductor's mc_settle_merged closes out the Linear issue
 #
 # No network: a `curl` stub plays api.linear.app/graphql and the settings route.
 #   HARNESS_TEST_SANDBOX=1 bash tests/linear-build-test.sh
@@ -65,13 +69,15 @@ op=$(jq -r '.query // ""' "$data" 2>/dev/null | sed -nE '1s/^(query|mutation) ([
 printf '%s %s\n' "$op" "$(jq -r '.variables.stateId // .variables.url // .variables.id // ""' "$data")" >> "$S/reqs"
 [ "$auth" = "$TL_KEY_EXPECT" ] || reply 401 '{"errors":[{"message":"Authentication required"}]}'
 case "$op" in
-  TrkGate)   reply 200 "$(cat "$TL_GATE/gate-CRO-1.json")" ;;
+  TrkGate)   reply 200 "$(cat "$TL_GATE/gate-$(cat "$S/gate" 2>/dev/null || echo CRO-1).json")" ;;
   TrkThread) reply 200 "$(cat "$TL_TH/th-$(cat "$S/th" 2>/dev/null || echo a).json")" ;;
   TrkIssue|TrkIssueMeta) reply 200 "$(cat "$TL_FIX/issue-CRO-1.json")" ;;
-  TrkAttach)  reply 200 '{"data":{"attachmentLinkURL":{"success":true,"attachment":{"id":"a-1"}}}}' ;;
+  TrkAttach)  [ -e "$S/noattach" ] && reply 400 '{"errors":[{"message":"refused"}]}'
+              reply 200 '{"data":{"attachmentLinkURL":{"success":true,"attachment":{"id":"a-1"}}}}' ;;
   TrkComment) jq -r '.variables.body' "$data" > "$S/comment-body"
               reply 200 '{"data":{"commentCreate":{"success":true,"comment":{"id":"c-1"}}}}' ;;
-  TrkUpdate)  reply 200 "$(jq -c '{data:{issueUpdate:{success:true,issue:{state:{id:.variables.stateId}}}}}' "$data")" ;;
+  TrkUpdate)  [ -e "$S/noupdate" ] && reply 200 '{"data":{"issueUpdate":{"success":false,"issue":null}}}'
+              reply 200 "$(jq -c '{data:{issueUpdate:{success:true,issue:{state:{id:.variables.stateId}}}}}' "$data")" ;;
 esac
 reply 400 '{"errors":[{"message":"the stub has no such operation"}]}'
 SH
@@ -146,6 +152,17 @@ printf '{"claims":[{"n":1,"verdict":"REFUTED"}]}' > "$T/b4/evidence.json"
 fresh; out=$(closeout "$T/b4")
 [ "$out" = "POSTED linproj/CRO-1 -> review" ] && ok || bad "B4 a partial merged build stays in review: $out"
 rm -f "$T/b4/evidence.json"
+# A refused attach and a refused move still count as posted: ONE comment, rc 0.
+: > "$S/noattach"; : > "$S/noupdate"; fresh; out=$(closeout "$T/b4"); rc=$?
+[ "$rc" = 0 ] && [ "$out" = "POSTED linproj/CRO-1 (status not moved)" ] && [ "$(grep -c '^TrkComment' "$S/reqs")" = 1 ] && ok \
+  || bad "B4 a refused attach and move: rc=$rc $out $(cat "$S/reqs")"
+rm -f "$S/noattach" "$S/noupdate"
+# The newest comment is the key's own (gate-CRO-2): the client-court guard
+# leaves it for the sweep, nothing posted.
+cp "$DIR/bin/triage-gate.sh" "$T/h/bin/"; echo CRO-2 > "$S/gate"
+fresh; out=$(closeout "$T/b4"); rc=$?
+[ "$rc" = 4 ] && ! grep -q '^TrkComment' "$S/reqs" && ok || bad "B4 own newest comment is left for the sweep (rc=$rc): $out"
+rm -f "$S/gate" "$T/h/bin/triage-gate.sh"
 [ ! -e "$S/gh.log" ] && ok || bad "B4 GitHub was asked: $(cat "$S/gh.log")"
 
 # --- B5 -------------------------------------------------------------------
@@ -154,8 +171,26 @@ fresh; lb_close_merged linproj CRO-1 https://github.com/o/l/pull/11 "merge condu
   || bad "B5 the merge close-out (rc=$rc): $(cat "$S/reqs" 2>/dev/null)"
 fresh; lb_close_merged linproj CRO-1 https://github.com/o/l/pull/11 "merge conductor"; rc=$?
 [ "$rc" = 0 ] && ! grep -q '^Trk\(Comment\|Update\)' "$S/reqs" 2>/dev/null && ok || bad "B5 a second settle says nothing twice"
+: > "$S/noupdate"; fresh; lb_close_merged linproj CRO-1 https://github.com/o/l/pull/12 x 2>/dev/null; rc=$?
+fresh; lb_close_merged linproj CRO-1 https://github.com/o/l/pull/12 x; rm -f "$S/noupdate"
+[ "$rc" = 0 ] && ! grep -q '^TrkComment' "$S/reqs" 2>/dev/null && ok || bad "B5 a refused move still marks the comment posted (rc=$rc)"
 fresh; lb_close_merged ghp TK-1 https://github.com/o/r/pull/3 x; rc=$?
 [ "$rc" = 3 ] && [ ! -s "$S/reqs" ] && ok || bad "B5 a GitHub project is rc 3 with no Linear call (rc=$rc)"
+
+# --- B6 -------------------------------------------------------------------
+# The merge conductor's settle, driven: the ticket key comes from the record.
+for st in beat.sh deploy-request.sh codegraph-ensure.sh pre-arm-guards.sh lane-alert.sh alert-line.sh; do
+  printf '#!/bin/bash\nexit 0\n' > "$T/h/bin/$st"; chmod +x "$T/h/bin/$st"
+done
+REC="$T/h/builds/linproj-CRO-1-202610140001"; mkdir -p "$REC"
+fresh
+(
+  . "$T/h/bin/lib/merge-conductor-lib.sh" && mc_init >/dev/null 2>&1
+  mc_settle_merged o/l#13 https://github.com/o/l/pull/13 linproj o/l ticket/cro-1 "$REC" - abc123 >/dev/null 2>&1
+) ; fresh_reqs=$(cat "$S/reqs" 2>/dev/null)
+grep -q 'Merged in https://github.com/o/l/pull/13 (merge conductor' "$S/comment-body" 2>/dev/null && printf '%s' "$fresh_reqs" | grep -q "^TrkUpdate $DONE$" && ok \
+  || bad "B6 mc_settle_merged closes out the Linear issue: $fresh_reqs $(tail -3 "$T/h/logs/merge-conductor.log" 2>/dev/null)"
+! grep -q 'issues/1\b\|issue close' "$S/gh.log" 2>/dev/null && ok || bad "B6 GitHub issue #1 was touched: $(cat "$S/gh.log")"
 
 LEAK=$(grep -rlF -- "$LKEY" "$S" "$T/h/logs" "$T/h1/logs" "$T/h/state" "$T"/*.out "$T"/*.err 2>/dev/null)
 [ -z "$LEAK" ] && ok || bad "the key reached: $LEAK"

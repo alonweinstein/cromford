@@ -121,6 +121,7 @@ if [ "$PREFIX" = "-" ]; then
       lb_closeout "$KEY" "$PR_URL" "$TO_STATUS" "$BF"; rc=$?
       rm -f "$BF"
       [ "$rc" = 0 ] || { say "the Linear close-out of $KEY failed (rc $rc)"; exit 1; }
+      [ "${LB_MOVED:-0}" = 1 ] || { echo "POSTED $PROJECT/$KEY (status not moved)"; exit 0; }
       echo "POSTED $PROJECT/$KEY -> $TO_STATUS"
       exit 0
     fi
