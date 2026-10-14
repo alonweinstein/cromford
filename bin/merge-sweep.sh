@@ -718,6 +718,33 @@ sweep_issue_for() {
   return 1
 }
 
+# sweep_linear <record-dir> <pr-url> — the Linear arm (bin/lib/linear-build.sh
+# lb_merge_lane), asked BEFORE either issue close above: for a project whose
+# tickets live on Linear, record pool-<p>-CRO-12-<stamp> is Linear issue CRO-12
+# and #12 of the app repo is somebody else's — and the gh guard refuses that
+# close, so it would be owed, and retried, on every pass for ever. rc 3 = not
+# Linear, close the GitHub issue as before; anything else = settled here.
+# Fail-open like the conductor's settle: a Linear close-out that did not land
+# is one log line and the merge is recorded, never re-offered.
+sweep_linear() {
+  local d="$1" pr="$2" slug p rc
+  declare -F lb_merge_lane >/dev/null 2>&1 || . "$H/bin/lib/linear-build.sh" 2>/dev/null || return 3
+  slug=$(sed -E 's|https://github.com/([^/]+/[^/]+)/pull/.*|\1|' <<<"$pr")
+  for p in $("$H/bin/fleet-conf.sh" --projects 2>/dev/null); do
+    [ "$("$H/bin/fleet-conf.sh" "$p" repo 2>/dev/null)" = "$slug" ] || continue
+    [ "$("$H/bin/fleet-conf.sh" "$p" board_prefix 2>/dev/null)" = "-" ] || return 3
+    HARNESS="$H" lb_merge_lane "$p" "$d" "$pr" "reviewed-merge sweep" 2>/dev/null; rc=$?
+    case "$rc" in
+      3) return 3 ;;
+      0) echo "$(STAMP) $pr merged — Linear issue $(lb_ticket_key "$p" "$d") closed out" >> "$LOG" ;;
+      *) echo "$(STAMP) $pr merged, but the Linear issue for record $(basename "$d") could not be closed out (rc $rc) — the merge is recorded anyway" >> "$LOG" ;;
+    esac
+    rm -f "$d/issue-close-owed"
+    return 0
+  done
+  return 3
+}
+
 # --- Per-tick tallies (BH-710) -----------------------------------------------
 # Every record is RETRYABLE until it says otherwise, and the classification is
 # banked at the TOP of the next iteration — which is how a loop with fourteen
@@ -1089,7 +1116,9 @@ while IFS=$'\t' read -r PROJ D BOR_KEY BOR_R BOR_TS; do
     # recorded, which is what it always was before this ticket.
     if [ "${PSTATE:-}" = "MERGED" ] && [ -f "$D/issue-close-owed" ]; then
       SI=$(sweep_issue_for "$D" "$PR"); SIRC=$?
-      if [ "$SIRC" = 0 ]; then
+      if sweep_linear "$D" "$PR"; then
+        :
+      elif [ "$SIRC" = 0 ]; then
         read -r SI_SLUG SI_NUM <<<"$SI"
         sweep_close_issue "$PR" "$D" "$SI_SLUG" "$SI_NUM" || continue
       elif [ "$SIRC" = 2 ]; then
@@ -1650,7 +1679,9 @@ while IFS=$'\t' read -r PROJ D BOR_KEY BOR_R BOR_TS; do
       # repeated every tick. The issue number is the build KEY's number
       # (pool-<project>-<KEY>-<stamp>, KEY = <PREFIX>-<n>). Fail-open: a
       # comment or close that fails is one log line, never a failed merge.
-      if [ "$("$H/bin/fleet-conf.sh" "$CG_P" board_prefix 2>/dev/null)" = "-" ]; then
+      # A Linear project's ticket is closed out on Linear (sweep_linear), never
+      # as #<n> here.
+      if [ "$("$H/bin/fleet-conf.sh" "$CG_P" board_prefix 2>/dev/null)" = "-" ] && ! sweep_linear "$D" "$PR"; then
         CG_ISSUE=$(basename "$D" | sed -nE "s/^(pool-)?$CG_P-[A-Za-z]+-([0-9]+)-.*/\2/p")
         if [ -n "$CG_ISSUE" ]; then
           # Comment, then close, then strip `ai-build` (BH-637 §3b) — a shipped

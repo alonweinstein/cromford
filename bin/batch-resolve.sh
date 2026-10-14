@@ -1209,7 +1209,7 @@ reconcile_creating() {
 #   its head moved). rc 1 = it still owes something, and the caller must keep the
 #   train OPEN so the next pass retries exactly this member.
 settle_member() {
-  local num="$1" sha="$2" turl="$3" head="${4:--}" rec issue body url now err w bf _st
+  local num="$1" sha="$2" turl="$3" head="${4:--}" rec issue body url now err w bf _st lin
   url="https://github.com/$SLUG/pull/$num"
   # IDEMPOTENT PER MEMBER, checked BEFORE anything is written. A kill part-way
   # through a settle used to leave the train open with no per-member record, so
@@ -1314,8 +1314,22 @@ Closing this PR because its commits are already in \`$PBASE\` under that merge."
   grep -qxF "$url" "$H/state/batch-closed.txt" 2>/dev/null || echo "$url" >> "$H/state/batch-closed.txt"
   # The ticket close-out, exactly as the conductor does it for a normal merge:
   # issue-driven projects get the issue commented and closed; board projects are
-  # closed out by the path that already owns their board comment.
-  if [ "$("$H/bin/fleet-conf.sh" "$PROJECT" board_prefix 2>/dev/null)" = "-" ]; then
+  # closed out by the path that already owns their board comment. A Linear
+  # project's ticket is closed out on Linear (bin/lib/linear-build.sh), asked
+  # before mc_issue_of, which would read CRO-12 as GitHub issue #12. Fail-open
+  # like the conductor: a close-out that did not land is one line, the member
+  # is still settled.
+  lin=3
+  if [ "$("$H/bin/fleet-conf.sh" "$PROJECT" board_prefix 2>/dev/null)" = "-" ] \
+     && { declare -F lb_merge_lane >/dev/null 2>&1 || . "$H/bin/lib/linear-build.sh" 2>/dev/null; }; then
+    lb_merge_lane "$PROJECT" "$rec" "$url" "batch train $turl" 2>/dev/null; lin=$?
+    case "$lin" in
+      0) say "#$num closed out its Linear issue $(lb_ticket_key "$PROJECT" "$rec")" ;;
+      3) ;;
+      *) say "#$num merged in the train, but its Linear issue could not be closed out (rc $lin) — the member is settled anyway" ;;
+    esac
+  fi
+  if [ "$lin" = 3 ] && [ "$("$H/bin/fleet-conf.sh" "$PROJECT" board_prefix 2>/dev/null)" = "-" ]; then
     issue=$(mc_issue_of "$rec" "")
     if [ -n "$issue" ]; then
       # Comment, close, and take `ai-build` off in that order (BH-637 §3b) — a

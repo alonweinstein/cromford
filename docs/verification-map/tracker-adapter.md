@@ -133,7 +133,9 @@ fleet.conf column 4 `-`, and the GitHub-Issues lanes strip `TK-142` to issue
 `bin/run-build.sh` exits 2 with an ALERTS line before it creates anything and
 `bin/board-closeout.sh` exits 4; `bin/needs-human-hold.sh` exits 0 for both,
 each without a GitHub call. A `linear` row with its context builds
-(`bin/lib/linear-build.sh`, entry LINEAR-BUILD). A settings outage answers rc 1 (GitHub), as before.
+(`bin/lib/linear-build.sh`, entry LINEAR-BUILD), and every merge lane closes
+its ticket out on Linear through `lb_merge_lane` (entry LINEAR-MERGE-LANES). A
+settings outage answers rc 1 (GitHub), as before.
 
 **Context:** `TRK_LINEAR_TOKEN` (the key, only on curl's argv),
 `TRK_LINEAR_TOKEN_VAR` (its name, which is what `TRK_LOG` shows),
