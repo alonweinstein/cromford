@@ -267,7 +267,8 @@ EOF
   # thread gate never refuses this build's plan on its own notice when the
   # resolver's ACCEPT resumes the review stage.
   declare -F ptg_own_post >/dev/null || . "$HARNESS/bin/lib/plan-thread.sh" 2>/dev/null
-  gh_rest_comment "$repo" "$issue" "$body" \
+  # Linear (RB_LINEAR): the notice goes on the Linear issue, never on #<n>.
+  if [ -n "${RB_LINEAR:-}" ]; then trk_linear_comment "$KEY" "$body"; else gh_rest_comment "$repo" "$issue" "$body"; fi \
     && { cm_put "blocked $PROJECT $KEY" "$(basename "$BUILD")" "$stamp" 2>/dev/null || : > "$stamp"
          command -v ptg_own_post >/dev/null 2>&1 && ptg_own_post "$BUILD" "$body"; } || true
   rm -f "$body"

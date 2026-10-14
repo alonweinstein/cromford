@@ -116,6 +116,9 @@ to_issue_repo() {
   [ -n "$p" ] || return 1
   h=$(to__h)
   [ "$("$h/bin/fleet-conf.sh" "$p" board_prefix 2>/dev/null)" = "-" ] || return 1
+  # A Linear build (bin/run-build.sh RB_LINEAR): the GitHub thread of #<n> is
+  # not the ticket's, so it holds nothing.
+  [ -z "${RB_LINEAR:-}" ] || return 1
   s="${GH_ISSUES_REPO:-}"
   [ -n "$s" ] || s=$("$h/bin/fleet-conf.sh" "$p" repo 2>/dev/null)
   case "$s" in */*) printf '%s' "$s" ;; *) return 1 ;; esac

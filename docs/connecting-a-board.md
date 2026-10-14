@@ -119,11 +119,22 @@ ticket whose newest comment is the key's own. Only issues of your team are
 ever read. An env file that sets `LINEAR_API_KEY` to nothing, or rows that do
 not load, make every tick `SKIP token-unresolved` with one ALERTS line a day.
 
-**Not yet:** a build can't run from a Linear issue, and the Linear prompt
-tells the session not to launch one. While the row says `linear`, `bin/run-build.sh` refuses the project, and
-the close-out and needs-human lanes post nothing to GitHub. Without that
-refusal they would treat `TK-142` as GitHub issue #142. The same refusal
-applies to a `jira` row.
+**Builds:** the triage session launches `bin/run-build.sh <project> TK-142
+TK-142` as on GitHub. The planner reads the Linear issue through
+`bin/tracker-cli.sh`, the stale-thread gate and the ticket's kind come from
+Linear, and the PR body says `Linear: TK-142` instead of `Closes #142`. When the
+build ends with a PR, `bin/board-closeout.sh` attaches the PR to the issue,
+comments, and moves it to review (or done when the build merged it itself). A
+later merge by the merge conductor comments and moves it to done. A build whose
+evidence refuted an acceptance item stays in review. A blocked build's notice
+goes on the Linear issue.
+
+**Not yet:** child tickets (a split XL plan, a rollout's waves) and HOLD /
+RESUME comments are not read or filed on Linear, and merges by bin/merge-sweep.sh
+or bin/batch-resolve.sh do not move the Linear issue (only the merge conductor
+does). A `jira` row is still refused by `bin/run-build.sh`, and its close-out
+and needs-human lanes post nothing to GitHub; without that refusal they would
+treat `TK-142` as GitHub issue #142.
 
 Every other lane is stopped one level lower: `bin/gh-ledger/gh`, the `gh` first
 on every lane's PATH, refuses a GitHub issue write (create, comment, close,

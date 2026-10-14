@@ -183,7 +183,7 @@ load "$R" example-org/gamma --tracker linear --team CRO --label ai-ready --no-bo
 P="$R/prompts/gamma.md"
 head -1 "$P" 2>/dev/null | grep -q '(Linear board)' && grep -q 'Linear team `CRO`' "$P" && grep -q 'labelled \*\*`ai-ready`\*\*' "$P" \
   && grep -q 'tracker-cli.sh gamma read CRO-<n>' "$P" && ! grep -qE '<(TEAM|LABEL|PROJECT)>' "$P" && ok || bad "L2 the Linear prompt is rendered: $(head -3 "$P" 2>/dev/null)"
-! grep -q 'run-build.sh gamma' "$P" && ok || bad "L2 the Linear prompt launches no build"
+grep -q 'run-build.sh gamma CRO-<n> CRO-<n> > /root/harness/logs/gamma.cro-<n>-build.out' "$P" && ok || bad "L2 the Linear prompt launches builds by the Linear key"
 ! grep -q 'label create' "$R/gh.log" && ok || bad "L2 no GitHub label is created: $(cat "$R/gh.log")"
 grep -q '^gamma .* -  *[0-9]' "$R/fleet.conf" && ok || bad "L2 the registry row is the usual column-4 '-' row"
 t=$(printf '%s\n' "$OUT" | grep -n 'setting-set tracker_linear.gamma.team CRO' | cut -d: -f1)

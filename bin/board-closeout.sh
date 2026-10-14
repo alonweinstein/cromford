@@ -107,6 +107,24 @@ if [ "$PREFIX" = "-" ]; then
   # shellcheck source=bin/lib/tracker.sh
   . "$BIN/lib/tracker.sh" 2>/dev/null || true
   if declare -F tracker_off_github >/dev/null 2>&1 && OFF=$(tracker_off_github "$PROJECT"); then
+    # LINEAR: the same comment on the Linear issue, the PR attached to it, and
+    # the status move the board contract asks for (review, or done = merged).
+    # A partial build (bin/lib/linear-build.sh lb_partial) stays in review.
+    if [ "$OFF" = linear ]; then
+      # shellcheck source=bin/lib/linear-build.sh
+      . "$BIN/lib/linear-build.sh" 2>/dev/null || { say "bin/lib/linear-build.sh missing"; exit 1; }
+      lb_on "$PROJECT" || { say "the Linear context did not load"; exit 1; }
+      [ "$TO_STATUS" = done ] && lb_partial "$BUILD" && TO_STATUS=review
+      case "$TO_STATUS" in done) LEAD="Merged." ;; *) LEAD="Built and opened for review." ;; esac
+      BF=$(mktemp "${TMPDIR:-/tmp}/closeout-body.XXXXXX") || { say "no temp file for the comment body"; exit 1; }
+      printf '%s\n\n%s\n\nPR: %s\n\n%s\n' "$LEAD" "${WHAT:-- see the PR for the change list}" "$PR_URL" "$VERIFIED" > "$BF"
+      lb_closeout "$KEY" "$PR_URL" "$TO_STATUS" "$BF"; rc=$?
+      rm -f "$BF"
+      [ "$rc" = 0 ] || { say "the Linear close-out of $KEY failed (rc $rc)"; exit 1; }
+      [ "${LB_MOVED:-0}" = 1 ] || { echo "POSTED $PROJECT/$KEY (status not moved)"; exit 0; }
+      echo "POSTED $PROJECT/$KEY -> $TO_STATUS"
+      exit 0
+    fi
     say "tickets live on $OFF (tracker_adapter.$PROJECT) — no GitHub issue comment, left for the sweep"; exit 4
   fi
   REPO=$("$BIN/fleet-conf.sh" "$PROJECT" repo 2>/dev/null) || REPO=""

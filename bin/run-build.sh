@@ -83,20 +83,39 @@ fi
 ALERTS="$HARNESS/logs/ALERTS.log"
 STAMP() { date -u '+%Y-%m-%d %H:%M:%SZ'; }
 # >>> tracker off github
-# THIS PIPELINE BUILDS GITHUB-ISSUES AND IN-APP BOARD TICKETS ONLY. A project
-# whose settings row tracker_adapter.<project> is jira or linear still sits at
-# fleet.conf column 4 `-`, so everything below would read its ticket as issue
-# #<n> of the app repo: the plan would be written from some other issue's
-# thread, the PR body would say `Closes #<n>` and the merge would close it.
-# Refused here, before a build dir, a lock or a job row exists. Fail-open: no
+# A project whose settings row tracker_adapter.<project> is jira or linear still
+# sits at fleet.conf column 4 `-`, so the GitHub-Issues paths below would read
+# its ticket as issue #<n> of the app repo: the plan written from some other
+# issue's thread, `Closes #<n>` in the PR body, that issue closed on merge.
+# LINEAR BUILDS: RB_LINEAR=1 with the Linear context loaded
+# (bin/lib/linear-build.sh), and every such path asks it — the ticket meta and
+# thread fingerprint come from Linear, the PR body names the key instead of
+# closing an issue, and the close-out comments and moves the Linear issue. A
+# Linear project whose context does not load, and every Jira project, is
+# refused here, before a build dir, a lock or a job row exists. Fail-open: no
 # bin/lib/tracker.sh, or a worker that did not answer, builds as before.
+RB_LINEAR=""
 # shellcheck source=bin/lib/tracker.sh
 . "$HARNESS/bin/lib/tracker.sh" 2>/dev/null || . "$(dirname "${BASH_SOURCE[0]}")/lib/tracker.sh" 2>/dev/null || true
 if declare -F tracker_off_github >/dev/null 2>&1 && _RB_TRK=$(tracker_off_github "$PROJECT"); then
-  echo "run-build: $PROJECT tickets live on $_RB_TRK (tracker_adapter.$PROJECT); this pipeline cannot build them yet — nothing started" >&2
-  mkdir -p "$HARNESS/logs" 2>/dev/null
-  echo "$(STAMP) [$PROJECT/$KEY] build refused: tracker_adapter.$PROJECT is $_RB_TRK, and run-build would read and close GitHub issue #${KEY##*-} instead of the $_RB_TRK ticket" >> "$ALERTS"
-  exit 2
+  _RB_WHY="this pipeline cannot build $_RB_TRK tickets yet"
+  if [ "$_RB_TRK" = linear ]; then
+    # shellcheck source=bin/lib/linear-build.sh
+    . "$HARNESS/bin/lib/linear-build.sh" 2>/dev/null || . "$(dirname "${BASH_SOURCE[0]}")/lib/linear-build.sh" 2>/dev/null || true
+    _RB_LF=$(mktemp "${TMPDIR:-/tmp}/rb-linear.XXXXXX" 2>/dev/null) || _RB_LF=/dev/null
+    if declare -F lb_on >/dev/null && lb_on "$PROJECT" 2>"$_RB_LF"; then
+      RB_LINEAR=1; export RB_LINEAR
+    else
+      _RB_WHY="its Linear context did not load ($(head -1 "$_RB_LF" 2>/dev/null))"
+    fi
+    [ "$_RB_LF" = /dev/null ] || rm -f "$_RB_LF"
+  fi
+  if [ -z "$RB_LINEAR" ]; then
+    echo "run-build: $PROJECT tickets live on $_RB_TRK (tracker_adapter.$PROJECT); $_RB_WHY — nothing started" >&2
+    mkdir -p "$HARNESS/logs" 2>/dev/null
+    echo "$(STAMP) [$PROJECT/$KEY] build refused: tracker_adapter.$PROJECT is $_RB_TRK and $_RB_WHY; run-build would otherwise read and close GitHub issue #${KEY##*-} instead of the $_RB_TRK ticket" >> "$ALERTS"
+    exit 2
+  fi
 fi
 # <<< tracker off github
 # >>> result pr url ratchet

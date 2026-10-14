@@ -409,6 +409,9 @@ STAGE_LANE_DEFER() { # STAGE_LANE_DEFER <stage-label> <outfile>... — exits 3 w
 # return an empty fingerprint and skip the gate entirely.
 TICKET_FP() {
   local base prefix tok tv
+  # Linear (RB_LINEAR, bin/run-build.sh): the human thread's digest, our own
+  # comments left out, so the stale gate and the build fp both have a signal.
+  if [ -n "${RB_LINEAR:-}" ]; then lb_thread_fp "$KEY"; return 0; fi
   base=$("$HARNESS/bin/fleet-conf.sh" "$PROJECT" prod 2>/dev/null)
   prefix=$("$HARNESS/bin/fleet-conf.sh" "$PROJECT" board_prefix 2>/dev/null)
   [ -n "$base" ] && [ "$base" != "-" ] || return 0
@@ -441,6 +444,8 @@ FP_BEFORE=$(TICKET_FP)
 # re-reading a board that may have moved.
 TICKET_META() {
   local base prefix tok tv repo issue t rc=0
+  # Linear: the issue itself, never GitHub issue #<n> of the app repo.
+  if [ -n "${RB_LINEAR:-}" ]; then lb_ticket_meta "$KEY"; return 0; fi
   base=$("$HARNESS/bin/fleet-conf.sh" "$PROJECT" prod 2>/dev/null)
   prefix=$("$HARNESS/bin/fleet-conf.sh" "$PROJECT" board_prefix 2>/dev/null)
   if [ -n "$base" ] && [ "$base" != "-" ] && [ "$prefix" != "-" ]; then
@@ -1480,7 +1485,8 @@ fi
 # or lift vocabulary. replan-commented follows a successful post only, so a
 # failed post is retried by a resume; no App identity writes the distinct
 # replan-comment-skipped, so nothing reads as delivered. Neither blocks the build.
-if [ -s "$BUILD/replan-comment.md" ] && [ ! -e "$BUILD/replan-commented" ] && [ ! -e "$BUILD/replan-comment-skipped" ]; then
+# Linear: no child tickets are filed there yet, so there is no replan to post.
+if [ -z "${RB_LINEAR:-}" ] && [ -s "$BUILD/replan-comment.md" ] && [ ! -e "$BUILD/replan-commented" ] && [ ! -e "$BUILD/replan-comment-skipped" ]; then
   RPC_SLUG=$("$HARNESS/bin/fleet-conf.sh" "$PROJECT" repo 2>/dev/null)
   RPC_N=$(sed -nE 's/^[A-Za-z]+-([0-9]+)$/\1/p' <<<"$KEY")
   case "${GH_TOKEN:-}" in

@@ -884,8 +884,13 @@ fi
 # all day and the tick answered "gate no-change" from 06:21Z to 14:49Z). The
 # number is the KEY's (<PREFIX>-<n>). Board projects get no line. Fail-open:
 # no fleet-conf.sh, no numeric key, no line — the body is byte-identical.
+# >>> closes line
+# Linear (RB_LINEAR): no `Closes #n` — #<n> of the app repo is somebody else's
+# issue. The key goes in the body instead, AFTER the partial-build block below
+# (which only rewrites a `Closes #`), and bin/board-closeout.sh and the merge
+# conductor move the Linear issue.
 CLOSES_LINE=""
-if [ "$("$HARNESS/bin/fleet-conf.sh" "$PROJECT" board_prefix 2>/dev/null)" = "-" ]; then
+if [ -z "${RB_LINEAR:-}" ] && [ "$("$HARNESS/bin/fleet-conf.sh" "$PROJECT" board_prefix 2>/dev/null)" = "-" ]; then
   _CL_ISSUE=$(sed -nE 's/^[A-Za-z]+-([0-9]+)$/\1/p' <<<"$KEY")
   [ -n "$_CL_ISSUE" ] && CLOSES_LINE="Closes #$_CL_ISSUE"
 fi
@@ -905,7 +910,14 @@ if [ -n "$CLOSES_LINE" ] && [ -r "${BUILD:-}/evidence.json" ] && command -v jq >
     NOTMET_SECTION=$(printf '\n## Acceptance self-check\n\nNot every acceptance item is met, so this PR says Refs, not Closes, and a merge leaves the issue open. Not met:\n%s\n' "$_NOTMET")
   fi
 fi
+if [ -n "${RB_LINEAR:-}" ]; then
+  CLOSES_LINE="Linear: $KEY"
+  if lb_partial "${BUILD:-}"; then
+    NOTMET_SECTION=$(printf '\n## Acceptance self-check\n\nNot every acceptance item is met, so a merge leaves %s in review rather than done.\n' "$KEY")
+  fi
+fi
 # <<< partial build refs
+# <<< closes line
 # >>> needs-human pr section
 # BH-3433 (BH-3442): the needs-human release section for an issues board's PR
 # body — empty until the release slice lands, so the body is byte-identical.
